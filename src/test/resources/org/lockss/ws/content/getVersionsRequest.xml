@@ -1,0 +1,17 @@
+<!--
+Sample SOAP request for simple testing.
+
+Usage:
+  curl -H "content-type: text/xml" -d @path/to/this/file
+       http://user:pass@host:port/ws/ContentService
+-->
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:service="http://content.ws.lockss.org/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <service:getVersions>
+            <url>http://some.url</url>
+            <auId>Some-AU_Id</auId>
+        </service:getVersions>
+    </soapenv:Body>
+</soapenv:Envelope>
