@@ -1,6 +1,6 @@
 /*
 
- Copyright (c) 2013-2019 Board of Trustees of Leland Stanford Jr. University,
+ Copyright (c) 2013-2020 Board of Trustees of Leland Stanford Jr. University,
  all rights reserved.
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,14 +30,18 @@ package org.lockss.ws.status;
 import static org.lockss.ws.SoapServiceUtil.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.lockss.log.L4JLogger;
+import org.lockss.util.Constants;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.status.RestStatusClient;
-import org.lockss.ws.SoapServiceUtil;
+import org.lockss.ws.SoapApplication;
 import org.lockss.ws.entities.AuStatus;
 import org.lockss.ws.entities.AuWsResult;
 import org.lockss.ws.entities.CrawlWsResult;
@@ -62,7 +66,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * The Daemon Status SOAP web service implementation.
@@ -73,6 +76,9 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
   @Autowired
   private Environment env;
+
+  private long connectTimeout = 10 * Constants.SECOND;
+  private long readTimeout = 120 * Constants.SECOND;
 
   /**
    * Provides an indication of whether the daemon is ready.
@@ -182,31 +188,19 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
   public Collection<IdNamePair> getAuIds() throws LockssWebServicesFault {
     log.debug2("Invoked.");
 
+    // Get the requested information via the queryAus SOAP operation.
+    List<AuWsResult> queryAusResult = queryAus("select auId, name");
+    log.trace("queryAusResult = {}", queryAusResult);
+
     try {
-      RestTemplate restTemplate = SoapServiceUtil.getRestTemplate();
+      // Initialize the results.
+      Collection<IdNamePair> results = new ArrayList<>(queryAusResult.size());
 
-      // TODO: Specify the appropriate endpoint.
-      String endpoint = env.getProperty(REPO_SVC_URL_KEY) + "/???";
-      log.trace("endpoint = {}", endpoint);
-
-      UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(endpoint);
-
-      HttpHeaders restHeaders =
-	  SoapServiceUtil.addSoapCredentials(new HttpHeaders());
-
-      // Make the request to the REST service and get the response.
-      ResponseEntity<String> response = RestUtil.callRestService(restTemplate,
-	  builder.build().encode().toUri(), HttpMethod.GET,
-	  new HttpEntity<>(null, restHeaders), String.class, "getAuIds");
-
-      // Validate the response.
-      if (!response.getStatusCode().is2xxSuccessful()) {
-	throw new RuntimeException("RestUtil returned non-200 result");
+      // Loop through the results of the queryAus SOAP operation.
+      for (AuWsResult auWsResult : queryAusResult) {
+	// Populate the results.
+	results.add(new IdNamePair(auWsResult.getAuId(), auWsResult.getName()));
       }
-
-      // Extract the results.
-      List<IdNamePair> results = new ObjectMapper().readValue(
-	  (String)response.getBody(), new TypeReference<List<IdNamePair>>(){});
 
       log.debug2("results = {}", results);
       return results;
@@ -227,12 +221,27 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
     log.debug2("auId = {}", auId);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      AuStatus result = new AuStatus();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Prepare the URI path variables.
+      Map<String, String> uriVariables = new HashMap<>(1);
+      uriVariables.put("auId", auId);
+      log.trace("uriVariables = {}", uriVariables);
 
-      log.debug2("result = {}", result);
-      return result;
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/austatuses/{auId}",
+	  uriVariables, null, HttpMethod.GET, "Can't get AU status");
+
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        AuStatus result = mapper.readValue(response.getBody(), AuStatus.class);
+
+        log.debug2("result = " + result);
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
@@ -254,12 +263,28 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
     log.debug2("pluginQuery = {}", pluginQuery);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<PluginWsResult> results = new ArrayList<>();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Prepare the query parameters.
+      Map<String, String> queryParams = new HashMap<>(1);
+      queryParams.put("pluginQuery", pluginQuery);
+      log.trace("queryParams = {}", queryParams);
 
-      log.debug2("results = {}", results);
-      return results;
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/plugins", null, queryParams,
+	  HttpMethod.GET, "Can't query plugins");
+
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        List<PluginWsResult> result = mapper.readValue(response.getBody(),
+  	  new TypeReference<List<PluginWsResult>>(){});
+
+        log.debug2("result = " + result);
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
@@ -281,12 +306,28 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
     log.debug2("auQuery = {}", auQuery);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<AuWsResult> results = new ArrayList<>();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Prepare the query parameters.
+      Map<String, String> queryParams = new HashMap<>(1);
+      queryParams.put("auQuery", auQuery);
+      log.trace("queryParams = {}", queryParams);
 
-      log.debug2("results = {}", results);
-      return results;
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/auqueries", null, queryParams,
+	  HttpMethod.GET, "Can't query AUs");
+
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        List<AuWsResult> result = mapper.readValue(response.getBody(),
+  	  new TypeReference<List<AuWsResult>>(){});
+
+        log.debug2("result = " + result);
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
@@ -466,13 +507,23 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
     log.debug2("Invoked.");
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      PlatformConfigurationWsResult result =
-	  new PlatformConfigurationWsResult();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/config/platform", null, null,
+	  HttpMethod.GET, "Can't get platform configuration");
 
-      log.debug2("result = {}", result);
-      return result;
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        PlatformConfigurationWsResult result = mapper.readValue(
+            response.getBody(), PlatformConfigurationWsResult.class);
+
+        log.debug2("result = " + result);
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
@@ -494,12 +545,28 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
     log.debug2("tdbPublisherQuery = {}", tdbPublisherQuery);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<TdbPublisherWsResult> results = new ArrayList<>();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Prepare the query parameters.
+      Map<String, String> queryParams = new HashMap<>(1);
+      queryParams.put("tdbPublisherQuery", tdbPublisherQuery);
+      log.trace("queryParams = {}", queryParams);
 
-      log.debug2("results = {}", results);
-      return results;
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/tdbpublishers", null,
+	  queryParams, HttpMethod.GET, "Can't query TDB publishers");
+
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        List<TdbPublisherWsResult> result = mapper.readValue(response.getBody(),
+  	  new TypeReference<List<TdbPublisherWsResult>>(){});
+
+        log.debug2("result = " + result);
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
@@ -521,12 +588,28 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
     log.debug2("tdbTitleQuery = {}", tdbTitleQuery);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<TdbTitleWsResult> results = new ArrayList<>();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Prepare the query parameters.
+      Map<String, String> queryParams = new HashMap<>(1);
+      queryParams.put("tdbTitleQuery", tdbTitleQuery);
+      log.trace("queryParams = {}", queryParams);
 
-      log.debug2("results = {}", results);
-      return results;
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/tdbtitles", null, queryParams,
+	  HttpMethod.GET, "Can't query TDB titles");
+
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        List<TdbTitleWsResult> result = mapper.readValue(response.getBody(),
+  	  new TypeReference<List<TdbTitleWsResult>>(){});
+
+        log.debug2("result = " + result);
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
@@ -548,12 +631,28 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
     log.debug2("tdbAuQuery = {}", tdbAuQuery);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<TdbAuWsResult> results = new ArrayList<>();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Prepare the query parameters.
+      Map<String, String> queryParams = new HashMap<>(1);
+      queryParams.put("tdbAuQuery", tdbAuQuery);
+      log.trace("queryParams = {}", queryParams);
 
-      log.debug2("results = {}", results);
-      return results;
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/tdbaus", null, queryParams,
+	  HttpMethod.GET, "Can't query TDB AUs");
+
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        List<TdbAuWsResult> result = mapper.readValue(response.getBody(),
+  	  new TypeReference<List<TdbAuWsResult>>(){});
+
+        log.debug2("result = " + result);
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
@@ -582,5 +681,62 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
+  }
+
+  /**
+   * Makes a call to a REST service endpoint.
+   * 
+   * @param serviceUrl       A String with the URL of the service.
+   * @param endPointPath     A String with the URI path to the endpoint.
+   * @param uriVariables     A Map<String, String> with any variables to be
+   *                         interpolated in the URI.
+   * @param queryParams      A Map<String, String> with any query parameters.
+   * @param httpMethod       An HttpMethod with HTTP method used to make the
+   *                         call to the REST service,
+   * @param exceptionMessage A String with the message to be returned with any
+   *                         exception.
+   * @return a ResponseEntity<String> with the response from the REST service.
+   * @throws LockssRestException if any problems arise in the call to the REST
+   *                             service.
+   */
+  private ResponseEntity<String> callRestServiceEndpoint(String serviceUrl, 
+      String endPointPath, Map<String, String> uriVariables,
+      Map<String, String> queryParams, HttpMethod httpMethod,
+      String exceptionMessage) throws LockssRestException {
+    log.debug2("serviceUrl = {}", serviceUrl);
+    log.debug2("endPointPath = {}", endPointPath);
+    log.debug2("uriVariables = {}", uriVariables);
+    log.debug2("queryParams = {}", queryParams);
+    log.debug2("httpMethod = {}", httpMethod);
+    log.debug2("exceptionMessage = {}", exceptionMessage);
+
+    // Create the REST template.
+    RestTemplate restTemplate =
+	  RestUtil.getRestTemplate(connectTimeout, readTimeout);
+
+    // Create the URI of the request to the REST service.
+    String uriString = serviceUrl + endPointPath;
+    log.trace("uriString = {}", uriString);
+
+
+    URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
+    log.trace("uri = {}", uri);
+
+    // Initialize the request headers.
+    List<String> restClientCredentials =
+	  SoapApplication.getRestClientCredentials();
+
+    HttpHeaders requestHeaders =
+	  RestUtil.getCredentialedRequestHeaders(restClientCredentials.get(0),
+	      restClientCredentials.get(1));
+
+    // Create the request entity.
+    HttpEntity<Void> requestEntity =
+	new HttpEntity<>(null, requestHeaders);
+
+    // Make the REST call.
+    log.trace("Calling RestUtil.callRestService");
+    return RestUtil.callRestService(restTemplate, uri, httpMethod,
+	requestEntity, String.class, exceptionMessage);
   }
 }
