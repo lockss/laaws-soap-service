@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2000-2019 Board of Trustees of Leland Stanford Jr. University,
+Copyright (c) 2000-2020 Board of Trustees of Leland Stanford Jr. University,
 all rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -31,76 +31,42 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.lockss.ws;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import org.apache.cxf.helpers.CastUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.lockss.log.L4JLogger;
+import org.lockss.util.rest.RestUtil;
+import org.lockss.util.rest.exception.LockssRestException;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.client.DefaultResponseErrorHandler;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 /**
  * SOAP Service utility code.
  */
 public class SoapServiceUtil {
-  /** The URL of the Repository REST service. */
+  /** The configuration key for the URL of the Repository REST service. */
   public final static String REPO_SVC_URL_KEY = "repository.service.url";
-  /** The URL of the Configuration REST service. */
+  /** The configuration key for the URL of the Configuration REST service. */
   public final static String CONFIG_SVC_URL_KEY = "configuration.service.url";
-  /** The URL of the Poller REST service. */
+  /** The configuration key for the URL of the Poller REST service. */
   public final static String POLLER_SVC_URL_KEY = "poller.service.url";
-  /** The URL of the Metadata Extractor REST service. */
+  /** The configuration key for the URL of the Metadata Extractor REST service. */
   public final static String MDX_SVC_URL_KEY = "metadataextractor.service.url";
-  /** The URL of the Metadata REST service. */
+  /** The configuration key for the URL of the Metadata REST service. */
   public final static String MDQ_SVC_URL_KEY = "metadata.service.url";
 
+  /** The configuration key for the connection timeout. */
+  public final static String CONNECTION_TIMEOUT_KEY = "connection.timeout";
+  /** The configuration key for the read timeout. */
+  public final static String READ_TIMEOUT_KEY = "read.timeout";
+
   private final static L4JLogger log = L4JLogger.getLogger();
-
-  /**
-   * Provides a newly-created REST template to access REST services.
-   *
-   * @return a RestTemplate with the REST template.
-   */
-  public static RestTemplate getRestTemplate() {
-    log.debug2("Invoked.");
-
-    RestTemplate restTemplate = new RestTemplate();
-
-    restTemplate.setErrorHandler(new DefaultResponseErrorHandler(){
-      protected boolean hasError(HttpStatus statusCode) {
-	return false;
-      }
-    });
-
-    log.debug2("Done.");
-    return restTemplate;
-  }
-
-  /**
-   * Adds the Authorization header in the current SOAP request message, if any,
-   * to a passed set of HTTP headers.
-   * 
-   * @param httpHeaders An HttpHeaders with the initial HTTP headers.
-   * @return an HttpHeaders with the resulting HTTP headers.
-   */
-  public static HttpHeaders addSoapCredentials(HttpHeaders httpHeaders) {
-    log.debug2("httpHeaders = {}", httpHeaders);
-
-    // Get the Authorization header from the SOAP request.
-    String authHeaderValue = getSoapRequestAuthorizationHeader();
-
-    // Check whether there is an Authorization header.
-    if (authHeaderValue != null) {
-      // Yes: Add it to the headers.
-      httpHeaders.add("Authorization", authHeaderValue);
-    }
-
-    log.debug2("httpHeaders = {}", httpHeaders);
-    return httpHeaders;
-  }
 
   /**
    * Provides the Authorization header in the current SOAP request message, if
@@ -134,5 +100,66 @@ public class SoapServiceUtil {
 
     log.debug2("authHeaderValue = {}", authHeaderValue);
     return authHeaderValue;
+  }
+
+  /**
+   * Makes a call to a REST service endpoint.
+   * 
+   * @param restTemplate     A RestTemplate used by Spring for synchronous
+   *                         client-side HTTP access.
+   * @param serviceUrl       A String with the URL of the service.
+   * @param endPointPath     A String with the URI path to the endpoint.
+   * @param uriVariables     A Map<String, String> with any variables to be
+   *                         interpolated in the URI.
+   * @param queryParams      A Map<String, String> with any query parameters.
+   * @param httpMethod       An HttpMethod with HTTP method used to make the
+   *                         call to the REST service.
+   * @param authHeaderValue  A String with the value of the Authorization header
+   *                         to be used to make the call, if any.
+   * @param exceptionMessage A String with the message to be returned with any
+   *                         exception.
+   * @return a ResponseEntity<String> with the response from the REST service.
+   * @throws LockssRestException if any problems arise in the call to the REST
+   *                             service.
+   */
+  public static ResponseEntity<String> callRestServiceEndpoint(
+      RestTemplate restTemplate, String serviceUrl, String endPointPath,
+      Map<String, String> uriVariables, Map<String, String> queryParams,
+      HttpMethod httpMethod, String authHeaderValue, String exceptionMessage)
+	  throws LockssRestException {
+    log.debug2("serviceUrl = {}", serviceUrl);
+    log.debug2("endPointPath = {}", endPointPath);
+    log.debug2("uriVariables = {}", uriVariables);
+    log.debug2("queryParams = {}", queryParams);
+    log.debug2("httpMethod = {}", httpMethod);
+    log.debug2("authHeaderValue = {}", authHeaderValue);
+    log.debug2("exceptionMessage = {}", exceptionMessage);
+
+    // Create the URI of the request to the REST service.
+    String uriString = serviceUrl + endPointPath;
+    log.trace("uriString = {}", uriString);
+
+    URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
+    log.trace("uri = {}", uri);
+
+    // Initialize the request headers.
+    HttpHeaders requestHeaders = new HttpHeaders();
+
+    // Check whether there are credentials to be sent.
+    if (authHeaderValue != null && !authHeaderValue.isEmpty()) {
+      // Yes.
+      requestHeaders.set("Authorization", authHeaderValue);
+    }
+
+    log.trace("requestHeaders = {}", requestHeaders);
+
+    // Create the request entity.
+    HttpEntity<Void> requestEntity =
+	new HttpEntity<>(null, requestHeaders);
+
+    // Make the REST call.
+    log.trace("Calling RestUtil.callRestService");
+    return RestUtil.callRestService(restTemplate, uri, httpMethod,
+	requestEntity, String.class, exceptionMessage);
   }
 }

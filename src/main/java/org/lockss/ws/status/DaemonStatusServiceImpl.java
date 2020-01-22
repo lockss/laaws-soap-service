@@ -30,7 +30,6 @@ package org.lockss.ws.status;
 import static org.lockss.ws.SoapServiceUtil.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,7 +40,6 @@ import org.lockss.util.Constants;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.status.RestStatusClient;
-import org.lockss.ws.SoapApplication;
 import org.lockss.ws.entities.AuStatus;
 import org.lockss.ws.entities.AuWsResult;
 import org.lockss.ws.entities.CrawlWsResult;
@@ -60,8 +58,6 @@ import org.lockss.ws.entities.VoteWsResult;
 import org.lockss.ws.status.DaemonStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -77,8 +73,8 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
   @Autowired
   private Environment env;
 
-  private long connectTimeout = 10 * Constants.SECOND;
-  private long readTimeout = 120 * Constants.SECOND;
+  private long defaultConnectTimeout = 10 * Constants.SECOND;
+  private long defaultReadTimeout = 120 * Constants.SECOND;
 
   /**
    * Provides an indication of whether the daemon is ready.
@@ -228,8 +224,9 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  env.getProperty(CONFIG_SVC_URL_KEY), "/austatuses/{auId}",
-	  uriVariables, null, HttpMethod.GET, "Can't get AU status");
+	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
+	  "/austatuses/{auId}", uriVariables, null, HttpMethod.GET,
+	  getSoapRequestAuthorizationHeader(), "Can't get AU status");
 
       // Get the response body.
       try {
@@ -270,8 +267,9 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  env.getProperty(CONFIG_SVC_URL_KEY), "/plugins", null, queryParams,
-	  HttpMethod.GET, "Can't query plugins");
+	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
+	  "/plugins", null, queryParams, HttpMethod.GET,
+	  getSoapRequestAuthorizationHeader(), "Can't query plugins");
 
       // Get the response body.
       try {
@@ -313,8 +311,9 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  env.getProperty(CONFIG_SVC_URL_KEY), "/auqueries", null, queryParams,
-	  HttpMethod.GET, "Can't query AUs");
+	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
+	  "/auqueries", null, queryParams, HttpMethod.GET,
+	  getSoapRequestAuthorizationHeader(), "Can't query AUs");
 
       // Get the response body.
       try {
@@ -509,8 +508,10 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
     try {
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  env.getProperty(CONFIG_SVC_URL_KEY), "/config/platform", null, null,
-	  HttpMethod.GET, "Can't get platform configuration");
+	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
+	  "/config/platform", null, null, HttpMethod.GET,
+	  getSoapRequestAuthorizationHeader(),
+	  "Can't get platform configuration");
 
       // Get the response body.
       try {
@@ -543,6 +544,8 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
   public List<TdbPublisherWsResult> queryTdbPublishers(String tdbPublisherQuery)
       throws LockssWebServicesFault {
     log.debug2("tdbPublisherQuery = {}", tdbPublisherQuery);
+    String authHeaderValue = getSoapRequestAuthorizationHeader();
+    log.trace("authHeaderValue = {}", authHeaderValue);
 
     try {
       // Prepare the query parameters.
@@ -552,8 +555,9 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  env.getProperty(CONFIG_SVC_URL_KEY), "/tdbpublishers", null,
-	  queryParams, HttpMethod.GET, "Can't query TDB publishers");
+	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
+	  "/tdbpublishers", null, queryParams, HttpMethod.GET,
+	  getSoapRequestAuthorizationHeader(), "Can't query TDB publishers");
 
       // Get the response body.
       try {
@@ -595,8 +599,9 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  env.getProperty(CONFIG_SVC_URL_KEY), "/tdbtitles", null, queryParams,
-	  HttpMethod.GET, "Can't query TDB titles");
+	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
+	  "/tdbtitles", null, queryParams, HttpMethod.GET,
+	  getSoapRequestAuthorizationHeader(), "Can't query TDB titles");
 
       // Get the response body.
       try {
@@ -638,8 +643,9 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  env.getProperty(CONFIG_SVC_URL_KEY), "/tdbaus", null, queryParams,
-	  HttpMethod.GET, "Can't query TDB AUs");
+	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
+	  "/tdbaus", null, queryParams, HttpMethod.GET,
+	  getSoapRequestAuthorizationHeader(), "Can't query TDB AUs");
 
       // Get the response body.
       try {
@@ -684,59 +690,14 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
   }
 
   /**
-   * Makes a call to a REST service endpoint.
+   * Provides the customized template used by Spring for synchronous client-side
+   * HTTP access.
    * 
-   * @param serviceUrl       A String with the URL of the service.
-   * @param endPointPath     A String with the URI path to the endpoint.
-   * @param uriVariables     A Map<String, String> with any variables to be
-   *                         interpolated in the URI.
-   * @param queryParams      A Map<String, String> with any query parameters.
-   * @param httpMethod       An HttpMethod with HTTP method used to make the
-   *                         call to the REST service,
-   * @param exceptionMessage A String with the message to be returned with any
-   *                         exception.
-   * @return a ResponseEntity<String> with the response from the REST service.
-   * @throws LockssRestException if any problems arise in the call to the REST
-   *                             service.
+   * @return a RestTemplate with the customized Spring template.
    */
-  private ResponseEntity<String> callRestServiceEndpoint(String serviceUrl, 
-      String endPointPath, Map<String, String> uriVariables,
-      Map<String, String> queryParams, HttpMethod httpMethod,
-      String exceptionMessage) throws LockssRestException {
-    log.debug2("serviceUrl = {}", serviceUrl);
-    log.debug2("endPointPath = {}", endPointPath);
-    log.debug2("uriVariables = {}", uriVariables);
-    log.debug2("queryParams = {}", queryParams);
-    log.debug2("httpMethod = {}", httpMethod);
-    log.debug2("exceptionMessage = {}", exceptionMessage);
-
-    // Create the REST template.
-    RestTemplate restTemplate =
-	  RestUtil.getRestTemplate(connectTimeout, readTimeout);
-
-    // Create the URI of the request to the REST service.
-    String uriString = serviceUrl + endPointPath;
-    log.trace("uriString = {}", uriString);
-
-
-    URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
-    log.trace("uri = {}", uri);
-
-    // Initialize the request headers.
-    List<String> restClientCredentials =
-	  SoapApplication.getRestClientCredentials();
-
-    HttpHeaders requestHeaders =
-	  RestUtil.getCredentialedRequestHeaders(restClientCredentials.get(0),
-	      restClientCredentials.get(1));
-
-    // Create the request entity.
-    HttpEntity<Void> requestEntity =
-	new HttpEntity<>(null, requestHeaders);
-
-    // Make the REST call.
-    log.trace("Calling RestUtil.callRestService");
-    return RestUtil.callRestService(restTemplate, uri, httpMethod,
-	requestEntity, String.class, exceptionMessage);
+  private RestTemplate getCustomRestTemplate() {
+    return RestUtil.getRestTemplate(env.getProperty(CONNECTION_TIMEOUT_KEY,
+	Long.class, defaultConnectTimeout),
+	env.getProperty(READ_TIMEOUT_KEY, Long.class, defaultReadTimeout));
   }
 }
