@@ -1,32 +1,28 @@
 /*
 
-Copyright (c) 2000-2020 Board of Trustees of Leland Stanford Jr. University,
-all rights reserved.
+ Copyright (c) 2000-2020 Board of Trustees of Leland Stanford Jr. University,
+ all rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
-1. Redistributions of source code must retain the above copyright notice, this
-list of conditions and the following disclaimer.
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
 
-2. Redistributions in binary form must reproduce the above copyright notice,
-this list of conditions and the following disclaimer in the documentation and/or
-other materials provided with the distribution.
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ STANFORD UNIVERSITY BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-3. Neither the name of the copyright holder nor the names of its contributors
-may be used to endorse or promote products derived from this software without
-specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ Except as contained in this notice, the name of Stanford University shall not
+ be used in advertising or otherwise to promote the sale, use or other dealings
+ in this Software without prior written authorization from Stanford University.
 
  */
 package org.lockss.ws;
@@ -38,8 +34,11 @@ import org.apache.cxf.helpers.CastUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.lockss.log.L4JLogger;
+import org.lockss.util.Constants;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.exception.LockssRestException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -47,16 +46,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * SOAP Service utility code.
+ * Base class for the various SOAP web service implementations.
  */
-public class SoapServiceUtil {
+public abstract class BaseServiceImpl {
   /** The configuration key for the URL of the Repository REST service. */
   public final static String REPO_SVC_URL_KEY = "repository.service.url";
   /** The configuration key for the URL of the Configuration REST service. */
   public final static String CONFIG_SVC_URL_KEY = "configuration.service.url";
   /** The configuration key for the URL of the Poller REST service. */
   public final static String POLLER_SVC_URL_KEY = "poller.service.url";
-  /** The configuration key for the URL of the Metadata Extractor REST service. */
+  /** The configuration key for the URL of the Metadata Extractor REST service.
+   */
   public final static String MDX_SVC_URL_KEY = "metadataextractor.service.url";
   /** The configuration key for the URL of the Metadata REST service. */
   public final static String MDQ_SVC_URL_KEY = "metadata.service.url";
@@ -68,13 +68,32 @@ public class SoapServiceUtil {
 
   private final static L4JLogger log = L4JLogger.getLogger();
 
+  @Autowired
+  protected Environment env;
+
+  // Default timeouts.
+  private long defaultConnectTimeout = 10 * Constants.SECOND;
+  private long defaultReadTimeout = 120 * Constants.SECOND;
+
+  /**
+   * Provides the customized template used by Spring for synchronous client-side
+   * HTTP access.
+   * 
+   * @return a RestTemplate with the customized Spring template.
+   */
+  protected RestTemplate getCustomRestTemplate() {
+    return RestUtil.getRestTemplate(env.getProperty(CONNECTION_TIMEOUT_KEY,
+	Long.class, defaultConnectTimeout),
+	env.getProperty(READ_TIMEOUT_KEY, Long.class, defaultReadTimeout));
+  }
+
   /**
    * Provides the Authorization header in the current SOAP request message, if
    * any.
    *
    * @return a String with the Authorization header.
    */
-  public static String getSoapRequestAuthorizationHeader() {
+  protected static String getSoapRequestAuthorizationHeader() {
     log.debug2("Invoked.");
 
     String authHeaderValue = null;
@@ -105,8 +124,6 @@ public class SoapServiceUtil {
   /**
    * Makes a call to a REST service endpoint.
    * 
-   * @param restTemplate     A RestTemplate used by Spring for synchronous
-   *                         client-side HTTP access.
    * @param serviceUrl       A String with the URL of the service.
    * @param endPointPath     A String with the URI path to the endpoint.
    * @param uriVariables     A Map<String, String> with any variables to be
@@ -114,25 +131,24 @@ public class SoapServiceUtil {
    * @param queryParams      A Map<String, String> with any query parameters.
    * @param httpMethod       An HttpMethod with HTTP method used to make the
    *                         call to the REST service.
-   * @param authHeaderValue  A String with the value of the Authorization header
-   *                         to be used to make the call, if any.
+   * @param body             A T with the contents of the body to be included
+   *                         with the request, if any.
    * @param exceptionMessage A String with the message to be returned with any
    *                         exception.
    * @return a ResponseEntity<String> with the response from the REST service.
    * @throws LockssRestException if any problems arise in the call to the REST
    *                             service.
    */
-  public static ResponseEntity<String> callRestServiceEndpoint(
-      RestTemplate restTemplate, String serviceUrl, String endPointPath,
-      Map<String, String> uriVariables, Map<String, String> queryParams,
-      HttpMethod httpMethod, String authHeaderValue, String exceptionMessage)
-	  throws LockssRestException {
+  protected <T> ResponseEntity<String> callRestServiceEndpoint(
+      String serviceUrl, String endPointPath, Map<String, String> uriVariables,
+      Map<String, String> queryParams, HttpMethod httpMethod, T body,
+      String exceptionMessage) throws LockssRestException {
     log.debug2("serviceUrl = {}", serviceUrl);
     log.debug2("endPointPath = {}", endPointPath);
     log.debug2("uriVariables = {}", uriVariables);
     log.debug2("queryParams = {}", queryParams);
     log.debug2("httpMethod = {}", httpMethod);
-    log.debug2("authHeaderValue = {}", authHeaderValue);
+    log.debug2("body = {}", body);
     log.debug2("exceptionMessage = {}", exceptionMessage);
 
     // Create the URI of the request to the REST service.
@@ -145,21 +161,23 @@ public class SoapServiceUtil {
     // Initialize the request headers.
     HttpHeaders requestHeaders = new HttpHeaders();
 
+    // Get any incoming authorization header with credentials to be passed to
+    // the REST service.
+    String authHeaderValue = getSoapRequestAuthorizationHeader();
+    log.trace("authHeaderValue = {}", authHeaderValue);
+
     // Check whether there are credentials to be sent.
     if (authHeaderValue != null && !authHeaderValue.isEmpty()) {
-      // Yes.
+      // Yes: Add them to the request.
       requestHeaders.set("Authorization", authHeaderValue);
     }
 
     log.trace("requestHeaders = {}", requestHeaders);
 
-    // Create the request entity.
-    HttpEntity<Void> requestEntity =
-	new HttpEntity<>(null, requestHeaders);
-
     // Make the REST call.
     log.trace("Calling RestUtil.callRestService");
-    return RestUtil.callRestService(restTemplate, uri, httpMethod,
-	requestEntity, String.class, exceptionMessage);
+    return RestUtil.callRestService(getCustomRestTemplate(), uri, httpMethod,
+	new HttpEntity<T>(body, requestHeaders), String.class,
+	exceptionMessage);
   }
 }

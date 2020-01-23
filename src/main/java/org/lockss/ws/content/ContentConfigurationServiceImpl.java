@@ -1,6 +1,6 @@
 /*
 
- Copyright (c) 2014-2019 Board of Trustees of Leland Stanford Jr. University,
+ Copyright (c) 2014-2020 Board of Trustees of Leland Stanford Jr. University,
  all rights reserved.
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,25 +27,25 @@
  */
 package org.lockss.ws.content;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import org.lockss.log.L4JLogger;
+import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.ContentConfigurationResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 /**
  * The Content Configuration SOAP web service implementation.
  */
 @Service
-public class ContentConfigurationServiceImpl implements
-    ContentConfigurationService {
+public class ContentConfigurationServiceImpl extends BaseServiceImpl
+implements ContentConfigurationService {
   private final static L4JLogger log = L4JLogger.getLogger();
-
-  @Autowired
-  private Environment env;
 
   /**
    * Configures the archival unit defined by its identifier.
@@ -85,19 +85,24 @@ public class ContentConfigurationServiceImpl implements
     log.debug2("auIds = {}", auIds);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<ContentConfigurationResult> results =
-	  new ArrayList<ContentConfigurationResult>(auIds.size());
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/aus/add", null, null,
+	  HttpMethod.POST, auIds, "Can't add AUs");
 
-      ContentConfigurationResult result =
-	  new ContentConfigurationResult(auIds.get(0), "AU Name", Boolean.TRUE,
-	      "It worked!");
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        List<ContentConfigurationResult> result =
+            mapper.readValue(response.getBody(),
+        	new TypeReference<List<ContentConfigurationResult>>(){});
 
-      results.add(result);
-      // TODO: END OF BLOCK TO BE REPLACED.
-
-      log.debug2("results = {}", results);
-      return results;
+        log.debug2("result = " + result);
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
@@ -140,19 +145,24 @@ public class ContentConfigurationServiceImpl implements
     log.debug2("auIds = {}", auIds);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<ContentConfigurationResult> results =
-	  new ArrayList<ContentConfigurationResult>(auIds.size());
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/aus/delete", null, null,
+	  HttpMethod.DELETE, auIds, "Can't delete AUs");
 
-      ContentConfigurationResult result =
-	  new ContentConfigurationResult(auIds.get(0), "AU Name", Boolean.TRUE,
-	      "It worked!");
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        List<ContentConfigurationResult> result =
+            mapper.readValue(response.getBody(),
+        	new TypeReference<List<ContentConfigurationResult>>(){});
 
-      results.add(result);
-      // TODO: END OF BLOCK TO BE REPLACED.
-
-      log.debug2("results = {}", results);
-      return results;
+        log.debug2("result = " + result);
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
@@ -195,19 +205,24 @@ public class ContentConfigurationServiceImpl implements
     log.debug2("auIds = {}", auIds);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<ContentConfigurationResult> results =
-	  new ArrayList<ContentConfigurationResult>(auIds.size());
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/aus/reactivate", null, null,
+	  HttpMethod.PUT, auIds, "Can't reactivate AUs");
 
-      ContentConfigurationResult result =
-	  new ContentConfigurationResult(auIds.get(0), "AU Name", Boolean.TRUE,
-	      "It worked!");
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        List<ContentConfigurationResult> result =
+            mapper.readValue(response.getBody(),
+        	new TypeReference<List<ContentConfigurationResult>>(){});
 
-      results.add(result);
-      // TODO: END OF BLOCK TO BE REPLACED.
-
-      log.debug2("results = {}", results);
-      return results;
+        log.debug2("result = " + result);
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
@@ -250,19 +265,24 @@ public class ContentConfigurationServiceImpl implements
     log.debug2("auIds = {}", auIds);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<ContentConfigurationResult> results =
-	  new ArrayList<ContentConfigurationResult>(auIds.size());
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/aus/deactivate", null, null,
+	  HttpMethod.PUT, auIds, "Can't deactivate AUs");
 
-      ContentConfigurationResult result =
-	  new ContentConfigurationResult(auIds.get(0), "AU Name", Boolean.TRUE,
-	      "It worked!");
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        List<ContentConfigurationResult> result =
+            mapper.readValue(response.getBody(),
+        	new TypeReference<List<ContentConfigurationResult>>(){});
 
-      results.add(result);
-      // TODO: END OF BLOCK TO BE REPLACED.
-
-      log.debug2("results = {}", results);
-      return results;
+        log.debug2("result = " + result);
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }

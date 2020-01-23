@@ -27,7 +27,6 @@
  */
 package org.lockss.ws.status;
 
-import static org.lockss.ws.SoapServiceUtil.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
@@ -36,10 +35,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.lockss.log.L4JLogger;
-import org.lockss.util.Constants;
-import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.status.RestStatusClient;
+import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.AuStatus;
 import org.lockss.ws.entities.AuWsResult;
 import org.lockss.ws.entities.CrawlWsResult;
@@ -56,25 +54,17 @@ import org.lockss.ws.entities.TdbPublisherWsResult;
 import org.lockss.ws.entities.TdbTitleWsResult;
 import org.lockss.ws.entities.VoteWsResult;
 import org.lockss.ws.status.DaemonStatusService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * The Daemon Status SOAP web service implementation.
  */
 @Service
-public class DaemonStatusServiceImpl implements DaemonStatusService {
+public class DaemonStatusServiceImpl extends BaseServiceImpl
+implements DaemonStatusService {
   private final static L4JLogger log = L4JLogger.getLogger();
-
-  @Autowired
-  private Environment env;
-
-  private long defaultConnectTimeout = 10 * Constants.SECOND;
-  private long defaultReadTimeout = 120 * Constants.SECOND;
 
   /**
    * Provides an indication of whether the daemon is ready.
@@ -224,9 +214,9 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
-	  "/austatuses/{auId}", uriVariables, null, HttpMethod.GET,
-	  getSoapRequestAuthorizationHeader(), "Can't get AU status");
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/austatuses/{auId}",
+	  uriVariables, null, HttpMethod.GET, (Void)null,
+	  "Can't get AU status");
 
       // Get the response body.
       try {
@@ -267,9 +257,8 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
-	  "/plugins", null, queryParams, HttpMethod.GET,
-	  getSoapRequestAuthorizationHeader(), "Can't query plugins");
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/plugins", null, queryParams,
+	  HttpMethod.GET, (Void)null, "Can't query plugins");
 
       // Get the response body.
       try {
@@ -311,9 +300,8 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
-	  "/auqueries", null, queryParams, HttpMethod.GET,
-	  getSoapRequestAuthorizationHeader(), "Can't query AUs");
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/auqueries", null, queryParams,
+	  HttpMethod.GET, (Void)null, "Can't query AUs");
 
       // Get the response body.
       try {
@@ -508,10 +496,8 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
     try {
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
-	  "/config/platform", null, null, HttpMethod.GET,
-	  getSoapRequestAuthorizationHeader(),
-	  "Can't get platform configuration");
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/config/platform", null, null,
+	  HttpMethod.GET, (Void)null, "Can't get platform configuration");
 
       // Get the response body.
       try {
@@ -544,8 +530,6 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
   public List<TdbPublisherWsResult> queryTdbPublishers(String tdbPublisherQuery)
       throws LockssWebServicesFault {
     log.debug2("tdbPublisherQuery = {}", tdbPublisherQuery);
-    String authHeaderValue = getSoapRequestAuthorizationHeader();
-    log.trace("authHeaderValue = {}", authHeaderValue);
 
     try {
       // Prepare the query parameters.
@@ -555,9 +539,9 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
-	  "/tdbpublishers", null, queryParams, HttpMethod.GET,
-	  getSoapRequestAuthorizationHeader(), "Can't query TDB publishers");
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/tdbpublishers", null,
+	  queryParams, HttpMethod.GET, (Void)null,
+	  "Can't query TDB publishers");
 
       // Get the response body.
       try {
@@ -599,9 +583,8 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
-	  "/tdbtitles", null, queryParams, HttpMethod.GET,
-	  getSoapRequestAuthorizationHeader(), "Can't query TDB titles");
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/tdbtitles", null, queryParams,
+	  HttpMethod.GET, (Void)null, "Can't query TDB titles");
 
       // Get the response body.
       try {
@@ -643,9 +626,8 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
 
       // Make the REST call.
       ResponseEntity<String> response = callRestServiceEndpoint(
-	  getCustomRestTemplate(), env.getProperty(CONFIG_SVC_URL_KEY),
-	  "/tdbaus", null, queryParams, HttpMethod.GET,
-	  getSoapRequestAuthorizationHeader(), "Can't query TDB AUs");
+	  env.getProperty(CONFIG_SVC_URL_KEY), "/tdbaus", null, queryParams,
+	  HttpMethod.GET, (Void)null, "Can't query TDB AUs");
 
       // Get the response body.
       try {
@@ -687,17 +669,5 @@ public class DaemonStatusServiceImpl implements DaemonStatusService {
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
-  }
-
-  /**
-   * Provides the customized template used by Spring for synchronous client-side
-   * HTTP access.
-   * 
-   * @return a RestTemplate with the customized Spring template.
-   */
-  private RestTemplate getCustomRestTemplate() {
-    return RestUtil.getRestTemplate(env.getProperty(CONNECTION_TIMEOUT_KEY,
-	Long.class, defaultConnectTimeout),
-	env.getProperty(READ_TIMEOUT_KEY, Long.class, defaultReadTimeout));
   }
 }
