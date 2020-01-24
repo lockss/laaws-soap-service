@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-Copyright (c) 2000-2019, Board of Trustees of Leland Stanford Jr. University
+Copyright (c) 2000-2020, Board of Trustees of Leland Stanford Jr. University
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -58,9 +58,20 @@ POSSIBILITY OF SUCH DAMAGE.
 
   <dependencies>
     <dependency>
-      <groupId>org.lockss</groupId>
-      <artifactId>lockss-util-core</artifactId>
-      <version>${version.lockss.lockss-util-core}</version>
+      <groupId>org.lockss.laaws</groupId>
+      <artifactId>laaws-repository-core</artifactId>
+      <version>${version.lockss.lockss-repository-core}</version>
+      <exclusions>
+        <!-- eventually brings servlet-api 2.5 but spring-test needs 3.0.1 or better -->
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.solr</groupId>
+          <artifactId>solr-solrj</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -84,12 +95,6 @@ POSSIBILITY OF SUCH DAMAGE.
 <!--       <type>test-jar</type> -->
 <!--       <scope>test</scope> -->
 <!--     </dependency> -->
-
-    <dependency>
-      <groupId>org.lockss</groupId>
-      <artifactId>lockss-util-rest</artifactId>
-      <version>${version.lockss.lockss-util-rest}</version>
-    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>

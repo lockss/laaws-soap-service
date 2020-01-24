@@ -61,6 +61,9 @@ public abstract class BaseServiceImpl {
   /** The configuration key for the URL of the Metadata REST service. */
   public final static String MDQ_SVC_URL_KEY = "metadata.service.url";
 
+  /** The configuration key for the Repository collection identifier. */
+  public final static String REPO_COLLECTION_KEY = "repository.collection";
+
   /** The configuration key for the connection timeout. */
   public final static String CONNECTION_TIMEOUT_KEY = "connection.timeout";
   /** The configuration key for the read timeout. */
@@ -143,17 +146,38 @@ public abstract class BaseServiceImpl {
       String serviceUrl, String endPointPath, Map<String, String> uriVariables,
       Map<String, String> queryParams, HttpMethod httpMethod, T body,
       String exceptionMessage) throws LockssRestException {
-    log.debug2("serviceUrl = {}", serviceUrl);
-    log.debug2("endPointPath = {}", endPointPath);
+    return callRestServiceUri(serviceUrl + endPointPath, uriVariables,
+	queryParams, httpMethod, body, exceptionMessage);
+  }
+
+  /**
+   * Makes a call to a REST service URI.
+   * 
+   * @param uriString        A String with the URI of the request to the REST
+   *                         service.
+   * @param uriVariables     A Map<String, String> with any variables to be
+   *                         interpolated in the URI.
+   * @param queryParams      A Map<String, String> with any query parameters.
+   * @param httpMethod       An HttpMethod with HTTP method used to make the
+   *                         call to the REST service.
+   * @param body             A T with the contents of the body to be included
+   *                         with the request, if any.
+   * @param exceptionMessage A String with the message to be returned with any
+   *                         exception.
+   * @return a ResponseEntity<String> with the response from the REST service.
+   * @throws LockssRestException if any problems arise in the call to the REST
+   *                             service.
+   */
+  protected <T> ResponseEntity<String> callRestServiceUri(String uriString,
+      Map<String, String> uriVariables, Map<String, String> queryParams,
+      HttpMethod httpMethod, T body, String exceptionMessage)
+	  throws LockssRestException {
+    log.debug2("uriString = {}", uriString);
     log.debug2("uriVariables = {}", uriVariables);
     log.debug2("queryParams = {}", queryParams);
     log.debug2("httpMethod = {}", httpMethod);
     log.debug2("body = {}", body);
     log.debug2("exceptionMessage = {}", exceptionMessage);
-
-    // Create the URI of the request to the REST service.
-    String uriString = serviceUrl + endPointPath;
-    log.trace("uriString = {}", uriString);
 
     URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
     log.trace("uri = {}", uri);
