@@ -9,9 +9,10 @@ Usage:
                   xmlns:service="http://content.ws.lockss.org/">
     <soapenv:Header/>
     <soapenv:Body>
-        <service:fetchFile>
+        <service:fetchVersionedFile>
             <url>https://www.thieme-connect.de/products/ebooks/pdf/10.1055/b-0036-132711.pdf</url>
             <auId>org|lockss|plugin|georgthiemeverlag|GeorgThiemeVerlagBooksPlugin&amp;base_url~https%3A%2F%2Fwww%2Ethieme-connect%2Ede%2F&amp;doi~10%2E1055%2Fb-004-129958</auId>
-        </service:fetchFile>
+            <version>4</version>
+        </service:fetchVersionedFile>
     </soapenv:Body>
 </soapenv:Envelope>

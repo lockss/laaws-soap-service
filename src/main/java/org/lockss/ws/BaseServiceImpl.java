@@ -27,14 +27,21 @@
  */
 package org.lockss.ws;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.apache.cxf.helpers.CastUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.PhaseInterceptorChain;
+import org.lockss.laaws.rs.core.LockssRepositoryFactory;
+import org.lockss.laaws.rs.core.RestLockssRepository;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.Constants;
+import org.lockss.util.auth.AuthUtil;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +51,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 /**
  * Base class for the various SOAP web service implementations.
@@ -125,6 +133,46 @@ public abstract class BaseServiceImpl {
   }
 
   /**
+   * Provides access to the REST Repository service.
+   * 
+   * @return a RestLockssRepository that allows access to the REST Repository
+   *         service.
+   * @throws MalformedURLException if there are problems with the REST
+   *                               Repository service URL.
+   */
+  protected RestLockssRepository getRestLockssRepository()
+      throws MalformedURLException {
+    String[] credentials = getSoapRequestCredentials();
+    log.trace("credentials = [{}, ****]", credentials[0]);
+
+    return LockssRepositoryFactory.createRestLockssRepository(
+	new URL(env.getProperty(REPO_SVC_URL_KEY)), credentials[0],
+	credentials[1]);
+  }
+
+  /**
+   * Provides the credentials in the current SOAP request message, if any.
+   *
+   * @return a String[] with the credentials.
+   */
+  protected static String[] getSoapRequestCredentials() {
+    log.debug2("Invoked.");
+
+    String[] credentials = {null, null};
+
+    String authHeaderValue = getSoapRequestAuthorizationHeader();
+    log.debug2("authHeaderValue = {}", authHeaderValue);
+
+    if (authHeaderValue != null) {
+      credentials = AuthUtil.decodeBasicAuthorizationHeader(
+	  getSoapRequestAuthorizationHeader());
+      log.debug2("credentials = [{}, ****]", credentials[0]);
+    }
+
+    return credentials;
+  }
+
+  /**
    * Makes a call to a REST service endpoint.
    * 
    * @param serviceUrl       A String with the URL of the service.
@@ -172,18 +220,42 @@ public abstract class BaseServiceImpl {
       Map<String, String> uriVariables, Map<String, String> queryParams,
       HttpMethod httpMethod, T body, String exceptionMessage)
 	  throws LockssRestException {
+    return callRestServiceUri(uriString, uriVariables, queryParams, httpMethod,
+	new HttpHeaders(), body, exceptionMessage);
+  }
+
+  /**
+   * Makes a call to a REST service URI.
+   * 
+   * @param uriString        A String with the URI of the request to the REST
+   *                         service.
+   * @param uriVariables     A Map<String, String> with any variables to be
+   *                         interpolated in the URI.
+   * @param queryParams      A Map<String, String> with any query parameters.
+   * @param httpMethod       An HttpMethod with HTTP method used to make the
+   *                         call to the REST service.
+   * @param body             A T with the contents of the body to be included
+   *                         with the request, if any.
+   * @param exceptionMessage A String with the message to be returned with any
+   *                         exception.
+   * @return a ResponseEntity<String> with the response from the REST service.
+   * @throws LockssRestException if any problems arise in the call to the REST
+   *                             service.
+   */
+  protected <T> ResponseEntity<String> callRestServiceUri(String uriString,
+      Map<String, String> uriVariables, Map<String, String> queryParams,
+      HttpMethod httpMethod, HttpHeaders requestHeaders, T body, String exceptionMessage)
+	  throws LockssRestException {
     log.debug2("uriString = {}", uriString);
     log.debug2("uriVariables = {}", uriVariables);
     log.debug2("queryParams = {}", queryParams);
     log.debug2("httpMethod = {}", httpMethod);
     log.debug2("body = {}", body);
+    log.debug2("requestHeaders = {}", requestHeaders);
     log.debug2("exceptionMessage = {}", exceptionMessage);
 
     URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
     log.trace("uri = {}", uri);
-
-    // Initialize the request headers.
-    HttpHeaders requestHeaders = new HttpHeaders();
 
     // Get any incoming authorization header with credentials to be passed to
     // the REST service.
@@ -203,5 +275,101 @@ public abstract class BaseServiceImpl {
     return RestUtil.callRestService(getCustomRestTemplate(), uri, httpMethod,
 	new HttpEntity<T>(body, requestHeaders), String.class,
 	exceptionMessage);
+  }
+
+  /**
+   * Makes a call to a REST service URI.
+   * 
+   * @param uriString        A String with the URI of the request to the REST
+   *                         service.
+   * @param uriVariables     A Map<String, String> with any variables to be
+   *                         interpolated in the URI.
+   * @param queryParams      A Map<String, String> with any query parameters.
+   * @param httpMethod       An HttpMethod with HTTP method used to make the
+   *                         call to the REST service.
+   * @param body             A T with the contents of the body to be included
+   *                         with the request, if any.
+   * @param exceptionMessage A String with the message to be returned with any
+   *                         exception.
+   * @return a ResponseEntity<String> with the response from the REST service.
+   * @throws LockssRestException if any problems arise in the call to the REST
+   *                             service.
+   */
+  protected <T> ResponseEntity<StreamingResponseBody>
+  callRestServiceUriStreaming(String uriString,
+      Map<String, String> uriVariables, Map<String, String> queryParams,
+      HttpMethod httpMethod, T body, String exceptionMessage)
+	  throws LockssRestException {
+    log.debug2("uriString = {}", uriString);
+    log.debug2("uriVariables = {}", uriVariables);
+    log.debug2("queryParams = {}", queryParams);
+    log.debug2("httpMethod = {}", httpMethod);
+    log.debug2("body = {}", body);
+    log.debug2("exceptionMessage = {}", exceptionMessage);
+
+    URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
+    log.trace("uri = {}", uri);
+
+    // Initialize the request headers.
+    HttpHeaders requestHeaders = new HttpHeaders();
+    requestHeaders.set("Accept", "multipart/related");
+
+    // Get any incoming authorization header with credentials to be passed to
+    // the REST service.
+    String authHeaderValue = getSoapRequestAuthorizationHeader();
+    log.trace("authHeaderValue = {}", authHeaderValue);
+
+    // Check whether there are credentials to be sent.
+    if (authHeaderValue != null && !authHeaderValue.isEmpty()) {
+      // Yes: Add them to the request.
+      requestHeaders.set("Authorization", authHeaderValue);
+    }
+
+    log.trace("requestHeaders = {}", requestHeaders);
+
+    // Make the REST call.
+    log.trace("Calling RestUtil.callRestService");
+    return RestUtil.callRestService(getCustomRestTemplate(), uri, httpMethod,
+	new HttpEntity<T>(body, requestHeaders), StreamingResponseBody.class,
+	exceptionMessage);
+  }
+
+  // TODO: Remove once StrinGutil has been moved from lockss-core to
+  // lockss-util.
+  /**
+   * Concatenate elements of collection into string, adding separators,
+   * delimitig each element
+   * @param c - Collection of object (on which toString() will be called)
+   * @param separatorFirst - String to place before first element
+   * @param separatorInner - String with which to separate elements
+   * @param separatorLast - String to place after last element
+   * @param sb - StringBuilder to write result into
+   * @return sb
+   */
+  protected static StringBuilder separatedString(Collection c,
+					      String separatorFirst,
+					      String separatorInner,
+					      String separatorLast,
+					      StringBuilder sb) {
+    if (c == null) {
+      return sb;
+    }
+    Iterator iter = c.iterator();
+    boolean first = true;
+    String NULL_OBJECT_PRINTABLE_TEXT = "(null)";
+    while (iter.hasNext()) {
+      if (first) {
+	first = false;
+	sb.append(separatorFirst);
+      } else {
+	sb.append(separatorInner);
+      }
+      Object obj = iter.next();
+      sb.append(obj == null ? NULL_OBJECT_PRINTABLE_TEXT : obj.toString());
+    }
+    if (!first) {
+      sb.append(separatorLast);
+    }
+    return sb;
   }
 }

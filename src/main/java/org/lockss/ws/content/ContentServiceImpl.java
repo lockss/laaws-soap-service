@@ -27,20 +27,13 @@
  */
 package org.lockss.ws.content;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.lockss.laaws.rs.model.Artifact;
-import org.lockss.laaws.rs.model.ArtifactPageInfo;
 import org.lockss.log.L4JLogger;
 import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.FileWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 /**
@@ -49,8 +42,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ContentServiceImpl extends BaseServiceImpl
 implements ContentService {
-  final static String allVersions = "all";
-  final static String anyVersion = "latest";
   private final static L4JLogger log = L4JLogger.getLogger();
 
   /**
@@ -70,7 +61,11 @@ implements ContentService {
       List<FileWsResult> result = new ArrayList<>();
 
       // Loop through all the artifacts in the response from the REST service.
-      for (Artifact artifact : getArtifacts(auId, url, allVersions)) {
+      for (Artifact artifact : getRestLockssRepository().
+	  getArtifactsAllVersions(env.getProperty(REPO_COLLECTION_KEY), auId,
+	      url)) {
+	log.trace("artifact = {}", artifact);
+
 	// Create the result data for this artifact.
 	FileWsResult fileWsResult = new FileWsResult();
 	fileWsResult.setUrl(artifact.getUri());
@@ -101,7 +96,17 @@ implements ContentService {
   @Override
   public boolean isUrlCached(String url, String auId)
       throws LockssWebServicesFault {
-    return isUrlVersionCached(url, auId, null);
+    log.debug2("url = {}", url);
+    log.debug2("auId = {}", auId);
+
+    try {
+      boolean result = getRestLockssRepository().getArtifact(
+	  env.getProperty(REPO_COLLECTION_KEY), auId, url) != null;
+      log.debug2("result = {}", result);
+      return result;
+    } catch (Exception e) {
+      throw new LockssWebServicesFault(e);
+    }
   }
 
   /**
@@ -121,97 +126,14 @@ implements ContentService {
     log.debug2("auId = {}", auId);
     log.debug2("version = {}", version);
 
-    String versionAsString = version == null ? anyVersion : version.toString();
-    log.debug2("versionAsString = {}", versionAsString);
-
     try {
-      boolean result = !getArtifacts(auId, url, versionAsString).isEmpty();
+      boolean result = getRestLockssRepository().getArtifactVersion(
+	  env.getProperty(REPO_COLLECTION_KEY), auId, url, version, false)
+	  != null;
       log.debug2("result = {}", result);
       return result;
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
-  }
-
-  /**
-   * Provides the artifacts for a URL in an Archival Unit with a given version,
-   * if specified.
-   * 
-   * @param auId    A String with the identifier (auid) of the archival unit.
-   * @param url     A String with the URL.
-   * @param version A String with the artifact version required.
-   * @return a {@code List<FileWsResult>} with the results.
-   * @throws LockssWebServicesFault if there are problems.
-   */
-  private List<Artifact> getArtifacts(String auId, String url, String version)
-      throws Exception {
-    log.debug2("auId = {}", auId);
-    log.debug2("url = {}", url);
-    log.debug2("version = {}", version);
-
-    if (auId == null || auId.isEmpty()) {
-      throw new IllegalArgumentException("Missing required Archival Unit "
-	  + "identifier (auId)");
-    }
-
-    if (url == null || url.isEmpty()) {
-      throw new IllegalArgumentException("Missing required URL");
-    }
-
-    if (version == null || version.isEmpty()) {
-      throw new IllegalArgumentException("Missing required version");
-    }
-
-    // Prepare the endpoint URI.
-    String endpointUri = env.getProperty(REPO_SVC_URL_KEY) + "/collections/"
-	+ env.getProperty(REPO_COLLECTION_KEY) + "/aus/{auId}/artifacts";
-    log.trace("endpointUri = {}", endpointUri);
-
-    // Prepare the URI path variables.
-    Map<String, String> uriVariables = new HashMap<>(1);
-    uriVariables.put("auId", auId);
-    log.trace("uriVariables = {}", uriVariables);
-
-    // Prepare the query parameters.
-    Map<String, String> queryParams = new HashMap<>(1);
-    queryParams.put("url", url);
-    queryParams.put("version", version);
-    log.trace("queryParams = {}", queryParams);
-
-    List<Artifact> result = new ArrayList<>();
-    boolean done = false;
-
-    // Loop while there are more results to be returned by the REST service.
-    while (!done) {
-      // Make the REST call.
-      ResponseEntity<String> response = callRestServiceUri(endpointUri,
-	  uriVariables, queryParams, HttpMethod.GET, (Void)null,
-	  "Can't get artifact versions");
-
-      // Get the response body.
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-	       false);
-      ArtifactPageInfo api =
-	  mapper.readValue(response.getBody(), ArtifactPageInfo.class);
-
-      // Add to the results the artifacts in the response.
-      result.addAll(api.getArtifacts());
-
-      // Get the endpoint URI for the next page of results. 
-      endpointUri = api.getPageInfo().getNextLink();
-      log.trace("endpointUri = {}", endpointUri);
-
-      // The endpoint URI for the next page of results is explicit, not
-      // requiring interpolation.
-      uriVariables = null;
-      queryParams = null;
-
-      // Determine whether the REST service has provided all the results.
-      done = endpointUri == null;
-    }
-
-    log.debug2("result = {}", result);
-    return result;
   }
 }
