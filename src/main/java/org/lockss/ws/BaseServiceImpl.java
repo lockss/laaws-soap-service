@@ -41,7 +41,8 @@ import org.lockss.laaws.rs.core.LockssRepositoryFactory;
 import org.lockss.laaws.rs.core.RestLockssRepository;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.Constants;
-import org.lockss.util.auth.AuthUtil;
+// Change to allow to laaws-build to be built, although this project branch won't work.
+//import org.lockss.util.auth.AuthUtil;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,9 +94,11 @@ public abstract class BaseServiceImpl {
    * @return a RestTemplate with the customized Spring template.
    */
   protected RestTemplate getCustomRestTemplate() {
-    return RestUtil.getRestTemplate(env.getProperty(CONNECTION_TIMEOUT_KEY,
-	Long.class, defaultConnectTimeout),
-	env.getProperty(READ_TIMEOUT_KEY, Long.class, defaultReadTimeout));
+// Change to allow to laaws-build to be built, although this project branch won't work.
+//    return RestUtil.getRestTemplate(env.getProperty(CONNECTION_TIMEOUT_KEY,
+//	Long.class, defaultConnectTimeout),
+//	env.getProperty(READ_TIMEOUT_KEY, Long.class, defaultReadTimeout));
+    return null;
   }
 
   /**
@@ -164,8 +167,9 @@ public abstract class BaseServiceImpl {
     log.debug2("authHeaderValue = {}", authHeaderValue);
 
     if (authHeaderValue != null) {
-      credentials = AuthUtil.decodeBasicAuthorizationHeader(
-	  getSoapRequestAuthorizationHeader());
+// Change to allow to laaws-build to be built, although this project branch won't work.
+//      credentials = AuthUtil.decodeBasicAuthorizationHeader(
+//	  getSoapRequestAuthorizationHeader());
       log.debug2("credentials = [{}, ****]", credentials[0]);
     }
 
@@ -254,7 +258,9 @@ public abstract class BaseServiceImpl {
     log.debug2("requestHeaders = {}", requestHeaders);
     log.debug2("exceptionMessage = {}", exceptionMessage);
 
-    URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
+// Change to allow to laaws-build to be built, although this project branch won't work.
+//    URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
+    URI uri = null;
     log.trace("uri = {}", uri);
 
     // Get any incoming authorization header with credentials to be passed to
@@ -307,7 +313,9 @@ public abstract class BaseServiceImpl {
     log.debug2("body = {}", body);
     log.debug2("exceptionMessage = {}", exceptionMessage);
 
-    URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
+// Change to allow to laaws-build to be built, although this project branch won't work.
+//    URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
+    URI uri = null;
     log.trace("uri = {}", uri);
 
     // Initialize the request headers.
