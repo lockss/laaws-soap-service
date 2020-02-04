@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.lockss.laaws.rs.model.Artifact;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.status.RestStatusClient;
@@ -657,12 +658,24 @@ implements DaemonStatusService {
    */
   public List<String> getAuUrls(String auId, String url)
       throws LockssWebServicesFault {
-    log.debug2("auId = {}, url = {}", auId, url);
+    log.debug2("auId = {}", auId);
+    log.debug2("url = {}", url);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
       List<String> results = new ArrayList<>();
-      // TODO: END OF BLOCK TO BE REPLACED.
+
+      String prefixUrl = url == null ? "" : url;
+      log.trace("prefixUrl = {}", prefixUrl);
+
+	// Loop through all the artifacts in the response from the REST service.
+      for (Artifact artifact : getRestLockssRepository().
+	  getArtifactsWithPrefix(env.getProperty(REPO_COLLECTION_KEY), auId,
+	      prefixUrl)) {
+	log.trace("artifact = {}", artifact);
+
+	// Add this artifact URL to the results.
+	results.add(artifact.getUri());
+      }
 
       log.debug2("results = {}", results);
       return results;

@@ -41,8 +41,7 @@ import org.lockss.laaws.rs.core.LockssRepositoryFactory;
 import org.lockss.laaws.rs.core.RestLockssRepository;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.Constants;
-// Change to allow to laaws-build to be built, although this project branch won't work.
-//import org.lockss.util.auth.AuthUtil;
+import org.lockss.util.auth.AuthUtil;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +51,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 /**
  * Base class for the various SOAP web service implementations.
@@ -94,11 +92,26 @@ public abstract class BaseServiceImpl {
    * @return a RestTemplate with the customized Spring template.
    */
   protected RestTemplate getCustomRestTemplate() {
-// Change to allow to laaws-build to be built, although this project branch won't work.
-//    return RestUtil.getRestTemplate(env.getProperty(CONNECTION_TIMEOUT_KEY,
-//	Long.class, defaultConnectTimeout),
-//	env.getProperty(READ_TIMEOUT_KEY, Long.class, defaultReadTimeout));
-    return null;
+    return RestUtil.getRestTemplate(getConnectionTimeout(), getReadTimeout());
+  }
+
+  /**
+   * Provides the configured connection timeout in milliseconds.
+   * 
+   * @return a Long with the configured connection timeout in milliseconds.
+   */
+  protected Long getConnectionTimeout() {
+    return env.getProperty(CONNECTION_TIMEOUT_KEY, Long.class,
+	defaultConnectTimeout);
+  }
+
+  /**
+   * Provides the configured read timeout in milliseconds.
+   * 
+   * @return a Long with the configured read timeout in milliseconds.
+   */
+  protected Long getReadTimeout() {
+    return env.getProperty(READ_TIMEOUT_KEY, Long.class, defaultReadTimeout);
   }
 
   /**
@@ -167,9 +180,8 @@ public abstract class BaseServiceImpl {
     log.debug2("authHeaderValue = {}", authHeaderValue);
 
     if (authHeaderValue != null) {
-// Change to allow to laaws-build to be built, although this project branch won't work.
-//      credentials = AuthUtil.decodeBasicAuthorizationHeader(
-//	  getSoapRequestAuthorizationHeader());
+      credentials = AuthUtil.decodeBasicAuthorizationHeader(
+	  getSoapRequestAuthorizationHeader());
       log.debug2("credentials = [{}, ****]", credentials[0]);
     }
 
@@ -258,9 +270,7 @@ public abstract class BaseServiceImpl {
     log.debug2("requestHeaders = {}", requestHeaders);
     log.debug2("exceptionMessage = {}", exceptionMessage);
 
-// Change to allow to laaws-build to be built, although this project branch won't work.
-//    URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
-    URI uri = null;
+    URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
     log.trace("uri = {}", uri);
 
     // Get any incoming authorization header with credentials to be passed to
@@ -280,65 +290,6 @@ public abstract class BaseServiceImpl {
     log.trace("Calling RestUtil.callRestService");
     return RestUtil.callRestService(getCustomRestTemplate(), uri, httpMethod,
 	new HttpEntity<T>(body, requestHeaders), String.class,
-	exceptionMessage);
-  }
-
-  /**
-   * Makes a call to a REST service URI.
-   * 
-   * @param uriString        A String with the URI of the request to the REST
-   *                         service.
-   * @param uriVariables     A Map<String, String> with any variables to be
-   *                         interpolated in the URI.
-   * @param queryParams      A Map<String, String> with any query parameters.
-   * @param httpMethod       An HttpMethod with HTTP method used to make the
-   *                         call to the REST service.
-   * @param body             A T with the contents of the body to be included
-   *                         with the request, if any.
-   * @param exceptionMessage A String with the message to be returned with any
-   *                         exception.
-   * @return a ResponseEntity<String> with the response from the REST service.
-   * @throws LockssRestException if any problems arise in the call to the REST
-   *                             service.
-   */
-  protected <T> ResponseEntity<StreamingResponseBody>
-  callRestServiceUriStreaming(String uriString,
-      Map<String, String> uriVariables, Map<String, String> queryParams,
-      HttpMethod httpMethod, T body, String exceptionMessage)
-	  throws LockssRestException {
-    log.debug2("uriString = {}", uriString);
-    log.debug2("uriVariables = {}", uriVariables);
-    log.debug2("queryParams = {}", queryParams);
-    log.debug2("httpMethod = {}", httpMethod);
-    log.debug2("body = {}", body);
-    log.debug2("exceptionMessage = {}", exceptionMessage);
-
-// Change to allow to laaws-build to be built, although this project branch won't work.
-//    URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
-    URI uri = null;
-    log.trace("uri = {}", uri);
-
-    // Initialize the request headers.
-    HttpHeaders requestHeaders = new HttpHeaders();
-    requestHeaders.set("Accept", "multipart/related");
-
-    // Get any incoming authorization header with credentials to be passed to
-    // the REST service.
-    String authHeaderValue = getSoapRequestAuthorizationHeader();
-    log.trace("authHeaderValue = {}", authHeaderValue);
-
-    // Check whether there are credentials to be sent.
-    if (authHeaderValue != null && !authHeaderValue.isEmpty()) {
-      // Yes: Add them to the request.
-      requestHeaders.set("Authorization", authHeaderValue);
-    }
-
-    log.trace("requestHeaders = {}", requestHeaders);
-
-    // Make the REST call.
-    log.trace("Calling RestUtil.callRestService");
-    return RestUtil.callRestService(getCustomRestTemplate(), uri, httpMethod,
-	new HttpEntity<T>(body, requestHeaders), StreamingResponseBody.class,
 	exceptionMessage);
   }
 
