@@ -1,6 +1,6 @@
 /*
 
- Copyright (c) 2015-2019 Board of Trustees of Leland Stanford Jr. University,
+ Copyright (c) 2015-2020 Board of Trustees of Leland Stanford Jr. University,
  all rights reserved.
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,23 +27,63 @@
  */
 package org.lockss.ws.importer;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import javax.activation.DataHandler;
+import javax.xml.bind.DatatypeConverter;
+import org.lockss.laaws.rs.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
+import org.lockss.util.PropertiesUtil;
+import org.lockss.util.rest.HttpResponseStatusAndHeaders;
+import org.lockss.util.rest.RestUtil;
+import org.lockss.util.rest.multipart.MultipartConnector;
+import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.ImportWsParams;
 import org.lockss.ws.entities.ImportWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.util.StreamUtils;
 
 /**
  * The Import SOAP web service implementation.
  */
 @Service
-public class ImportServiceImpl implements ImportService {
+public class ImportServiceImpl extends BaseServiceImpl
+implements ImportService {
   private final static L4JLogger log = L4JLogger.getLogger();
 
-  @Autowired
-  private Environment env;
+  /**
+   * The name of the part with the import content.
+   * 
+   * It must be named this way because the use of Swagger 2 requires it. In the
+   * Swagger YAML configuration file, a multipart/form-data body payload is
+   * represented by the 'in: formData' parameter, which needs to have a type of
+   * 'file' and Swagger 2 uses the type as the part name.
+   */
+  private static final String IMPORT_CONTENT_PART_NAME = "file";
+
+  private static final String BASIC_AUTH_KEY = "BasicAuthorization";
 
   /**
    * Imports a pulled file into an archival unit.
@@ -58,17 +98,57 @@ public class ImportServiceImpl implements ImportService {
       throws LockssWebServicesFault {
     log.debug2("importParams = {}", importParams);
 
-    try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      // Prepare the result to be returned.
-      ImportWsResult wsResult = new ImportWsResult();
-      // TODO: END OF BLOCK TO BE REPLACED.
+    ImportWsResult wsResult = new ImportWsResult();
 
-      log.debug2("wsResult = {}", wsResult);
-      return wsResult;
+    try {
+      // Prepare the endpoint URI.
+      URI uri = getImportEndpointUri();
+      log.trace("uri = {}", uri);
+
+      // Get the user properties.
+      String[] userProperties = importParams.getProperties();
+      log.trace("userProperties = {}", Arrays.asList(userProperties));
+
+      // The connection to the file to be imported.
+      URLConnection urlConnection = null;
+
+      // The stream to the file to be imported.
+      InputStream input = null;
+
+      try {
+	// Get a connection to the file to be imported.
+	urlConnection = getSourceUrlConnection(importParams.getSourceUrl(),
+	    PropertiesUtil.convertArrayToMap(userProperties));
+
+	// Open a stream to the file to be imported.
+	input = urlConnection.getInputStream();
+
+	// Perform the REST call to import the content.
+	wsResult = performRestCall(importParams.getTargetId(),
+	    importParams.getTargetUrl(), userProperties, input, uri,
+	    urlConnection.getContentType(),
+	    urlConnection.getContentLengthLong());
+      } catch (MalformedURLException mue) {
+	wsResult.setIsSuccess(Boolean.FALSE);
+	wsResult.setMessage("Malformed source URL: " + mue.getMessage());
+      } catch (IOException ioe) {
+	wsResult.setIsSuccess(Boolean.FALSE);
+
+	if (urlConnection == null) {
+	  wsResult.setMessage("Cannot open connection to source URL: "
+	      + ioe.getMessage());
+	} else {
+	  wsResult.setMessage("Cannot open input stream to source URL: "
+	      + ioe.getMessage());
+	}
+      }
     } catch (Exception e) {
-      throw new LockssWebServicesFault(e);
+      wsResult.setIsSuccess(Boolean.FALSE);
+      wsResult.setMessage("Cannot import pushed content: " + e.getMessage());
     }
+
+    log.debug2("wsResult = {}", wsResult);
+    return wsResult;
   }
 
   /**
@@ -84,17 +164,95 @@ public class ImportServiceImpl implements ImportService {
       throws LockssWebServicesFault {
     log.debug2("importParams = {}", importParams);
 
-    try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      // Prepare the result to be returned.
-      ImportWsResult wsResult = new ImportWsResult();
-      // TODO: END OF BLOCK TO BE REPLACED.
+    ImportWsResult wsResult = new ImportWsResult();
 
-      log.debug2("wsResult = {}", wsResult);
-      return wsResult;
+    // The stream to the file to be imported.
+    InputStream input = null;
+
+    // The temporary file used to find the content length.
+    File tmpFile = null;
+
+    try {
+      // Prepare the endpoint URI.
+      URI uri = getImportEndpointUri();
+      log.trace("uri = {}", uri);
+
+      // Get the wrapper of the pushed file to be imported.
+      DataHandler dataHandler = importParams.getDataHandler();
+
+      try {
+	// Open a stream to the pushed file to be imported.
+	input = dataHandler.getInputStream();
+      } catch (IOException ioe) {
+	wsResult.setIsSuccess(Boolean.FALSE);
+	wsResult.setMessage("Cannot open input stream to pushed content: "
+	      + ioe.getMessage());
+
+	log.debug2("wsResult = {}", wsResult);
+	return wsResult;
+      }
+
+      tmpFile = File.createTempFile("imported", "", null);
+      FileOutputStream fos = null;
+      //long contentLength = -1;
+
+      try {
+        fos = new FileOutputStream(tmpFile);
+      } finally {
+	try {
+	  fos.close();
+	} catch (Exception e) {
+	  log.warn("Exception caught closing file output stream", e);
+	}
+      }
+
+      try {
+	/*contentLength =*/StreamUtils.copyRange(input, fos, 0, Long.MAX_VALUE);
+      } finally {
+	try {
+	  fos.close();
+	} catch (Exception e) {
+	  log.warn("Exception caught closing file output stream", e);
+	}
+      }
+
+      // Clean up.
+      if (input != null) {
+	try {
+	  input.close();
+	} catch (IOException ioe) {
+	  log.warn("Exception caught closing input stream", ioe);
+	}
+      }
+
+      // Continue using the copy just made.
+      input = new FileInputStream(tmpFile);
+
+      // Perform the REST call to import the content.
+      wsResult = performRestCall(importParams.getTargetId(),
+	  importParams.getTargetUrl(), importParams.getProperties(), input, uri,
+	  dataHandler.getContentType(), tmpFile.length());
     } catch (Exception e) {
-      throw new LockssWebServicesFault(e);
+	wsResult.setIsSuccess(Boolean.FALSE);
+	wsResult.setMessage("Cannot import pushed content: " + e.getMessage());
+    } finally {
+      if (input != null) {
+	try {
+	  input.close();
+	} catch (IOException ioe) {
+	  log.warn("Exception caught closing input stream", ioe);
+	}
+      }
+
+      if (tmpFile != null) {
+	if (!tmpFile.delete()) {
+	  tmpFile.deleteOnExit();
+	}
+      }
     }
+
+    log.debug2("wsResult = {}", wsResult);
+    return wsResult;
   }
 
   /**
@@ -103,15 +261,176 @@ public class ImportServiceImpl implements ImportService {
    * @return a String[] with the names of the supported checksum algorithms.
    */
   @Override
-  public String[] getSupportedChecksumAlgorithms() {
+  public String[] getSupportedChecksumAlgorithms()
+      throws LockssWebServicesFault {
     log.debug2("Invoked.");
 
-    // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-    String[] results = new String[1];
-    results[0] = "Some Checksum Algorithm";
-    // TODO: END OF BLOCK TO BE REPLACED.
+    try {
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(REPO_SVC_URL_KEY), "/checksumalgorithms", null, null,
+	  HttpMethod.GET, (Void)null,
+	  "Can't get supported checksum algorithms");
 
-    log.debug2("results = {}", (Object[])results);
-    return results;
+      // Get the response body.
+      try {
+        ObjectMapper mapper = new ObjectMapper();
+        List<String> list = mapper.readValue((String)response.getBody(),
+            new TypeReference<List<String>>(){});
+        log.trace("list = {}", list);
+
+        String[] result = list.toArray(new String[0]);
+        log.debug2("result = {}", Arrays.toString(result));
+        return result;
+      } catch (Exception e) {
+        log.error("Cannot get body of response", e);
+        throw e;
+      }
+    } catch (Exception e) {
+      throw new LockssWebServicesFault(e);
+    }
+  }
+
+  /**
+   * Provides the endpoint URI for file import operations.
+   * 
+   * @return a URI with the endpoint URI.
+   */
+  private URI getImportEndpointUri() {
+    log.debug2("Invoked");
+
+    // Prepare the endpoint URI.
+    String endpointUri = env.getProperty(POLLER_SVC_URL_KEY) + "/aus/import";
+    log.trace("endpointUri = {}", endpointUri);
+
+    URI uri = RestUtil.getRestUri(endpointUri, null, null);
+    log.debug2("uri = {}", uri);
+    return uri;
+  }
+
+  /**
+   * Provides a connection to the source URL of a pulled file to be imported.
+   * 
+   * @param sourceUrl  A String with the URL to the pulled file to be imported.
+   * @param properties A {@code Map<String, String>} with the user-specified
+   *                   properties.
+   * @return a URLConnection to the URL of the pulled file to be imported.
+   * @throws MalformedURLException if the source URL is malformed.
+   * @throws IOException           if it cannot open a connection or an input
+   *                               stream to the source URL.
+   */
+  private URLConnection getSourceUrlConnection(String sourceUrl,
+      Map<String, String> properties) throws MalformedURLException, IOException{
+    log.debug2("sourceUrl = {}", sourceUrl);
+    log.debug2("properties = {}", properties);
+
+    URL url = new URL(sourceUrl);
+    URLConnection urlConnection = url.openConnection();
+    String uInfo = url.getUserInfo();
+    log.trace("uInfo = {}", uInfo);
+
+    if (uInfo != null) {
+      String basicAuth = "Basic "
+	  + DatatypeConverter.printBase64Binary(uInfo.getBytes());
+      log.trace("basicAuth = {}", basicAuth);
+
+      urlConnection.setRequestProperty("Authorization", basicAuth);
+    } else if (properties.containsKey(BASIC_AUTH_KEY)) {
+      String basicAuth = properties.get(BASIC_AUTH_KEY);
+      log.trace("basicAuth = {}", basicAuth);
+
+      urlConnection.setRequestProperty("Authorization", basicAuth);
+    }
+
+    log.debug2("urlConnection = {}", urlConnection);
+    return urlConnection;
+  }
+
+  /**
+   * Performs the REST call to import content.
+   * 
+   * @param targetId       A String with the base URL path of the target AU.
+   * @param targetUrl      A String with the target AU URL.
+   * @param userProperties A {@code String[]} with the user-specified
+   *                       properties.
+   * @param input          An InputStream with the content to be imported.
+   * @param uri            A URI with the REST endpoint URI.
+   * @param contentType    A String with the MIME type of the content to be
+   *                       imported.
+   * @param contentLength  A long with the length of the content to be imported.
+   * @return an ImportWsResult with the result of the call.
+   */
+  private ImportWsResult performRestCall(String targetId, String targetUrl,
+      String[] userProperties, InputStream input, URI uri, String contentType,
+      long contentLength) {
+    log.debug2("targetId = {}", targetId);
+    log.debug2("targetUrl = {}", targetUrl);
+    log.debug2("userProperties = {}", Arrays.asList(userProperties));
+    log.debug2("uri = {}", uri);
+    log.debug2("contentType = {}", contentType);
+    log.debug2("contentLength = {}", contentLength);
+
+    // Initialize the request headers.
+    HttpHeaders requestHeaders = new HttpHeaders();
+    requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+    requestHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+    // Get any incoming authorization header with credentials to be passed to
+    // the REST service.
+    String authHeaderValue = getSoapRequestAuthorizationHeader();
+    log.trace("authHeaderValue = {}", authHeaderValue);
+
+    // Check whether there are credentials to be sent.
+    if (authHeaderValue != null && !authHeaderValue.isEmpty()) {
+      // Yes: Add them to the request.
+      requestHeaders.set("Authorization", authHeaderValue);
+    }
+
+    log.trace("requestHeaders = {}", requestHeaders);
+
+    // Add the payload.
+    MultiValueMap<String, Object> parts =
+	new LinkedMultiValueMap<String, Object>();
+
+    parts.add("targetBaseUrlPath", targetId);
+    parts.add("targetUrl", targetUrl);
+    parts.add("userProperties", userProperties);
+
+    Resource resource =
+	  new NamedInputStreamResource(IMPORT_CONTENT_PART_NAME, input);
+
+    // Initialize the part headers.
+    HttpHeaders partHeaders = new HttpHeaders();
+    partHeaders.setContentType(MediaType.valueOf(contentType));
+
+    // This must be set or else AbstractResource#contentLength will read the
+    // entire InputStream to determine the content length, which will exhaust
+    // the InputStream.
+    partHeaders.setContentLength(contentLength);
+    log.trace("partHeaders = {}", partHeaders);
+
+    parts.add(IMPORT_CONTENT_PART_NAME,
+	  new HttpEntity<>(resource, partHeaders));
+    log.trace("parts = {}", parts);
+
+    // Make the request and obtain the response.
+    HttpResponseStatusAndHeaders response = new MultipartConnector(uri,
+	requestHeaders, parts).requestPut(getConnectionTimeout().intValue(),
+	  (int)getReadTimeout().intValue());
+    log.trace("response = {}", response);
+
+    // Prepare the result to be returned.
+    boolean isSuccess = response.getCode() == HttpStatus.OK.value();
+    log.trace("isSuccess = {}", isSuccess);
+
+    ImportWsResult wsResult = new ImportWsResult();
+    wsResult.setIsSuccess(isSuccess);
+
+    if (!isSuccess) {
+      wsResult.setMessage(response.getMessage());
+    }
+
+    log.debug2("wsResult = {}", wsResult);
+    return wsResult;
   }
 }

@@ -1,0 +1,22 @@
+<!--
+Sample SOAP request for simple testing.
+
+Usage:
+  curl -H "content-type: text/xml" -d @path/to/this/file
+       http://user:pass@host:port/ws/ImportService
+-->
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:service="http://importer.ws.lockss.org/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <service:importPushedFile>
+            <importParams>
+                <sourceUrl></sourceUrl>
+                <dataHandler>RmVybmFuZG8gR2FyY8OtYS1Mb3lnb3JyaSBVcmlhcnRl</dataHandler>
+                <targetId>targetId2</targetId>
+                <targetUrl>file://dummy.host/target/path/test2.warc</targetUrl>
+                <properties>reserved.displayName=Test Import 2 (Passed through the reserved.display property)</properties>
+            </importParams>
+        </service:importPushedFile>
+    </soapenv:Body>
+</soapenv:Envelope>
