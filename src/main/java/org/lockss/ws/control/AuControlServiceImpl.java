@@ -1,6 +1,6 @@
 /*
 
- Copyright (c) 2015-2019 Board of Trustees of Leland Stanford Jr. University,
+ Copyright (c) 2015-2020 Board of Trustees of Leland Stanford Jr. University,
  all rights reserved.
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,12 +30,15 @@ package org.lockss.ws.control;
 import java.util.ArrayList;
 import java.util.List;
 import org.lockss.log.L4JLogger;
+import org.lockss.util.rest.exception.LockssRestHttpException;
+import org.lockss.util.rest.poller.PollDesc;
+import org.lockss.util.rest.poller.RestPollerClient;
+import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.CheckSubstanceResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 import org.lockss.ws.entities.RequestCrawlResult;
 import org.lockss.ws.entities.RequestDeepCrawlResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.lockss.ws.entities.RequestAuControlResult;
 
@@ -43,7 +46,8 @@ import org.lockss.ws.entities.RequestAuControlResult;
  * The AU Control SOAP web service implementation.
  */
 @Service
-public class AuControlServiceImpl implements AuControlService {
+public class AuControlServiceImpl extends BaseServiceImpl
+implements AuControlService {
   static final String MISSING_AU_ID_ERROR_MESSAGE = "Missing auId";
   static final String NO_SUBSTANCE_ERROR_MESSAGE =
       "No substance patterns defined for plugin";
@@ -61,9 +65,6 @@ public class AuControlServiceImpl implements AuControlService {
       "Cannot enable AU metadata indexing";
 
   private final static L4JLogger log = L4JLogger.getLogger();
-
-  @Autowired
-  private Environment env;
 
   /**
    * Provides an indication of whether an Archival Unit has substance.
@@ -257,17 +258,57 @@ public class AuControlServiceImpl implements AuControlService {
       throws LockssWebServicesFault {
     log.debug2("auId = {}", auId);
 
-    try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      RequestAuControlResult result =
-	  new RequestAuControlResult(auId, true, "It worked!");
-      // TODO: END OF BLOCK TO BE REPLACED.
+    RequestAuControlResult result = null;
 
+    // Handle a missing auId.
+    // TODO: Replace with StringUtil method once StringUtil has been
+    // moved from the lockss-core project to the lockss-util project.
+    if (isNullString(auId)) {
+      result =
+	  new RequestAuControlResult(auId, false, MISSING_AU_ID_ERROR_MESSAGE);
       log.debug2("result = {}", result);
       return result;
-    } catch (Exception e) {
-      throw new LockssWebServicesFault(e);
     }
+
+    String message = null;
+
+    try {
+      // The description of the poll to be called.
+      PollDesc pollDescription = new PollDesc();
+      pollDescription.setAuId(auId);
+      log.trace("pollDescription = {}", pollDescription);
+
+      // Make the REST call to request the poll.
+      String response =
+	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader()).callPoll(pollDescription);
+      log.trace("response = {}", response);
+
+      result = new RequestAuControlResult(response, true, null);
+    } catch (LockssRestHttpException lrhe) {
+      message = lrhe.getMessage();
+      log.trace("message = {}", message);
+
+      // Handle a missing Archival Unit.
+      if (lrhe.getHttpStatus().equals(HttpStatus.NOT_FOUND)) {
+	message = NO_SUCH_AU_ERROR_MESSAGE;
+      } else if (lrhe.getCause() != null) {
+	message = lrhe.getCause().getMessage();
+      }
+
+      result = new RequestAuControlResult(auId, false, message);
+    } catch (Exception e) {
+      if (e.getCause() != null) {
+	message = e.getCause().getMessage();
+      } else {
+	message = e.getMessage();
+      }
+
+      result = new RequestAuControlResult(auId, false, message);
+    }
+
+    log.debug2("result = {}", result);
+    return result;
   }
 
   /**

@@ -88,6 +88,12 @@ POSSIBILITY OF SUCH DAMAGE.
       <version>${version.lockss.lockss-util-entities}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-util-rest</artifactId>
+      <version>${version.lockss.lockss-util-rest}</version>
+    </dependency>
+
 <!--     <dependency> -->
 <!--       <groupId>org.lockss</groupId> -->
 <!--       <artifactId>lockss-util-entities</artifactId> -->

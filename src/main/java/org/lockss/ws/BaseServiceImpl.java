@@ -331,4 +331,15 @@ public abstract class BaseServiceImpl {
     }
     return sb;
   }
+
+  // TODO: Remove once StringUtil has been moved from lockss-core to
+  // lockss-util.
+  /**
+   * Test whether a string is null or the empty string
+   * @param s the string
+   * @return true if s is null or the empty string
+   */
+  protected static boolean isNullString(String s) {
+    return s == null || s.length() == 0;
+  }
 }

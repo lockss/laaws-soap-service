@@ -11,7 +11,7 @@ Usage:
     <soapenv:Body>
         <service:importPulledFile>
             <importParams>
-                <sourceUrl>file:/home/fernando/lockss/web_services/runClient/lockss_export-20151029172424502-00000.warc</sourceUrl>
+                <sourceUrl>file:/some/path/to/lockss_export-20151029172424502-00000.warc</sourceUrl>
                 <dataHandler></dataHandler>
                 <targetId>targetId1</targetId>
                 <targetUrl>file://dummy.host/target/path/test1.warc</targetUrl>
