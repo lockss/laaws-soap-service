@@ -37,6 +37,7 @@ import java.util.Map;
 import org.lockss.laaws.rs.model.Artifact;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.exception.LockssRestException;
+import org.lockss.util.rest.poller.RestPollerClient;
 import org.lockss.util.rest.status.RestStatusClient;
 import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.AuStatus;
@@ -337,9 +338,10 @@ implements DaemonStatusService {
     log.debug2("peerQuery = {}", peerQuery);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<PeerWsResult> results = new ArrayList<>();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Make the REST call to make the query.
+      List<PeerWsResult> results =
+	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader()).queryPeers(peerQuery);
 
       log.debug2("results = {}", results);
       return results;
@@ -364,9 +366,10 @@ implements DaemonStatusService {
     log.debug2("voteQuery = {}", voteQuery);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<VoteWsResult> results = new ArrayList<>();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Make the REST call to make the query.
+      List<VoteWsResult> results =
+	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader()).queryVotes(voteQuery);
 
       log.debug2("results = {}", results);
       return results;
@@ -472,9 +475,10 @@ implements DaemonStatusService {
     log.debug2("pollQuery = {}", pollQuery);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      List<PollWsResult> results = new ArrayList<>();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Make the REST call to make the query.
+      List<PollWsResult> results =
+	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader()).queryPolls(pollQuery);
 
       log.debug2("results = {}", results);
       return results;
