@@ -1,0 +1,16 @@
+<!--
+Sample SOAP request for simple testing.
+
+Usage:
+  curl -H "content-type: text/xml" -d @path/to/this/file
+       http://user:pass@host:port/ws/HasherService
+-->
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:service="http://hasher.ws.lockss.org/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <service:getAsynchronousHashResult>
+          <requestId>upBQM</requestId>
+        </service:getAsynchronousHashResult>
+    </soapenv:Body>
+</soapenv:Envelope>

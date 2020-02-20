@@ -1,6 +1,6 @@
 /*
 
- Copyright (c) 2014-2019 Board of Trustees of Leland Stanford Jr. University,
+ Copyright (c) 2014-2020 Board of Trustees of Leland Stanford Jr. University,
  all rights reserved.
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,26 +27,24 @@
  */
 package org.lockss.ws.hasher;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.lockss.log.L4JLogger;
+import org.lockss.util.Constants;
+import org.lockss.util.rest.poller.RestPollerClient;
+import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.HasherWsAsynchronousResult;
 import org.lockss.ws.entities.HasherWsParams;
 import org.lockss.ws.entities.HasherWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 /**
  * The Hasher SOAP web service implementation.
  */
 @Service
-public class HasherServiceImpl implements HasherService {
+public class HasherServiceImpl extends BaseServiceImpl
+implements HasherService {
   private final static L4JLogger log = L4JLogger.getLogger();
-
-  @Autowired
-  private Environment env;
 
   /**
    * Performs the hashing of an AU or a URL.
@@ -62,9 +60,12 @@ public class HasherServiceImpl implements HasherService {
     log.debug2("wsParams = {}", wsParams);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      HasherWsResult result = new HasherWsResult();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Make the REST call to perform the hash.
+      HasherWsResult result = new RestPollerClient(
+	  env.getProperty(POLLER_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader(),
+	  10 * Constants.SECOND,
+	  Constants.DAY).hash(wsParams);
 
       log.debug2("result = {}", result);
       return result;
@@ -88,9 +89,10 @@ public class HasherServiceImpl implements HasherService {
     log.debug2("wsParams = {}", wsParams);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      HasherWsAsynchronousResult result = new HasherWsAsynchronousResult();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Make the REST call to perform the hash.
+      HasherWsAsynchronousResult result =
+	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader()).hashAsynchronously(wsParams);
 
       log.debug2("result = {}", result);
       return result;
@@ -114,9 +116,11 @@ public class HasherServiceImpl implements HasherService {
     log.debug2("requestId = {}", requestId);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      HasherWsAsynchronousResult result = new HasherWsAsynchronousResult();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Make the REST call to get the hash.
+      HasherWsAsynchronousResult result =
+	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader())
+	  .getAsynchronousHashResult(requestId);
 
       log.debug2("result = {}", result);
       return result;
@@ -138,11 +142,11 @@ public class HasherServiceImpl implements HasherService {
     log.debug2("Invoked.");
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      // Initialize the response.
+      // Make the REST call to get all the hashes.
       List<HasherWsAsynchronousResult> wsResults =
-	  new ArrayList<HasherWsAsynchronousResult>();
-      // TODO: END OF BLOCK TO BE REPLACED.
+	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader())
+	  .getAllAsynchronousHashResults();
 
       log.debug2("wsResults = {}", wsResults);
       return wsResults;
@@ -167,9 +171,11 @@ public class HasherServiceImpl implements HasherService {
     log.debug2("requestId = {}", requestId);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      HasherWsAsynchronousResult result = new HasherWsAsynchronousResult();
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Make the REST call to remove the hash.
+      HasherWsAsynchronousResult result =
+	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader())
+	  .removeAsynchronousHashRequest(requestId);
 
       log.debug2("result = {}", result);
       return result;

@@ -27,13 +27,16 @@
  */
 package org.lockss.ws;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.mail.MessagingException;
 import org.apache.cxf.helpers.CastUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.PhaseInterceptorChain;
@@ -44,11 +47,14 @@ import org.lockss.util.Constants;
 import org.lockss.util.auth.AuthUtil;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.exception.LockssRestException;
+import org.lockss.util.rest.multipart.MultipartConnector;
+import org.lockss.util.rest.multipart.MultipartResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -250,6 +256,8 @@ public abstract class BaseServiceImpl {
    * @param queryParams      A Map<String, String> with any query parameters.
    * @param httpMethod       An HttpMethod with HTTP method used to make the
    *                         call to the REST service.
+   * @param requestHeaders   An HttpHeaders with HTTP request headers used to
+   *                         make the call to the REST service.
    * @param body             A T with the contents of the body to be included
    *                         with the request, if any.
    * @param exceptionMessage A String with the message to be returned with any
@@ -260,8 +268,8 @@ public abstract class BaseServiceImpl {
    */
   protected <T> ResponseEntity<String> callRestServiceUri(String uriString,
       Map<String, String> uriVariables, Map<String, String> queryParams,
-      HttpMethod httpMethod, HttpHeaders requestHeaders, T body, String exceptionMessage)
-	  throws LockssRestException {
+      HttpMethod httpMethod, HttpHeaders requestHeaders, T body,
+      String exceptionMessage) throws LockssRestException {
     log.debug2("uriString = {}", uriString);
     log.debug2("uriVariables = {}", uriVariables);
     log.debug2("queryParams = {}", queryParams);
@@ -291,6 +299,62 @@ public abstract class BaseServiceImpl {
     return RestUtil.callRestService(getCustomRestTemplate(), uri, httpMethod,
 	new HttpEntity<T>(body, requestHeaders), String.class,
 	exceptionMessage);
+  }
+
+  /**
+   * Makes a call to a REST service endpoint that returns a multi-part response.
+   * 
+   * @param serviceUrl       A String with the URL of the service.
+   * @param endPointPath     A String with the URI path to the endpoint.
+   * @param uriVariables     A Map<String, String> with any variables to be
+   *                         interpolated in the URI.
+   * @param queryParams      A Map<String, String> with any query parameters.
+   * @param requestHeaders   An HttpHeaders with HTTP request headers used to
+   *                         make the call to the REST service.
+   * @param httpMethod       An HttpMethod with HTTP method used to make the
+   *                         call to the REST service.
+   * @param body             A T with the contents of the body to be included
+   *                         with the request, if any.
+   * @return a MultipartResponse with the response from the REST service.
+   * @throws LockssRestException if any problems arise in the call to the REST
+   *                             service.
+   */
+  protected <T> MultipartResponse getMultipartResponse(String serviceUrl,
+      String endPointPath, Map<String, String> uriVariables,
+      Map<String, String> queryParams, HttpHeaders requestHeaders,
+      HttpMethod httpMethod, T body) throws IOException, MessagingException {
+    log.debug2("serviceUrl = {}", serviceUrl);
+    log.debug2("endPointPath = {}", endPointPath);
+    log.debug2("uriVariables = {}", uriVariables);
+    log.debug2("queryParams = {}", queryParams);
+    log.debug2("requestHeaders = {}", requestHeaders);
+    log.debug2("httpMethod = {}", httpMethod);
+    log.debug2("body = {}", body);
+
+    URI uri = RestUtil.getRestUri(serviceUrl + endPointPath, uriVariables,
+	queryParams);
+    log.trace("uri = {}", uri);
+
+    requestHeaders.setAccept(Arrays.asList(MediaType.MULTIPART_FORM_DATA,
+	MediaType.APPLICATION_JSON));
+
+    // Get any incoming authorization header with credentials to be passed to
+    // the REST service.
+    String authHeaderValue = getSoapRequestAuthorizationHeader();
+    log.trace("authHeaderValue = {}", authHeaderValue);
+
+    // Check whether there are credentials to be sent.
+    if (authHeaderValue != null && !authHeaderValue.isEmpty()) {
+      // Yes: Add them to the request.
+      requestHeaders.set("Authorization", authHeaderValue);
+    }
+
+    log.trace("requestHeaders = {}", requestHeaders);
+
+    // Make the REST call.
+    log.trace("Calling MultipartConnector.requestGet");
+    return new MultipartConnector(uri, requestHeaders).request(httpMethod, body,
+	getConnectionTimeout().intValue(), getReadTimeout().intValue());
   }
 
   // TODO: Remove once StrinGutil has been moved from lockss-core to
