@@ -28,9 +28,13 @@
 package org.lockss.ws.control;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.lockss.log.L4JLogger;
+import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.exception.LockssRestHttpException;
+import org.lockss.util.rest.mdx.MetadataUpdateSpec;
 import org.lockss.util.rest.poller.PollDesc;
 import org.lockss.util.rest.poller.RestPollerClient;
 import org.lockss.ws.BaseServiceImpl;
@@ -38,7 +42,9 @@ import org.lockss.ws.entities.CheckSubstanceResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 import org.lockss.ws.entities.RequestCrawlResult;
 import org.lockss.ws.entities.RequestDeepCrawlResult;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.lockss.ws.entities.RequestAuControlResult;
 
@@ -353,12 +359,33 @@ implements AuControlService {
   public RequestAuControlResult requestMdIndexingById(String auId,
       boolean force) throws LockssWebServicesFault {
     log.debug2("auId = {}, force = {}", auId, force);
+    RequestAuControlResult result = null;
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      RequestAuControlResult result =
-	  new RequestAuControlResult(auId, true, "It worked!");
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Prepare the query parameters.
+      Map<String, String> queryParams = new HashMap<>(1);
+      queryParams.put("force", String.valueOf(force));
+      log.trace("queryParams = {}", queryParams);
+
+      // Prepare the request body.
+      MetadataUpdateSpec metadataUpdateSpec = new MetadataUpdateSpec();
+      metadataUpdateSpec.setAuid(auId);
+      metadataUpdateSpec.setUpdateType("full_extraction");
+
+      // Make the REST call.
+      ResponseEntity<String> response = callRestServiceEndpoint(
+	  env.getProperty(MDX_SVC_URL_KEY), "/mdupdates", null, queryParams,
+	  HttpMethod.POST, metadataUpdateSpec,
+	  "Can't request metadata indexing");
+
+      HttpStatus statusCode = response.getStatusCode();
+      log.trace("statusCode = {}", statusCode);
+
+      if (RestUtil.isSuccess(statusCode)) {
+	result = new RequestAuControlResult(auId, true, null);
+      } else {
+	result = new RequestAuControlResult(auId, false, statusCode.toString());
+      }
 
       log.debug2("result = {}", result);
       return result;
