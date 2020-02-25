@@ -1,0 +1,16 @@
+<!--
+Sample SOAP request for simple testing.
+
+Usage:
+  curl -H "content-type: text/xml" -d @path/to/this/file
+       http://user:pass@host:port/ws/AuControlService
+-->
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:service="http://control.ws.lockss.org/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <service:enableMdIndexingById>
+            <auId>org|lockss|plugin|pensoft|oai|PensoftOaiPlugin&amp;au_oai_date~2013&amp;au_oai_set~bdj&amp;base_url~http%3A%2F%2Fbdj%2Epensoft%2Enet%2F</auId>
+        </service:enableMdIndexingById>
+    </soapenv:Body>
+</soapenv:Envelope>

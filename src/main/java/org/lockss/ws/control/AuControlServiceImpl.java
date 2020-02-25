@@ -33,10 +33,12 @@ import java.util.List;
 import java.util.Map;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestUtil;
+import org.lockss.util.rest.config.RestConfigClient;
 import org.lockss.util.rest.exception.LockssRestHttpException;
 import org.lockss.util.rest.mdx.MetadataUpdateSpec;
 import org.lockss.util.rest.poller.PollDesc;
 import org.lockss.util.rest.poller.RestPollerClient;
+import org.lockss.util.time.TimeBase;
 import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.CheckSubstanceResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
@@ -437,11 +439,17 @@ implements AuControlService {
     log.debug2("auId = {}", auId);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      RequestAuControlResult result =
-	  new RequestAuControlResult(auId, true, "It worked!");
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Make the REST call to disable metadata indexing for the Archival Unit.
+      String response = new RestConfigClient(
+	  env.getProperty(CONFIG_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader())
+	  .patchArchivalUnitState(auId,
+	      "{\"isMetadataExtractionEnabled\":false}",
+	      "xLockssRequestCookie" + String.valueOf(TimeBase.nowMs()));
+      log.debug2("response = {}", response);
 
+      RequestAuControlResult result =
+	  new RequestAuControlResult(auId, true, null);
       log.debug2("result = {}", result);
       return result;
     } catch (Exception e) {
@@ -489,11 +497,17 @@ implements AuControlService {
     log.debug2("auId = {}", auId);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      RequestAuControlResult result =
-	  new RequestAuControlResult(auId, true, "It worked!");
-      // TODO: END OF BLOCK TO BE REPLACED.
+      // Make the REST call to disable metadata indexing for the Archival Unit.
+      String response = new RestConfigClient(
+	  env.getProperty(CONFIG_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader())
+	  .patchArchivalUnitState(auId,
+	      "{\"isMetadataExtractionEnabled\":true}",
+	      "xLockssRequestCookie" + String.valueOf(TimeBase.nowMs()));
+      log.debug2("response = {}", response);
 
+      RequestAuControlResult result =
+	  new RequestAuControlResult(auId, true, null);
       log.debug2("result = {}", result);
       return result;
     } catch (Exception e) {
