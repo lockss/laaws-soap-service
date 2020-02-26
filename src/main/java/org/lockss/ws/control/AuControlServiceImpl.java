@@ -38,7 +38,6 @@ import org.lockss.util.rest.exception.LockssRestHttpException;
 import org.lockss.util.rest.mdx.MetadataUpdateSpec;
 import org.lockss.util.rest.poller.PollDesc;
 import org.lockss.util.rest.poller.RestPollerClient;
-import org.lockss.util.time.TimeBase;
 import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.CheckSubstanceResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
@@ -443,8 +442,7 @@ implements AuControlService {
 	  env.getProperty(CONFIG_SVC_URL_KEY),
 	  getSoapRequestAuthorizationHeader())
 	  .patchArchivalUnitState(auId,
-	      "{\"isMetadataExtractionEnabled\":false}",
-	      "xLockssRequestCookie" + String.valueOf(TimeBase.nowMs()));
+	      "{\"isMetadataExtractionEnabled\":false}", null);
       log.debug2("response = {}", response);
 
       RequestAuControlResult result =
@@ -501,8 +499,7 @@ implements AuControlService {
 	  env.getProperty(CONFIG_SVC_URL_KEY),
 	  getSoapRequestAuthorizationHeader())
 	  .patchArchivalUnitState(auId,
-	      "{\"isMetadataExtractionEnabled\":true}",
-	      "xLockssRequestCookie" + String.valueOf(TimeBase.nowMs()));
+	      "{\"isMetadataExtractionEnabled\":true}", null);
       log.debug2("response = {}", response);
 
       RequestAuControlResult result =
