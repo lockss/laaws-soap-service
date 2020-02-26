@@ -86,13 +86,12 @@ implements AuControlService {
     log.debug2("auId = {}", auId);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      CheckSubstanceResult result =
-	  new CheckSubstanceResult(auId, null, null, "It worked!");
-      // TODO: END OF BLOCK TO BE REPLACED.
-
-      log.debug2("result = {}", result);
-      return result;
+      // Make the REST call to disable metadata indexing for the Archival Unit.
+      CheckSubstanceResult response = new RestConfigClient(
+	  env.getProperty(CONFIG_SVC_URL_KEY),
+	  getSoapRequestAuthorizationHeader()).putAuSubstanceCheck(auId);
+      log.debug2("response = {}", response);
+      return response;
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
