@@ -394,11 +394,9 @@ implements DaemonStatusService {
     log.debug2("repositorySpaceQuery = {}", repositorySpaceQuery);
 
     try {
-      // Make the REST call to make the query.
-      List<RepositorySpaceWsResult> results =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader())
-	  .queryRepositorySpaces(repositorySpaceQuery);
+      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
+      List<RepositorySpaceWsResult> results = new ArrayList<>();
+      // TODO: END OF BLOCK TO BE REPLACED.
 
       log.debug2("results = {}", results);
       return results;
@@ -423,11 +421,9 @@ implements DaemonStatusService {
     log.debug2("repositoryQuery = {}", repositoryQuery);
 
     try {
-      // Make the REST call to make the query.
-      List<RepositoryWsResult> results =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader())
-	  .queryRepositories(repositoryQuery);
+      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
+      List<RepositoryWsResult> results = new ArrayList<>();
+      // TODO: END OF BLOCK TO BE REPLACED.
 
       log.debug2("results = {}", results);
       return results;
