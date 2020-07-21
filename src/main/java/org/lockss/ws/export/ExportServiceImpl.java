@@ -150,7 +150,7 @@ implements ExportService {
 	  Part part = parts.get(name);
 	  log.trace("part = " + part);
 
-	  String contentType = part.getHeaders().get(HttpHeaders.CONTENT_TYPE);
+	  String contentType = part.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
 	  log.trace("contentType = " + contentType);
 
 	  AttachmentDataSource source =
