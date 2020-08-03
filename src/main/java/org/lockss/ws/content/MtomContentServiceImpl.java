@@ -35,6 +35,7 @@ import java.util.Properties;
 import javax.activation.DataHandler;
 import javax.xml.ws.soap.MTOM;
 import org.apache.cxf.jaxrs.ext.multipart.InputStreamDataSource;
+import org.lockss.laaws.rs.core.LockssRepository;
 import org.lockss.laaws.rs.model.Artifact;
 import org.lockss.laaws.rs.model.ArtifactData;
 import org.lockss.log.L4JLogger;
@@ -154,7 +155,7 @@ implements MtomContentService {
     ContentResult result = new ContentResult();
 
     ArtifactData artifactData =
-	getRestLockssRepository().getArtifactData(artifact, true);
+	getRestLockssRepository().getArtifactData(artifact, LockssRepository.IncludeContent.ALWAYS);
     log.trace("artifactData = {}", artifactData);
 
     if (artifactData != null) {
