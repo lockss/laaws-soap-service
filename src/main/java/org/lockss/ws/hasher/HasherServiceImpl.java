@@ -61,11 +61,11 @@ implements HasherService {
 
     try {
       // Make the REST call to perform the hash.
-      HasherWsResult result = new RestPollerClient(
-	  env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader(),
-	  10 * Constants.SECOND,
-	  Constants.DAY).hash(wsParams);
+      HasherWsResult result =
+	new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.setTimeouts(10 * Constants.SECOND, Constants.DAY)
+	.hash(wsParams);
 
       log.debug2("result = {}", result);
       return result;
@@ -91,8 +91,9 @@ implements HasherService {
     try {
       // Make the REST call to perform the hash.
       HasherWsAsynchronousResult result =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader()).hashAsynchronously(wsParams);
+	new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.hashAsynchronously(wsParams);
 
       log.debug2("result = {}", result);
       return result;
@@ -118,9 +119,9 @@ implements HasherService {
     try {
       // Make the REST call to get the hash.
       HasherWsAsynchronousResult result =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader())
-	  .getAsynchronousHashResult(requestId);
+	new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.getAsynchronousHashResult(requestId);
 
       log.debug2("result = {}", result);
       return result;
@@ -144,9 +145,9 @@ implements HasherService {
     try {
       // Make the REST call to get all the hashes.
       List<HasherWsAsynchronousResult> wsResults =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader())
-	  .getAllAsynchronousHashResults();
+	new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.getAllAsynchronousHashResults();
 
       log.debug2("wsResults = {}", wsResults);
       return wsResults;
@@ -173,9 +174,9 @@ implements HasherService {
     try {
       // Make the REST call to remove the hash.
       HasherWsAsynchronousResult result =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader())
-	  .removeAsynchronousHashRequest(requestId);
+	new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.removeAsynchronousHashRequest(requestId);
 
       log.debug2("result = {}", result);
       return result;
