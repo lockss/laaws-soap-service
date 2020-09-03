@@ -48,6 +48,7 @@ import org.lockss.log.L4JLogger;
 import org.lockss.util.PropertiesUtil;
 import org.lockss.util.rest.HttpResponseStatusAndHeaders;
 import org.lockss.util.rest.RestUtil;
+import org.lockss.util.rest.SpringHeaderUtil;
 import org.lockss.util.rest.multipart.MultipartConnector;
 import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.ImportWsParams;
@@ -375,16 +376,7 @@ implements ImportService {
     requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
     requestHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-    // Get any incoming authorization header with credentials to be passed to
-    // the REST service.
-    String authHeaderValue = getSoapRequestAuthorizationHeader();
-    log.trace("authHeaderValue = {}", authHeaderValue);
-
-    // Check whether there are credentials to be sent.
-    if (authHeaderValue != null && !authHeaderValue.isEmpty()) {
-      // Yes: Add them to the request.
-      requestHeaders.set("Authorization", authHeaderValue);
-    }
+    SpringHeaderUtil.addHeaders(getAuthHeaders(), requestHeaders);
 
     log.trace("requestHeaders = {}", requestHeaders);
 

@@ -36,6 +36,7 @@ import javax.xml.ws.soap.MTOM;
 import org.apache.cxf.attachment.AttachmentDataSource;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestUtil;
+import org.lockss.util.rest.SpringHeaderUtil;
 import org.lockss.util.rest.multipart.MultipartConnector;
 import org.lockss.util.rest.multipart.MultipartResponse;
 import org.lockss.util.rest.multipart.MultipartResponse.Part;
@@ -111,16 +112,7 @@ implements ExportService {
       requestHeaders.setAccept(Arrays.asList(MediaType.MULTIPART_FORM_DATA,
   	MediaType.APPLICATION_JSON));
 
-      // Get any incoming authorization header with credentials to be passed to
-      // the REST service.
-      String authHeaderValue = getSoapRequestAuthorizationHeader();
-      log.trace("authHeaderValue = {}", authHeaderValue);
-
-      // Check whether there are credentials to be sent.
-      if (authHeaderValue != null && !authHeaderValue.isEmpty()) {
-        // Yes: Add them to the request.
-        requestHeaders.set("Authorization", authHeaderValue);
-      }
+      SpringHeaderUtil.addHeaders(getAuthHeaders(), requestHeaders);
 
       log.trace("requestHeaders = {}", requestHeaders);
 

@@ -37,15 +37,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.*;
 import org.apache.cxf.helpers.CastUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.PhaseInterceptorChain;
+import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.lockss.laaws.rs.core.LockssRepositoryFactory;
 import org.lockss.laaws.rs.core.RestLockssRepository;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.Constants;
 import org.lockss.util.auth.AuthUtil;
 import org.lockss.util.rest.RestUtil;
+import org.lockss.util.rest.SpringHeaderUtil;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.multipart.MultipartConnector;
 import org.lockss.util.rest.multipart.MultipartResponse;
@@ -120,6 +124,20 @@ public abstract class BaseServiceImpl {
     return env.getProperty(READ_TIMEOUT_KEY, Long.class, defaultReadTimeout);
   }
 
+  protected HttpHeaders getAuthHeaders() {
+    HttpHeaders hdrs = new HttpHeaders();
+    String auth = getSoapRequestAuthorizationHeader();
+    if (!StringUtils.isEmpty(auth)) {
+      hdrs.set("Authorization", auth);
+    }
+    String reqIp = getRequestorIpAddress();
+    if (!StringUtils.isEmpty(reqIp)) {
+      hdrs.set("X-Forwarded-For", reqIp);
+    }
+    return hdrs;
+  }
+
+
   /**
    * Provides the Authorization header in the current SOAP request message, if
    * any.
@@ -152,6 +170,22 @@ public abstract class BaseServiceImpl {
 
     log.debug2("authHeaderValue = {}", authHeaderValue);
     return authHeaderValue;
+  }
+
+  /**
+   * Provides the Authorization header in the current SOAP request message, if
+   * any.
+   *
+   * @return a String with the Authorization header.
+   */
+  protected static String getRequestorIpAddress() {
+    // Get the message from the SOAP request.
+    Message message = PhaseInterceptorChain.getCurrentMessage();
+    HttpServletRequest request =
+      (HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
+    String srcIp = request.getRemoteAddr();
+    log.debug2("src IP = {}", srcIp);
+    return srcIp;
   }
 
   /**
@@ -280,17 +314,8 @@ public abstract class BaseServiceImpl {
 
     URI uri = RestUtil.getRestUri(uriString, uriVariables, queryParams);
     log.trace("uri = {}", uri);
-
-    // Get any incoming authorization header with credentials to be passed to
-    // the REST service.
-    String authHeaderValue = getSoapRequestAuthorizationHeader();
-    log.trace("authHeaderValue = {}", authHeaderValue);
-
-    // Check whether there are credentials to be sent.
-    if (authHeaderValue != null && !authHeaderValue.isEmpty()) {
-      // Yes: Add them to the request.
-      requestHeaders.set("Authorization", authHeaderValue);
-    }
+ 
+    SpringHeaderUtil.addHeaders(getAuthHeaders(), requestHeaders, true);
 
     log.trace("requestHeaders = {}", requestHeaders);
 
@@ -338,16 +363,7 @@ public abstract class BaseServiceImpl {
     requestHeaders.setAccept(Arrays.asList(MediaType.MULTIPART_FORM_DATA,
 	MediaType.APPLICATION_JSON));
 
-    // Get any incoming authorization header with credentials to be passed to
-    // the REST service.
-    String authHeaderValue = getSoapRequestAuthorizationHeader();
-    log.trace("authHeaderValue = {}", authHeaderValue);
-
-    // Check whether there are credentials to be sent.
-    if (authHeaderValue != null && !authHeaderValue.isEmpty()) {
-      // Yes: Add them to the request.
-      requestHeaders.set("Authorization", authHeaderValue);
-    }
+    SpringHeaderUtil.addHeaders(getAuthHeaders(), requestHeaders, true);
 
     log.trace("requestHeaders = {}", requestHeaders);
 
@@ -396,14 +412,4 @@ public abstract class BaseServiceImpl {
     return sb;
   }
 
-  // TODO: Remove once StringUtil has been moved from lockss-core to
-  // lockss-util.
-  /**
-   * Test whether a string is null or the empty string
-   * @param s the string
-   * @return true if s is null or the empty string
-   */
-  protected static boolean isNullString(String s) {
-    return s == null || s.length() == 0;
-  }
 }
