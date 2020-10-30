@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+Copyright (c) 2000-2020, Board of Trustees of Leland Stanford Jr. University
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+may be used to endorse or promote products derived from this software without
+specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <groupId>org.lockss</groupId>
+    <artifactId>lockss-parent-pom</artifactId>
+    <version>1.12.0</version>
+    <relativePath />
+  </parent>
+
+  <groupId>org.lockss.laaws</groupId>
+  <artifactId>laaws-soap-service</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>laaws-soap-service</name>
+  <description>LOCKSS SOAP Service</description>
+
+  <properties>
+    <java.version>1.8</java.version>
+
+    <!-- Not a LAAWS Spring project but needs to be packaged with dependencies -->
+    <build.java.spring.repackageJar.skip>false</build.java.spring.repackageJar.skip>
+    <build.java.mainClass>org.lockss.ws.SoapApplication</build.java.mainClass>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.lockss.laaws</groupId>
+      <artifactId>laaws-repository-core</artifactId>
+      <version>${version.lockss.lockss-repository-core}</version>
+      <exclusions>
+        <!-- eventually brings servlet-api 2.5 but spring-test needs 3.0.1 or better -->
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.solr</groupId>
+          <artifactId>solr-solrj</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-util-core</artifactId>
+      <version>${version.lockss.lockss-util-core}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-util-entities</artifactId>
+      <version>${version.lockss.lockss-util-entities}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-util-rest</artifactId>
+      <version>${version.lockss.lockss-util-rest}</version>
+    </dependency>
+
+<!--     <dependency> -->
+<!--       <groupId>org.lockss</groupId> -->
+<!--       <artifactId>lockss-util-entities</artifactId> -->
+<!--       <version>${version.lockss.lockss-util-entities}</version> -->
+<!--       <type>test-jar</type> -->
+<!--       <scope>test</scope> -->
+<!--     </dependency> -->
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-parent</artifactId>
+      <version>${version.group.spring-boot}</version>
+      <type>pom</type>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <version>${version.group.spring-boot}</version>
+      <exclusions>
+        <!-- Avoid http://www.slf4j.org/codes.html#log4jDelegationLoop -->
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>log4j-over-slf4j</artifactId>
+        </exclusion>
+        <!-- Avoid Logback vs. SLF4J conflict -->
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
+      <version>3.2.7</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+      <version>3.2.7</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-features-logging</artifactId>
+      <version>3.2.7</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <version>${version.group.spring-boot}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>

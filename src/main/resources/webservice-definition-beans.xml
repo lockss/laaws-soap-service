@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+Copyright (c) 2000-2019, Board of Trustees of Leland Stanford Jr. University
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+may be used to endorse or promote products derived from this software without
+specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd
+         http://cxf.apache.org/jaxrs
+         http://cxf.apache.org/schemas/jaxrs.xsd
+         http://cxf.apache.org/jaxws               
+         http://cxf.apache.org/schemas/jaxws.xsd
+         http://www.springframework.org/schema/context
+         http://www.springframework.org/schema/context/spring-context-4.1.xsd">
+  <jaxws:endpoint id="AuControlService" implementor="#auControlServiceImpl"
+                  address="/AuControlService">
+    <jaxws:features>
+      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
+    </jaxws:features>
+  </jaxws:endpoint>
+  <jaxws:endpoint id="ContentService" implementor="#contentServiceImpl"
+                  address="/ContentService">
+    <jaxws:features>
+      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
+    </jaxws:features>
+  </jaxws:endpoint>
+  <jaxws:endpoint id="ContentConfigurationService"
+                  implementor="#contentConfigurationServiceImpl"
+                  address="/ContentConfigurationService">
+    <jaxws:features>
+      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
+    </jaxws:features>
+  </jaxws:endpoint>
+  <jaxws:endpoint id="MtomContentService" implementor="#mtomContentServiceImpl"
+                  address="/MtomContentService">
+    <jaxws:features>
+      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
+    </jaxws:features>
+  </jaxws:endpoint>
+  <jaxws:endpoint id="ExportService" implementor="#exportServiceImpl"
+                  address="/ExportService">
+    <jaxws:features>
+      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
+    </jaxws:features>
+  </jaxws:endpoint>
+  <jaxws:endpoint id="HasherService" implementor="#hasherServiceImpl"
+                  address="/HasherService">
+    <jaxws:features>
+      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
+    </jaxws:features>
+  </jaxws:endpoint>
+  <jaxws:endpoint id="ImportService" implementor="#importServiceImpl"
+                  address="/ImportService">
+    <jaxws:features>
+      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
+    </jaxws:features>
+  </jaxws:endpoint>
+  <jaxws:endpoint id="MetadataControlService"
+                  implementor="#metadataControlServiceImpl"
+                  address="/MetadataControlService">
+    <jaxws:features>
+      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
+    </jaxws:features>
+  </jaxws:endpoint>
+  <jaxws:endpoint id="MetadataMonitorService"
+                  implementor="#metadataMonitorServiceImpl"
+                  address="/MetadataMonitorService">
+    <jaxws:features>
+      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
+    </jaxws:features>
+  </jaxws:endpoint>
+  <jaxws:endpoint id="CounterReportsService"
+                  implementor="#counterReportsServiceImpl"
+                  address="/CounterReportsService">
+    <jaxws:features>
+      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
+    </jaxws:features>
+  </jaxws:endpoint>
+  <jaxws:endpoint id="DaemonStatusService"
+                  implementor="#daemonStatusServiceImpl"
+                  address="/DaemonStatusService">
+    <jaxws:features>
+      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
+    </jaxws:features>
+  </jaxws:endpoint>
+</beans>

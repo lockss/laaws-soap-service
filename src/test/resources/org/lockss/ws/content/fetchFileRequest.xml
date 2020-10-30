@@ -1,0 +1,17 @@
+<!--
+Sample SOAP request for simple testing.
+
+Usage:
+  curl -H "content-type: text/xml" -d @path/to/this/file
+       http://user:pass@host:port/ws/MtomContentService
+-->
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:service="http://content.ws.lockss.org/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <service:fetchFile>
+            <url>https://www.thieme-connect.de/products/ebooks/pdf/10.1055/b-0036-132711.pdf</url>
+            <auId>org|lockss|plugin|georgthiemeverlag|GeorgThiemeVerlagBooksPlugin&amp;base_url~https%3A%2F%2Fwww%2Ethieme-connect%2Ede%2F&amp;doi~10%2E1055%2Fb-004-129958</auId>
+        </service:fetchFile>
+    </soapenv:Body>
+</soapenv:Envelope>

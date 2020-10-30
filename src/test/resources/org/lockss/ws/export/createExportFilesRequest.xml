@@ -1,0 +1,25 @@
+<!--
+Sample SOAP request for simple testing.
+
+Usage:
+  curl -H "content-type: text/xml" -d @path/to/this/file
+       http://user:pass@host:port/ws/ExportService
+-->
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:service="http://export.ws.lockss.org/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <service:createExportFiles>
+            <arg0>
+                <auid>org|lockss|plugin|georgthiemeverlag|GeorgThiemeVerlagBooksPlugin&amp;base_url~https%3A%2F%2Fwww%2Ethieme-connect%2Ede%2F&amp;doi~10%2E1055%2Fb-004-129958</auid>
+                <fileType>WARC_RESPONSE</fileType>
+                <compress>true</compress>
+                <excludeDirNodes>true</excludeDirNodes>
+                <xlateFilenames>XLATE_NONE</xlateFilenames>
+                <filePrefix>lockss_export</filePrefix>
+                <maxSize>-1</maxSize>
+                <maxVersions>-1</maxVersions>
+            </arg0>
+        </service:createExportFiles>
+    </soapenv:Body>
+</soapenv:Envelope>

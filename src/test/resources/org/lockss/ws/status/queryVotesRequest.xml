@@ -1,0 +1,16 @@
+<!--
+Sample SOAP request for simple testing.
+
+Usage:
+  curl -H "content-type: text/xml" -d @path/to/this/file
+       http://user:pass@host:port/ws/DaemonStatusService
+-->
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:service="http://status.ws.lockss.org/">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <service:queryVotes>
+            <voteQuery>select *</voteQuery>
+        </service:queryVotes>
+    </soapenv:Body>
+</soapenv:Envelope>
