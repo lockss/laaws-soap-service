@@ -340,8 +340,9 @@ implements DaemonStatusService {
     try {
       // Make the REST call to make the query.
       List<PeerWsResult> results =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader()).queryPeers(peerQuery);
+	new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.queryPeers(peerQuery);
 
       log.debug2("results = {}", results);
       return results;
@@ -368,8 +369,9 @@ implements DaemonStatusService {
     try {
       // Make the REST call to make the query.
       List<VoteWsResult> results =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader()).queryVotes(voteQuery);
+	new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.queryVotes(voteQuery);
 
       log.debug2("results = {}", results);
       return results;
@@ -396,9 +398,9 @@ implements DaemonStatusService {
     try {
       // Make the REST call to make the query.
       List<RepositorySpaceWsResult> results =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader())
-	  .queryRepositorySpaces(repositorySpaceQuery);
+	new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.queryRepositorySpaces(repositorySpaceQuery);
 
       log.debug2("results = {}", results);
       return results;
@@ -425,9 +427,9 @@ implements DaemonStatusService {
     try {
       // Make the REST call to make the query.
       List<RepositoryWsResult> results =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader())
-	  .queryRepositories(repositoryQuery);
+	new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.queryRepositories(repositoryQuery);
 
       log.debug2("results = {}", results);
       return results;
@@ -481,8 +483,9 @@ implements DaemonStatusService {
     try {
       // Make the REST call to make the query.
       List<PollWsResult> results =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader()).queryPolls(pollQuery);
+	new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.queryPolls(pollQuery);
 
       log.debug2("results = {}", results);
       return results;

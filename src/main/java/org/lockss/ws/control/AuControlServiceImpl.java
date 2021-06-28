@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.config.RestConfigClient;
@@ -86,9 +87,10 @@ implements AuControlService {
 
     try {
       // Make the REST call to disable metadata indexing for the Archival Unit.
-      CheckSubstanceResult response = new RestConfigClient(
-	  env.getProperty(CONFIG_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader()).putAuSubstanceCheck(auId);
+      CheckSubstanceResult response =
+	new RestConfigClient(env.getProperty(CONFIG_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.putAuSubstanceCheck(auId);
       log.debug2("response = {}", response);
       return response;
     } catch (Exception e) {
@@ -267,9 +269,7 @@ implements AuControlService {
     RequestAuControlResult result = null;
 
     // Handle a missing auId.
-    // TODO: Replace with StringUtil method once StringUtil has been
-    // moved from the lockss-core project to the lockss-util project.
-    if (isNullString(auId)) {
+    if (StringUtils.isEmpty(auId)) {
       result =
 	  new RequestAuControlResult(auId, false, MISSING_AU_ID_ERROR_MESSAGE);
       log.debug2("result = {}", result);
@@ -286,8 +286,9 @@ implements AuControlService {
 
       // Make the REST call to request the poll.
       String response =
-	  new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader()).callPoll(pollDescription);
+	new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.callPoll(pollDescription);
       log.trace("response = {}", response);
 
       result = new RequestAuControlResult(response, true, null);
@@ -438,11 +439,12 @@ implements AuControlService {
 
     try {
       // Make the REST call to disable metadata indexing for the Archival Unit.
-      String response = new RestConfigClient(
-	  env.getProperty(CONFIG_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader())
-	  .patchArchivalUnitState(auId,
-	      "{\"isMetadataExtractionEnabled\":false}", null);
+      String response =
+	new RestConfigClient(env.getProperty(CONFIG_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.patchArchivalUnitState(auId,
+				"{\"isMetadataExtractionEnabled\":false}",
+				null);
       log.debug2("response = {}", response);
 
       RequestAuControlResult result =
@@ -495,11 +497,12 @@ implements AuControlService {
 
     try {
       // Make the REST call to disable metadata indexing for the Archival Unit.
-      String response = new RestConfigClient(
-	  env.getProperty(CONFIG_SVC_URL_KEY),
-	  getSoapRequestAuthorizationHeader())
-	  .patchArchivalUnitState(auId,
-	      "{\"isMetadataExtractionEnabled\":true}", null);
+      String response =
+	new RestConfigClient(env.getProperty(CONFIG_SVC_URL_KEY))
+	.addRequestHeaders(getAuthHeaders())
+	.patchArchivalUnitState(auId,
+				"{\"isMetadataExtractionEnabled\":true}",
+				null);
       log.debug2("response = {}", response);
 
       RequestAuControlResult result =
