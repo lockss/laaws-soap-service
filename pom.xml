@@ -40,13 +40,13 @@ POSSIBILITY OF SUCH DAMAGE.
   <parent>
     <groupId>org.lockss</groupId>
     <artifactId>lockss-parent-pom</artifactId>
-    <version>1.13.0</version>
+    <version>1.14.0</version>
     <relativePath />
   </parent>
 
   <groupId>org.lockss.laaws</groupId>
   <artifactId>laaws-soap-service</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
   <packaging>jar</packaging>
 
   <name>laaws-soap-service</name>
@@ -62,6 +62,14 @@ POSSIBILITY OF SUCH DAMAGE.
 
   <dependencies>
     <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-util-core</artifactId>
+      <version>${version.lockss.lockss-util-core}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.lockss.laaws</groupId>
       <artifactId>laaws-repository-core</artifactId>
       <version>${version.lockss.lockss-repository-core}</version>
@@ -76,14 +84,6 @@ POSSIBILITY OF SUCH DAMAGE.
           <artifactId>solr-solrj</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>org.lockss</groupId>
-      <artifactId>lockss-util-core</artifactId>
-      <version>${version.lockss.lockss-util-core}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
