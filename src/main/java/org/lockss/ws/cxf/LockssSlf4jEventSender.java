@@ -42,18 +42,15 @@ import org.slf4j.MDC;
 import org.slf4j.MarkerFactory;
 
 /**
- * Implementation of org.apache.cxf.ext.logging.slf4j.Slf4jEventSender for
- * logging at level TRACE instead of level INFO.
+ * Implementation of org.apache.cxf.ext.logging.slf4j.Slf4jEventSender for logging at level TRACE
+ * instead of level INFO.
  */
 public class LockssSlf4jEventSender implements LogEventSender {
-  /**
-   * It is called by the Logging interceptor to send the fully populated message
-   * to be logged.
-   */
+  /** It is called by the Logging interceptor to send the fully populated message to be logged. */
   @Override
   public void send(LogEvent event) {
-    String cat = "org.apache.cxf.services."
-	+ event.getPortTypeName().getLocalPart() + "." + event.getType();
+    String cat =
+        "org.apache.cxf.services." + event.getPortTypeName().getLocalPart() + "." + event.getType();
     Logger log = LoggerFactory.getLogger(cat);
     Set<String> keys = new HashSet<>();
 
@@ -66,20 +63,20 @@ public class LockssSlf4jEventSender implements LogEventSender {
       put(keys, "ExchangeId", event.getExchangeId());
       put(keys, "MessageId", event.getMessageId());
       if (event.getServiceName() != null) {
-	put(keys, "ServiceName", localPart(event.getServiceName()));
-	put(keys, "PortName", localPart(event.getPortName()));
-	put(keys, "PortTypeName", localPart(event.getPortTypeName()));
+        put(keys, "ServiceName", localPart(event.getServiceName()));
+        put(keys, "PortName", localPart(event.getPortName()));
+        put(keys, "PortTypeName", localPart(event.getPortTypeName()));
       }
       if (event.getFullContentFile() != null) {
-	put(keys, "FullContentFile",
-	    event.getFullContentFile().getAbsolutePath());
+        put(keys, "FullContentFile", event.getFullContentFile().getAbsolutePath());
       }
       put(keys, "Headers", event.getHeaders().toString());
-      log.trace(MarkerFactory.getMarker(event.getServiceName() != null ?
-	  "SOAP" : "REST"), getLogMessage(event));
+      log.trace(
+          MarkerFactory.getMarker(event.getServiceName() != null ? "SOAP" : "REST"),
+          getLogMessage(event));
     } finally {
       for (String key : keys) {
-	MDC.remove(key);
+        MDC.remove(key);
       }
     }
   }

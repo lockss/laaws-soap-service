@@ -35,9 +35,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ImportResource;
 
-/**
- * Launcher of the Spring Boot application.
- */
+/** Launcher of the Spring Boot application. */
 @SpringBootApplication
 @ImportResource({"classpath:webservice-definition-beans.xml"})
 public class SoapApplication {

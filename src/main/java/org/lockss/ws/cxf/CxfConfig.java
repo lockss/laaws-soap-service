@@ -38,14 +38,12 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Integration of the CXF infrastructure with Spring.
- */
+/** Integration of the CXF infrastructure with Spring. */
 @Configuration
 public class CxfConfig {
   /**
    * Provides the bean that registers the servlet in the container.
-   * 
+   *
    * @return a ServletRegistrationBean with the servlet registration bean.
    */
   @Bean
@@ -56,12 +54,12 @@ public class CxfConfig {
 
   /**
    * Provides the Spring-flavored CXF Bus for adding interceptors, if needed.
-   * 
+   *
    * @return a SpringBus newly created.
    */
-  @Bean(name=Bus.DEFAULT_BUS_ID)
-  public SpringBus springBus() {    
+  @Bean(name = Bus.DEFAULT_BUS_ID)
+  public SpringBus springBus() {
     SpringBus springBus = new SpringBus();
     return springBus;
-  }	
+  }
 }

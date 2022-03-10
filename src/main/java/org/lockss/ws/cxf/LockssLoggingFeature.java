@@ -43,30 +43,28 @@ import org.apache.cxf.feature.AbstractFeature;
 import org.apache.cxf.interceptor.InterceptorProvider;
 
 /**
- * This class is used to control message-on-the-wire logging at log level
- * TRACE instead of the default log level INFO of
- * org.apache.cxf.ext.logging.LoggingFeature. Usage:
+ * This class is used to control message-on-the-wire logging at log level TRACE instead of the
+ * default log level INFO of org.apache.cxf.ext.logging.LoggingFeature. Usage:
+ *
  * <pre>
  * <![CDATA[
-    <jaxws:endpoint ...>
-      <jaxws:features>
-       <bean class="org.lockss.ws.cxf.LockssLoggingFeature"/>
-      </jaxws:features>
-    </jaxws:endpoint>
-  ]]>
-  </pre>
+ * <jaxws:endpoint ...>
+ * <jaxws:features>
+ * <bean class="org.lockss.ws.cxf.LockssLoggingFeature"/>
+ * </jaxws:features>
+ * </jaxws:endpoint>
+ * ]]>
+ * </pre>
  */
 @NoJSR250Annotations
 @Provider(value = Type.Feature)
 public class LockssLoggingFeature extends AbstractFeature {
-  private LoggingInInterceptor in;
-  private LoggingOutInterceptor out;
-  private PrettyLoggingFilter inPrettyFilter;
-  private PrettyLoggingFilter outPrettyFilter;
+  private final LoggingInInterceptor in;
+  private final LoggingOutInterceptor out;
+  private final PrettyLoggingFilter inPrettyFilter;
+  private final PrettyLoggingFilter outPrettyFilter;
 
-  /**
-   * Default constructor.
-   */
+  /** Default constructor. */
   public LockssLoggingFeature() {
     LogEventSender sender = new LockssSlf4jVerboseEventSender();
     inPrettyFilter = new PrettyLoggingFilter(sender);
@@ -115,6 +113,7 @@ public class LockssLoggingFeature extends AbstractFeature {
 
   /**
    * Log binary content?
+   *
    * @param logBinary defaults to false
    */
   public void setLogBinary(boolean logBinary) {
@@ -124,15 +123,15 @@ public class LockssLoggingFeature extends AbstractFeature {
 
   /**
    * Log multipart content?
+   *
    * @param logMultipart defaults to true
    */
   public void setLogMultipart(boolean logMultipart) {
     in.setLogMultipart(logMultipart);
     out.setLogMultipart(logMultipart);
   }
-  
+
   public void setVerbose(boolean verbose) {
-    setSender(verbose ? new LockssSlf4jVerboseEventSender()
-	: new LockssSlf4jEventSender());
+    setSender(verbose ? new LockssSlf4jVerboseEventSender() : new LockssSlf4jEventSender());
   }
 }

@@ -35,12 +35,12 @@ import org.apache.cxf.ext.logging.event.LogEvent;
 import org.apache.cxf.ext.logging.event.LogMessageFormatter;
 
 /**
- * Implementation of org.apache.cxf.ext.logging.slf4j.Slf4jVerboseEventSender
- * for logging at level TRACE instead of level INFO.
+ * Implementation of org.apache.cxf.ext.logging.slf4j.Slf4jVerboseEventSender for logging at level
+ * TRACE instead of level INFO.
  */
 public class LockssSlf4jVerboseEventSender extends LockssSlf4jEventSender {
   @Override
   protected String getLogMessage(LogEvent event) {
-      return LogMessageFormatter.format(event);
+    return LogMessageFormatter.format(event);
   }
 }

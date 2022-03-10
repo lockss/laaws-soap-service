@@ -47,33 +47,29 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 /**
- * The Message Transmission Optimization Mechanism (MTOM) Content SOAP web
- * service implementation.
+ * The Message Transmission Optimization Mechanism (MTOM) Content SOAP web service implementation.
  */
 @MTOM
 @Service
-public class MtomContentServiceImpl extends BaseServiceImpl
-implements MtomContentService {
-  final static String anyVersion = "latest";
-  private final static L4JLogger log = L4JLogger.getLogger();
+public class MtomContentServiceImpl extends BaseServiceImpl implements MtomContentService {
+  static final String anyVersion = "latest";
+  private static final L4JLogger log = L4JLogger.getLogger();
 
   /**
    * Provides the content defined by a URL and Archival Unit.
-   * 
-   * @param url  A String with the URL.
+   *
+   * @param url A String with the URL.
    * @param auId A String with the identifier (auid) of the archival unit.
    * @return a ContentResult with the result of the operation.
    * @throws LockssWebServicesFault if there are problems.
    */
-  public ContentResult fetchFile(String url, String auId)
-      throws LockssWebServicesFault {
+  public ContentResult fetchFile(String url, String auId) throws LockssWebServicesFault {
     log.debug2("url = {}", url);
     log.debug2("auId = {}", auId);
 
     try {
       if (auId == null || auId.isEmpty()) {
-        throw new IllegalArgumentException("Missing required Archival Unit "
-  	  + "identifier (auId)");
+        throw new IllegalArgumentException("Missing required Archival Unit " + "identifier (auId)");
       }
 
       if (url == null || url.isEmpty()) {
@@ -82,12 +78,12 @@ implements MtomContentService {
 
       ContentResult result = new ContentResult();
 
-      Artifact artifact = getRestLockssRepository()
-	  .getArtifact(env.getProperty(REPO_COLLECTION_KEY), auId, url);
+      Artifact artifact =
+          getRestLockssRepository().getArtifact(env.getProperty(REPO_COLLECTION_KEY), auId, url);
       log.trace("artifact = {}", artifact);
 
       if (artifact != null) {
-	result = getContentResultFromArtifact(artifact);
+        result = getContentResultFromArtifact(artifact);
       }
 
       log.debug2("result = {}", result);
@@ -99,41 +95,41 @@ implements MtomContentService {
 
   /**
    * Provides the content defined by a URL, an Archival Unit and a version.
-   * 
-   * @param url     A String with the URL.
-   * @param auId    A String with the identifier (auid) of the archival unit.
+   *
+   * @param url A String with the URL.
+   * @param auId A String with the identifier (auid) of the archival unit.
    * @param version An Integer with the requested version of the content.
    * @return a ContentResult with the result of the operation.
    * @throws LockssWebServicesFault if there are problems.
    */
-  public ContentResult fetchVersionedFile(String url, String auId,
-      Integer version) throws LockssWebServicesFault {
+  public ContentResult fetchVersionedFile(String url, String auId, Integer version)
+      throws LockssWebServicesFault {
     log.debug2("url = {}", url);
     log.debug2("auId = {}", auId);
     log.debug2("version = {}", version);
 
     try {
       if (auId == null || auId.isEmpty()) {
-	throw new IllegalArgumentException("Missing required Archival Unit "
-	    + "identifier (auId)");
+        throw new IllegalArgumentException("Missing required Archival Unit " + "identifier (auId)");
       }
 
       if (url == null || url.isEmpty()) {
-	throw new IllegalArgumentException("Missing required URL");
+        throw new IllegalArgumentException("Missing required URL");
       }
 
       if (version == null) {
-	throw new IllegalArgumentException("Missing required version");
+        throw new IllegalArgumentException("Missing required version");
       }
 
       ContentResult result = new ContentResult();
 
-      Artifact artifact = getRestLockssRepository().getArtifactVersion(
-	  env.getProperty(REPO_COLLECTION_KEY), auId, url, version, false);
+      Artifact artifact =
+          getRestLockssRepository()
+              .getArtifactVersion(env.getProperty(REPO_COLLECTION_KEY), auId, url, version, false);
       log.trace("artifact = {}", artifact);
 
       if (artifact != null) {
-	result = getContentResultFromArtifact(artifact);
+        result = getContentResultFromArtifact(artifact);
       }
 
       log.debug2("result = {}", result);
@@ -145,46 +141,48 @@ implements MtomContentService {
 
   /**
    * Provides the SOAP service operation result for a given Artifact.
-   * 
+   *
    * @param artifact the Artifact that is the data source.
    * @return a ContentResult with the SOAP service operation result.
    * @throws Exception if there are problems.
    */
-  private ContentResult getContentResultFromArtifact(Artifact artifact)
-      throws Exception {
+  private ContentResult getContentResultFromArtifact(Artifact artifact) throws Exception {
     ContentResult result = new ContentResult();
 
     ArtifactData artifactData =
-	getRestLockssRepository().getArtifactData(artifact, LockssRepository.IncludeContent.ALWAYS);
+        getRestLockssRepository().getArtifactData(artifact, LockssRepository.IncludeContent.ALWAYS);
     log.trace("artifactData = {}", artifactData);
 
     if (artifactData != null) {
       String contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
-	    HttpHeaders metadata = artifactData.getMetadata();
+      HttpHeaders metadata = artifactData.getMetadata();
       log.trace("metadata = {}", metadata);
 
       if (metadata != null) {
-	MediaType mediaType = metadata.getContentType();
-	log.trace("mediaType = {}", mediaType);
+        MediaType mediaType = metadata.getContentType();
+        log.trace("mediaType = {}", mediaType);
 
-	if (mediaType != null) {
-	  contentType = mediaType.toString();
-	  log.trace("contentType = {}", contentType);
-	}
+        if (mediaType != null) {
+          contentType = mediaType.toString();
+          log.trace("contentType = {}", contentType);
+        }
       }
 
-      result.setDataHandler(new DataHandler(new InputStreamDataSource(
-	  artifactData.getInputStream(), contentType, artifact.getUri())));
+      result.setDataHandler(
+          new DataHandler(
+              new InputStreamDataSource(
+                  artifactData.getInputStream(), contentType, artifact.getUri())));
 
       Properties props = new Properties();
 
       for (String key : artifactData.getMetadata().keySet()) {
-	// TODO: Replace with StringUtil method once StringUtil has been
-	// moved from the lockss-core project to the lockss-util project.
-	String value = separatedString(artifactData.getMetadata().get(key),
-	    "", ",", "", new StringBuilder()).toString();
-	props.setProperty(key, value);
+        // TODO: Replace with StringUtil method once StringUtil has been
+        // moved from the lockss-core project to the lockss-util project.
+        String value =
+            separatedString(artifactData.getMetadata().get(key), "", ",", "", new StringBuilder())
+                .toString();
+        props.setProperty(key, value);
       }
 
       result.setProperties(props);
@@ -194,105 +192,106 @@ implements MtomContentService {
     return result;
   }
 
-//  /**
-//   * Provides the content defined by a URL, an Archival Unit and a version.
-//   * 
-//   * @param url     A String with the URL.
-//   * @param auId    A String with the identifier (auid) of the archival unit.
-//   * @param version A String with the file version required.
-//   * @return a ContentResult with the result of the operation.
-//   * @throws LockssWebServicesFault if there are problems.
-//   */
-//  private ContentResult getArtifact(String url, String auId, String version)
-//      throws Exception {
-//    log.debug2("url = {}", url);
-//    log.debug2("auId = {}", auId);
-//    log.debug2("version = {}", version);
-//
-//    if (auId == null || auId.isEmpty()) {
-//      throw new IllegalArgumentException("Missing required Archival Unit "
-//	  + "identifier (auId)");
-//    }
-//
-//    if (url == null || url.isEmpty()) {
-//      throw new IllegalArgumentException("Missing required URL");
-//    }
-//
-//    if (version == null || version.isEmpty()) {
-//      throw new IllegalArgumentException("Missing required version");
-//    }
-//
-//    // Prepare the endpoint URI.
-//    String endpointUri = env.getProperty(REPO_SVC_URL_KEY)
-//	+ "/collections/{collection}/aus/{auId}/artifacts";
-//    log.trace("endpointUri = {}", endpointUri);
-//
-//    // Prepare the URI path variables.
-//    Map<String, String> uriVariables = new HashMap<>(1);
-//    uriVariables.put("collection", env.getProperty(REPO_COLLECTION_KEY));
-//    uriVariables.put("auId", auId);
-//    log.trace("uriVariables = {}", uriVariables);
-//
-//    // Prepare the query parameters.
-//    Map<String, String> queryParams = new HashMap<>(1);
-//    queryParams.put("url", url);
-//    queryParams.put("version", version);
-//    log.trace("queryParams = {}", queryParams);
-//
-//    // Make the REST call.
-//    ResponseEntity<String> response = callRestServiceUri(endpointUri,
-//	  uriVariables, queryParams, HttpMethod.GET, (Void)null,
-//	  "Can't get artifact version");
-//
-//    // Get the response body.
-//    ObjectMapper mapper = new ObjectMapper();
-//    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-//	       false);
-//    List<Artifact> artifacts = mapper.readValue(response.getBody(),
-//	ArtifactPageInfo.class).getArtifacts();
-//
-//    ContentResult result = new ContentResult();
-//
-//    if (!artifacts.isEmpty()) {
-//      Artifact artifact = artifacts.get(0);
-//      log.trace("artifact = {}", artifact);
-//
-//      String artifactId = artifact.getId();
-//      log.trace("artifactId = {}", artifactId);
-//
-////      ArtifactData artifactData = artCache.getArtifactData(env.getProperty(REPO_COLLECTION_KEY), artifactId,
-////	   true);
-//
-//      // Prepare the endpoint URI.
-//      endpointUri = env.getProperty(REPO_SVC_URL_KEY)
-//	  + "/collections/{collection}/artifacts/{artifactId}";
-//      log.trace("endpointUri = {}", endpointUri);
-//
-//      uriVariables.put("collection", env.getProperty(REPO_COLLECTION_KEY));
-//      uriVariables.put("artifactId", artifactId);
-//      log.trace("uriVariables = {}", uriVariables);
-//
-//      // Initialize the request headers.
-//      HttpHeaders requestHeaders = new HttpHeaders();
-//      requestHeaders.set("Accept", "multipart/related");
-//
-//      // Make the REST call.
-//      response = callRestServiceUri(endpointUri, uriVariables, null,
-//	  HttpMethod.GET, requestHeaders, (Void)null, "Can't get artifact");
-//
-//      Properties props = new Properties();
-//      props.put("someKey", "someValue");
-//      result.setProperties(props);
-//
-//      result.setDataHandler(new DataHandler(new InputStreamDataSource(
-//	  new ByteArrayInputStream(response.getBody().getBytes()),
-//	  "multipart/related")));
-//
-////      result.setDataHandler(new DataHandler(new InputStreamDataSource(
-////	  artifactData.getInputStream(), "applicationtext/octet-stream")));
-//    }
-//
-//    log.debug2("result = {}", result);
-//    return result;
-//  }
+  //  /**
+  //   * Provides the content defined by a URL, an Archival Unit and a version.
+  //   *
+  //   * @param url     A String with the URL.
+  //   * @param auId    A String with the identifier (auid) of the archival unit.
+  //   * @param version A String with the file version required.
+  //   * @return a ContentResult with the result of the operation.
+  //   * @throws LockssWebServicesFault if there are problems.
+  //   */
+  //  private ContentResult getArtifact(String url, String auId, String version)
+  //      throws Exception {
+  //    log.debug2("url = {}", url);
+  //    log.debug2("auId = {}", auId);
+  //    log.debug2("version = {}", version);
+  //
+  //    if (auId == null || auId.isEmpty()) {
+  //      throw new IllegalArgumentException("Missing required Archival Unit "
+  //	  + "identifier (auId)");
+  //    }
+  //
+  //    if (url == null || url.isEmpty()) {
+  //      throw new IllegalArgumentException("Missing required URL");
+  //    }
+  //
+  //    if (version == null || version.isEmpty()) {
+  //      throw new IllegalArgumentException("Missing required version");
+  //    }
+  //
+  //    // Prepare the endpoint URI.
+  //    String endpointUri = env.getProperty(REPO_SVC_URL_KEY)
+  //	+ "/collections/{collection}/aus/{auId}/artifacts";
+  //    log.trace("endpointUri = {}", endpointUri);
+  //
+  //    // Prepare the URI path variables.
+  //    Map<String, String> uriVariables = new HashMap<>(1);
+  //    uriVariables.put("collection", env.getProperty(REPO_COLLECTION_KEY));
+  //    uriVariables.put("auId", auId);
+  //    log.trace("uriVariables = {}", uriVariables);
+  //
+  //    // Prepare the query parameters.
+  //    Map<String, String> queryParams = new HashMap<>(1);
+  //    queryParams.put("url", url);
+  //    queryParams.put("version", version);
+  //    log.trace("queryParams = {}", queryParams);
+  //
+  //    // Make the REST call.
+  //    ResponseEntity<String> response = callRestServiceUri(endpointUri,
+  //	  uriVariables, queryParams, HttpMethod.GET, (Void)null,
+  //	  "Can't get artifact version");
+  //
+  //    // Get the response body.
+  //    ObjectMapper mapper = new ObjectMapper();
+  //    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+  //	       false);
+  //    List<Artifact> artifacts = mapper.readValue(response.getBody(),
+  //	ArtifactPageInfo.class).getArtifacts();
+  //
+  //    ContentResult result = new ContentResult();
+  //
+  //    if (!artifacts.isEmpty()) {
+  //      Artifact artifact = artifacts.get(0);
+  //      log.trace("artifact = {}", artifact);
+  //
+  //      String artifactId = artifact.getId();
+  //      log.trace("artifactId = {}", artifactId);
+  //
+  ////      ArtifactData artifactData =
+  // artCache.getArtifactData(env.getProperty(REPO_COLLECTION_KEY), artifactId,
+  ////	   true);
+  //
+  //      // Prepare the endpoint URI.
+  //      endpointUri = env.getProperty(REPO_SVC_URL_KEY)
+  //	  + "/collections/{collection}/artifacts/{artifactId}";
+  //      log.trace("endpointUri = {}", endpointUri);
+  //
+  //      uriVariables.put("collection", env.getProperty(REPO_COLLECTION_KEY));
+  //      uriVariables.put("artifactId", artifactId);
+  //      log.trace("uriVariables = {}", uriVariables);
+  //
+  //      // Initialize the request headers.
+  //      HttpHeaders requestHeaders = new HttpHeaders();
+  //      requestHeaders.set("Accept", "multipart/related");
+  //
+  //      // Make the REST call.
+  //      response = callRestServiceUri(endpointUri, uriVariables, null,
+  //	  HttpMethod.GET, requestHeaders, (Void)null, "Can't get artifact");
+  //
+  //      Properties props = new Properties();
+  //      props.put("someKey", "someValue");
+  //      result.setProperties(props);
+  //
+  //      result.setDataHandler(new DataHandler(new InputStreamDataSource(
+  //	  new ByteArrayInputStream(response.getBody().getBytes()),
+  //	  "multipart/related")));
+  //
+  ////      result.setDataHandler(new DataHandler(new InputStreamDataSource(
+  ////	  artifactData.getInputStream(), "applicationtext/octet-stream")));
+  //    }
+  //
+  //    log.debug2("result = {}", result);
+  //    return result;
+  //  }
 }
