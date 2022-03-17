@@ -47,7 +47,7 @@ public class CxfConfig {
    * @return a ServletRegistrationBean with the servlet registration bean.
    */
   @Bean
-  public ServletRegistrationBean dispatcherServlet() {
+  public ServletRegistrationBean cxfServletRegistration() {
     // The URL path to all the services starts with /ws/.
     return new ServletRegistrationBean(new CXFServlet(), "/ws/*");
   }
