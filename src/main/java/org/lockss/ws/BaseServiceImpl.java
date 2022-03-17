@@ -88,19 +88,11 @@ public abstract class BaseServiceImpl {
   private static final L4JLogger log = L4JLogger.getLogger();
 
   @Autowired protected Environment env;
+  @Autowired protected RestTemplate restTemplate;
 
   // Default timeouts.
   private final long defaultConnectTimeout = 10 * Constants.SECOND;
   private final long defaultReadTimeout = 120 * Constants.SECOND;
-
-  /**
-   * Provides the customized template used by Spring for synchronous client-side HTTP access.
-   *
-   * @return a RestTemplate with the customized Spring template.
-   */
-  protected RestTemplate getCustomRestTemplate() {
-    return RestUtil.getRestTemplate(getConnectionTimeout(), getReadTimeout());
-  }
 
   /**
    * Provides the configured connection timeout in milliseconds.
@@ -313,7 +305,7 @@ public abstract class BaseServiceImpl {
     // Make the REST call.
     log.trace("Calling RestUtil.callRestService");
     return RestUtil.callRestService(
-        getCustomRestTemplate(),
+        restTemplate,
         uri,
         httpMethod,
         new HttpEntity<>(body, requestHeaders),
