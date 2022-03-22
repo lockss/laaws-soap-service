@@ -60,6 +60,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
               .setTimeouts(10 * Constants.SECOND, Constants.DAY)
+              .setRestTemplate(restTemplate)
               .hash(wsParams);
 
       log.debug2("result = {}", result);
