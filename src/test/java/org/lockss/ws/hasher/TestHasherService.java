@@ -1,6 +1,7 @@
 package org.lockss.ws.hasher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.cxf.attachment.AttachmentDataSource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,6 +10,7 @@ import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.util.rest.RestResponseErrorBody;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.multipart.MultipartMessageHttpMessageConverter;
+import org.lockss.ws.entities.HasherWsAsynchronousResult;
 import org.lockss.ws.entities.HasherWsParams;
 import org.lockss.ws.entities.HasherWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
@@ -18,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,12 +31,15 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
+import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
+import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,7 +111,7 @@ public class TestHasherService extends SpringLockssTestCase4 {
   }
 
   @Test
-  public void TestHash() throws Exception {
+  public void testHash() throws Exception {
 
     //// Test bad or no auth error ("401 Unauthorized") handling
     {
@@ -206,6 +212,10 @@ public class TestHasherService extends SpringLockssTestCase4 {
       mockRestServer.reset();
     }
 
+  }
+
+  @Test
+  public void testHash_success() throws Exception {
     //// Test success
     {
       HasherWsParams params = new HasherWsParams();
@@ -218,6 +228,48 @@ public class TestHasherService extends SpringLockssTestCase4 {
       URI restEndpoint = RestUtil.getRestUri(
           env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
 
+      HasherWsAsynchronousResult hasherResult = new HasherWsAsynchronousResult();
+
+      hasherResult.setStartTime(12345L);
+      hasherResult.setRecordFileName("recordFileName");
+      AttachmentDataSource recordSource = new AttachmentDataSource("text/plain",
+          new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)));
+      DataHandler recordDataHandler = new DataHandler(recordSource);
+//      hasherResult.setRecordFileDataHandler(new DataHandler(recordData));
+      hasherResult.setBlockFileName("blockFileName");
+      AttachmentDataSource blockSource = new AttachmentDataSource("text/plain",
+          new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)));
+      DataHandler blockDataHandler = new DataHandler(blockSource);
+//      hasherResult.setBlockFileDataHandler(new DataHandler(blockData));
+      hasherResult.setHashResult("hashResult".getBytes(StandardCharsets.UTF_8));
+      hasherResult.setErrorMessage("errorMsg");
+      hasherResult.setStatus("testStatus");
+      hasherResult.setBytesHashed(12345L);
+      hasherResult.setFilesHashed(12345);
+      hasherResult.setElapsedTime(12345L);
+      hasherResult.setRequestTime(12345L);
+      hasherResult.setRequestId("requestId");
+
+      String responseBody = "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId\"" + CRLF +
+          "Content-Type: application/json" + CRLF +
+          CRLF +
+          mapper.writeValueAsString(hasherResult) + CRLF +
+          "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId-Block\"" + CRLF +
+          "Content-Type: text/plain" + CRLF +
+          CRLF +
+          "test1" + CRLF +
+          "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId-Record\"" + CRLF +
+          "Content-Type: text/plain" + CRLF +
+          CRLF +
+          "test2" + CRLF +
+          "--12345--\r\n";
+
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.setContentLength(responseBody.length());
+
       // Mock REST service call and response
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
@@ -227,15 +279,35 @@ public class TestHasherService extends SpringLockssTestCase4 {
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.OK)
-              .contentType(MediaType.MULTIPART_FORM_DATA)
-              .body(mapper.writeValueAsString(blankError)));
+              .contentType(MediaType.parseMediaType("multipart/form-data; boundary=12345\n"))
+              .headers(responseHeaders)
+              .body(responseBody));
 
       // Make the call through SOAP
       HasherWsResult result = proxy.hash(params);
+
+      assertEquals(hasherResult.getStartTime(), result.getStartTime());
+      assertEquals(hasherResult.getRecordFileName(), result.getRecordFileName());
+//      assertEquals(hasherResult.getRecordFileDataHandler(), result.getRecordFileDataHandler());
+//      assertEquals(recordDataHandler.getContentType(), result.getRecordFileDataHandler().getContentType());
+      assertInputStreamMatchesString("test2", result.getRecordFileDataHandler().getInputStream());;
+      assertEquals(hasherResult.getBlockFileName(), result.getBlockFileName());
+//      assertEquals(hasherResult.getBlockFileDataHandler(), result.getBlockFileDataHandler());
+//      assertEquals(blockDataHandler.getContentType(), result.getBlockFileDataHandler().getContentType());
+      assertInputStreamMatchesString("test1", result.getBlockFileDataHandler().getInputStream());;
+      assertEquals(hasherResult.getHashResult(), result.getHashResult());
+      assertEquals(hasherResult.getErrorMessage(), result.getErrorMessage());
+      assertEquals(hasherResult.getStatus(), result.getStatus());
+      assertEquals(hasherResult.getBytesHashed(), result.getBytesHashed());
+      assertEquals(hasherResult.getFilesHashed(), result.getFilesHashed());
+      assertEquals(hasherResult.getElapsedTime(), result.getElapsedTime());
+//      assertEquals(hasherResult.getRequestTime(), result.getRequestTime());
+//      assertEquals(hasherResult.getRequestId(), result.getRequestId());
 
       mockRestServer.verify();
       mockRestServer.reset();
     }
   }
 
+  private static final String CRLF = "\r\n";
 }
