@@ -87,6 +87,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
       HasherWsAsynchronousResult result =
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .hashAsynchronously(wsParams);
 
       log.debug2("result = {}", result);
@@ -113,6 +114,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
       HasherWsAsynchronousResult result =
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .getAsynchronousHashResult(requestId);
 
       log.debug2("result = {}", result);
@@ -138,6 +140,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
       List<HasherWsAsynchronousResult> wsResults =
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .getAllAsynchronousHashResults();
 
       log.debug2("wsResults = {}", wsResults);
@@ -165,6 +168,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
       HasherWsAsynchronousResult result =
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .removeAsynchronousHashRequest(requestId);
 
       log.debug2("result = {}", result);
