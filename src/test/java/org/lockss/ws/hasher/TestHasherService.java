@@ -1,7 +1,6 @@
 package org.lockss.ws.hasher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.cxf.attachment.AttachmentDataSource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,7 +30,6 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
-import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
@@ -89,6 +87,8 @@ public class TestHasherService extends SpringLockssTestCase4 {
   private static final String PASSWORD = "lockss-p";
   private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
 
+  private static final String CRLF = "\r\n";
+
   // FIXME: Blank mock REST error response
   private static final RestResponseErrorBody.RestResponseError blankError =
       new RestResponseErrorBody.RestResponseError();
@@ -110,9 +110,11 @@ public class TestHasherService extends SpringLockssTestCase4 {
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
   }
 
+  /**
+   * Test for {@link HasherService#hash(HasherWsParams)}.
+   */
   @Test
   public void testHash() throws Exception {
-
     //// Test bad or no auth error ("401 Unauthorized") handling
     {
       HasherWsParams params = new HasherWsParams();
@@ -129,9 +131,9 @@ public class TestHasherService extends SpringLockssTestCase4 {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andExpect(content().contentType("application/json;charset=UTF-8"))
           .andExpect(content().string(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
               .contentType(MediaType.APPLICATION_JSON)
@@ -162,9 +164,9 @@ public class TestHasherService extends SpringLockssTestCase4 {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andExpect(content().contentType("application/json;charset=UTF-8"))
           .andExpect(content().string(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.FORBIDDEN)
               .contentType(MediaType.APPLICATION_JSON)
@@ -195,9 +197,9 @@ public class TestHasherService extends SpringLockssTestCase4 {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andExpect(content().contentType("application/json;charset=UTF-8"))
           .andExpect(content().string(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
               .contentType(MediaType.APPLICATION_JSON)
@@ -212,10 +214,6 @@ public class TestHasherService extends SpringLockssTestCase4 {
       mockRestServer.reset();
     }
 
-  }
-
-  @Test
-  public void testHash_success() throws Exception {
     //// Test success
     {
       HasherWsParams params = new HasherWsParams();
@@ -228,41 +226,41 @@ public class TestHasherService extends SpringLockssTestCase4 {
       URI restEndpoint = RestUtil.getRestUri(
           env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
 
-      HasherWsAsynchronousResult hasherResult = new HasherWsAsynchronousResult();
+      // This map simulates the map built by the Poller service from a HasherResult object
+      Map<String, Object> resultProps = new HashMap<>();
 
-      hasherResult.setStartTime(12345L);
-      hasherResult.setRecordFileName("recordFileName");
-      AttachmentDataSource recordSource = new AttachmentDataSource("text/plain",
-          new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)));
-      DataHandler recordDataHandler = new DataHandler(recordSource);
-//      hasherResult.setRecordFileDataHandler(new DataHandler(recordData));
-      hasherResult.setBlockFileName("blockFileName");
-      AttachmentDataSource blockSource = new AttachmentDataSource("text/plain",
-          new ByteArrayInputStream("test".getBytes(StandardCharsets.UTF_8)));
-      DataHandler blockDataHandler = new DataHandler(blockSource);
-//      hasherResult.setBlockFileDataHandler(new DataHandler(blockData));
-      hasherResult.setHashResult("hashResult".getBytes(StandardCharsets.UTF_8));
-      hasherResult.setErrorMessage("errorMsg");
-      hasherResult.setStatus("testStatus");
-      hasherResult.setBytesHashed(12345L);
-      hasherResult.setFilesHashed(12345);
-      hasherResult.setElapsedTime(12345L);
-      hasherResult.setRequestTime(12345L);
-      hasherResult.setRequestId("requestId");
+      resultProps.put("requestId", "noRequestId"); // DEFAULT_REQUEST_ID when isAsynchronous=false
+      resultProps.put("startTime", 12345L);
+
+      resultProps.put("recordFileName", "testRecordFileName");
+      resultProps.put("blockFileName", "testBlockFileName");
+
+      resultProps.put("errorMessage", "testErrorMessage");
+      resultProps.put("status", "Done");
+
+      resultProps.put("hashResult", "testHashResult".getBytes(StandardCharsets.UTF_8));
+
+      resultProps.put("bytesHashed", 12345L);
+      resultProps.put("filesHashed", 12345);
+      resultProps.put("elapsedTime", 12345L);
 
       String responseBody = "--12345\r\n" +
           "Content-Disposition: form-data; name=\"testRequestId\"" + CRLF +
           "Content-Type: application/json" + CRLF +
           CRLF +
-          mapper.writeValueAsString(hasherResult) + CRLF +
+          mapper.writeValueAsString(resultProps) + CRLF +
           "--12345\r\n" +
           "Content-Disposition: form-data; name=\"testRequestId-Block\"" + CRLF +
-          "Content-Type: text/plain" + CRLF +
+          "Content-Length: 5" + CRLF +
+          // Content-Type is parsed on the client-side to create an AttachmentDataSource
+          // but it is not provided by the Poller service
           CRLF +
           "test1" + CRLF +
           "--12345\r\n" +
           "Content-Disposition: form-data; name=\"testRequestId-Record\"" + CRLF +
-          "Content-Type: text/plain" + CRLF +
+          "Content-Length: 5" + CRLF +
+          // Content-Type is parsed on the client-side to create an AttachmentDataSource
+          // but it is not provided by the Poller service
           CRLF +
           "test2" + CRLF +
           "--12345--\r\n";
@@ -274,9 +272,9 @@ public class TestHasherService extends SpringLockssTestCase4 {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andExpect(content().contentType("application/json;charset=UTF-8"))
           .andExpect(content().string(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.OK)
               .contentType(MediaType.parseMediaType("multipart/form-data; boundary=12345\n"))
@@ -286,28 +284,876 @@ public class TestHasherService extends SpringLockssTestCase4 {
       // Make the call through SOAP
       HasherWsResult result = proxy.hash(params);
 
-      assertEquals(hasherResult.getStartTime(), result.getStartTime());
-      assertEquals(hasherResult.getRecordFileName(), result.getRecordFileName());
-//      assertEquals(hasherResult.getRecordFileDataHandler(), result.getRecordFileDataHandler());
-//      assertEquals(recordDataHandler.getContentType(), result.getRecordFileDataHandler().getContentType());
-      assertInputStreamMatchesString("test2", result.getRecordFileDataHandler().getInputStream());;
-      assertEquals(hasherResult.getBlockFileName(), result.getBlockFileName());
-//      assertEquals(hasherResult.getBlockFileDataHandler(), result.getBlockFileDataHandler());
-//      assertEquals(blockDataHandler.getContentType(), result.getBlockFileDataHandler().getContentType());
-      assertInputStreamMatchesString("test1", result.getBlockFileDataHandler().getInputStream());;
-      assertEquals(hasherResult.getHashResult(), result.getHashResult());
-      assertEquals(hasherResult.getErrorMessage(), result.getErrorMessage());
-      assertEquals(hasherResult.getStatus(), result.getStatus());
-      assertEquals(hasherResult.getBytesHashed(), result.getBytesHashed());
-      assertEquals(hasherResult.getFilesHashed(), result.getFilesHashed());
-      assertEquals(hasherResult.getElapsedTime(), result.getElapsedTime());
-//      assertEquals(hasherResult.getRequestTime(), result.getRequestTime());
-//      assertEquals(hasherResult.getRequestId(), result.getRequestId());
+      // This is always sent over the wire by the REST server but ignored when isAsynchronous=false
+      // assertEquals(resultProps.get("requestId"), result.getRequestId());
+
+      assertEquals(resultProps.get("startTime"), result.getStartTime());
+      assertSameBytes(new ByteArrayInputStream((byte[])resultProps.get("hashResult")),
+          new ByteArrayInputStream(result.getHashResult()));
+      assertEquals(resultProps.get("errorMessage"), result.getErrorMessage());
+      assertEquals(resultProps.get("status"), result.getStatus());
+      assertEquals(resultProps.get("bytesHashed"), result.getBytesHashed());
+      assertEquals(resultProps.get("filesHashed"), result.getFilesHashed());
+      assertEquals(resultProps.get("elapsedTime"), result.getElapsedTime());
+
+      // Assert "block" and "record" file names and contents
+      assertEquals(resultProps.get("blockFileName"), result.getBlockFileName());
+      assertEquals(resultProps.get("recordFileName"), result.getRecordFileName());
+      assertInputStreamMatchesString("test1", result.getBlockFileDataHandler().getInputStream());
+      assertInputStreamMatchesString("test2", result.getRecordFileDataHandler().getInputStream());
 
       mockRestServer.verify();
       mockRestServer.reset();
     }
   }
 
-  private static final String CRLF = "\r\n";
+  /**
+   * Test for {@link HasherService#hashAsynchronously(HasherWsParams)}.
+   */
+  @Test
+  public void testHashAsynchronously() throws Exception {
+    //// Test bad or no auth error ("401 Unauthorized") handling
+    {
+      HasherWsParams params = new HasherWsParams();
+      params.setAuId("auid1");
+
+      Map<String, String> queryParams = new HashMap<>();
+      queryParams.put("isAsynchronous", "true");
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.PUT))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(mapper.writeValueAsString(blankError)));
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.hashAsynchronously(params),
+          "401 Unauthorized");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test bad User Role error ("Forbidden") handling
+    {
+      HasherWsParams params = new HasherWsParams();
+      params.setAuId("auid1");
+
+      Map<String, String> queryParams = new HashMap<>();
+      queryParams.put("isAsynchronous", "true");
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.PUT))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andRespond(withStatus(HttpStatus.FORBIDDEN)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(mapper.writeValueAsString(blankError)));
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.hashAsynchronously(params),
+          "403 Forbidden");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test unforeseen exception ("500 Internal Server Error") handling
+    {
+      HasherWsParams params = new HasherWsParams();
+      params.setAuId("auid1");
+
+      Map<String, String> queryParams = new HashMap<>();
+      queryParams.put("isAsynchronous", "true");
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.PUT))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(mapper.writeValueAsString(blankError)));
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.hashAsynchronously(params),
+          "500 Internal Server Error");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test success
+    {
+      HasherWsParams params = new HasherWsParams();
+      params.setAuId("auid1");
+
+      Map<String, String> queryParams = new HashMap<>();
+      queryParams.put("isAsynchronous", "true");
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+
+      // This map simulates the map built by the Poller service from a HasherResult object
+      Map<String, Object> resultProps = new HashMap<>();
+
+      resultProps.put("requestId", "testRequestId");
+      resultProps.put("startTime", 12345L);
+
+      resultProps.put("recordFileName", "testRecordFileName");
+      resultProps.put("blockFileName", "testBlockFileName");
+
+      resultProps.put("errorMessage", "testErrorMessage");
+      resultProps.put("status", "Done");
+
+      resultProps.put("hashResult", "testHashResult".getBytes(StandardCharsets.UTF_8));
+
+      resultProps.put("bytesHashed", 12345L);
+      resultProps.put("filesHashed", 12345);
+      resultProps.put("elapsedTime", 12345L);
+
+      String responseBody = "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId\"" + CRLF +
+          "Content-Type: application/json" + CRLF +
+          CRLF +
+          mapper.writeValueAsString(resultProps) + CRLF +
+          "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId-Block\"" + CRLF +
+          "Content-Length: 5" + CRLF +
+          // Content-Type is parsed on the client-side to create an AttachmentDataSource
+          // but it is not provided by the Poller service
+          CRLF +
+          "test1" + CRLF +
+          "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId-Record\"" + CRLF +
+          "Content-Length: 5" + CRLF +
+          // Content-Type is parsed on the client-side to create an AttachmentDataSource
+          // but it is not provided by the Poller service
+          CRLF +
+          "test2" + CRLF +
+          "--12345--\r\n";
+
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.setContentLength(responseBody.length());
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.PUT))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andRespond(withStatus(HttpStatus.OK)
+              .contentType(MediaType.parseMediaType("multipart/form-data; boundary=12345\n"))
+              .headers(responseHeaders)
+              .body(responseBody));
+
+      // Make the call through SOAP
+      HasherWsAsynchronousResult result = proxy.hashAsynchronously(params);
+
+      assertEquals(resultProps.get("requestId"), result.getRequestId());
+      assertEquals(resultProps.get("startTime"), result.getStartTime());
+      assertSameBytes(new ByteArrayInputStream((byte[])resultProps.get("hashResult")),
+          new ByteArrayInputStream(result.getHashResult()));
+      assertEquals(resultProps.get("errorMessage"), result.getErrorMessage());
+      assertEquals(resultProps.get("status"), result.getStatus());
+      assertEquals(resultProps.get("bytesHashed"), result.getBytesHashed());
+      assertEquals(resultProps.get("filesHashed"), result.getFilesHashed());
+      assertEquals(resultProps.get("elapsedTime"), result.getElapsedTime());
+
+      // Assert "block" and "record" file names and contents
+      assertEquals(resultProps.get("blockFileName"), result.getBlockFileName());
+      assertEquals(resultProps.get("recordFileName"), result.getRecordFileName());
+      assertInputStreamMatchesString("test1", result.getBlockFileDataHandler().getInputStream());
+      assertInputStreamMatchesString("test2", result.getRecordFileDataHandler().getInputStream());
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+  }
+
+  /**
+   * Test for {@link HasherService#getAsynchronousHashResult(String)}.
+   */
+  @Test
+  public void testGetAsynchronousHashResult() throws Exception {
+    //// Test null requestId error ("400 Bad Request") handling
+    {
+      String requestId = "requestId";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      String message = "Must supply request identifier";
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.BAD_REQUEST)
+              .contentType(MediaType.TEXT_PLAIN)
+              .body(message));
+
+          // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.getAsynchronousHashResult(requestId),
+          "400 Bad Request");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test bad or no auth error ("401 Unauthorized") handling
+    {
+      String requestId = "requestId";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
+              .contentType(MediaType.TEXT_PLAIN)); // Suppress JSON parsing of empty body
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.getAsynchronousHashResult(requestId),
+          "401 Unauthorized");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test bad User Role error ("Forbidden") handling
+    {
+      String requestId = "requestId";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.FORBIDDEN)
+              .contentType(MediaType.TEXT_PLAIN)); // Suppress JSON parsing of empty body
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.getAsynchronousHashResult(requestId),
+          "403 Forbidden");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test missing request error ("404 Not Found") handling
+    {
+      String requestId = "requestId";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      String message = "Cannot find asynchronous hash request '" + requestId + "'";
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.NOT_FOUND)
+              .contentType(MediaType.TEXT_PLAIN)
+              .body(message));
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.getAsynchronousHashResult(requestId),
+          "404 Not Found");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test unforeseen exception ("500 Internal Server Error") handling
+    {
+      String requestId = "requestId";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      String message = "Cannot getHash() for requestId = '" + requestId + "'";
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+              .contentType(MediaType.TEXT_PLAIN)
+              .body(message));
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.getAsynchronousHashResult(requestId),
+          "500 Internal Server Error");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test success
+    {
+      String requestId = "requestId";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      // This map simulates the map built by the Poller service from a HasherResult object
+      Map<String, Object> resultProps = new HashMap<>();
+
+      resultProps.put("requestId", "testRequestId");
+      resultProps.put("startTime", 12345L);
+
+      resultProps.put("recordFileName", "testRecordFileName");
+      resultProps.put("blockFileName", "testBlockFileName");
+
+      resultProps.put("errorMessage", "testErrorMessage");
+      resultProps.put("status", "Done");
+
+      resultProps.put("hashResult", "testHashResult".getBytes(StandardCharsets.UTF_8));
+
+      resultProps.put("bytesHashed", 12345L);
+      resultProps.put("filesHashed", 12345);
+      resultProps.put("elapsedTime", 12345L);
+
+      String responseBody = "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId\"" + CRLF +
+          "Content-Type: application/json" + CRLF +
+          CRLF +
+          mapper.writeValueAsString(resultProps) + CRLF +
+          "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId-Block\"" + CRLF +
+          "Content-Length: 5" + CRLF +
+          // Content-Type is parsed on the client-side to create an AttachmentDataSource
+          // but it is not provided by the Poller service
+          CRLF +
+          "test1" + CRLF +
+          "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId-Record\"" + CRLF +
+          "Content-Length: 5" + CRLF +
+          // Content-Type is parsed on the client-side to create an AttachmentDataSource
+          // but it is not provided by the Poller service
+          CRLF +
+          "test2" + CRLF +
+          "--12345--\r\n";
+
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.setContentLength(responseBody.length());
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.OK)
+              .contentType(MediaType.parseMediaType("multipart/form-data; boundary=12345\n"))
+              .headers(responseHeaders)
+              .body(responseBody));
+
+      // Make the call through SOAP
+      HasherWsAsynchronousResult result = proxy.getAsynchronousHashResult(requestId);
+
+      assertEquals(resultProps.get("requestId"), result.getRequestId());
+      assertEquals(resultProps.get("startTime"), result.getStartTime());
+      assertSameBytes(new ByteArrayInputStream((byte[])resultProps.get("hashResult")),
+          new ByteArrayInputStream(result.getHashResult()));
+      assertEquals(resultProps.get("errorMessage"), result.getErrorMessage());
+      assertEquals(resultProps.get("status"), result.getStatus());
+      assertEquals(resultProps.get("bytesHashed"), result.getBytesHashed());
+      assertEquals(resultProps.get("filesHashed"), result.getFilesHashed());
+      assertEquals(resultProps.get("elapsedTime"), result.getElapsedTime());
+
+      // Assert "block" and "record" file names and contents
+      assertEquals(resultProps.get("blockFileName"), result.getBlockFileName());
+      assertEquals(resultProps.get("recordFileName"), result.getRecordFileName());
+      assertInputStreamMatchesString("test1", result.getBlockFileDataHandler().getInputStream());
+      assertInputStreamMatchesString("test2", result.getRecordFileDataHandler().getInputStream());
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+  }
+
+  /**
+   * Test for {@link HasherService#getAllAsynchronousHashResults()}.
+   */
+  @Test
+  public void testGetAllAsynchronousHashResults() throws Exception {
+    //// Test bad or no auth error ("401 Unauthorized") handling
+    {
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, null);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
+              .contentType(MediaType.TEXT_PLAIN)); // Suppress JSON parsing of empty body
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.getAllAsynchronousHashResults(),
+          "401 Unauthorized");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test bad User Role error ("Forbidden") handling
+    {
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, null);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+              .contentType(MediaType.TEXT_PLAIN)); // Suppress JSON parsing of empty body
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.getAllAsynchronousHashResults(),
+          "403 Forbidden");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test unforeseen exception ("500 Internal Server Error") handling
+    {
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, null);
+
+      String message = "Cannot getAllHashes()";
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+              .contentType(MediaType.TEXT_PLAIN)
+              .body(message));
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.getAllAsynchronousHashResults(),
+          "500 Internal Server Error");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test success
+    {
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, null);
+
+      // This map simulates the map built by the Poller service from a HasherResult object
+      Map<String, Object> resultProps1 = new HashMap<>();
+
+      resultProps1.put("requestId", "testRequestId1");
+      resultProps1.put("startTime", 12345L);
+
+      resultProps1.put("recordFileName", "testRecordFileName1");
+      resultProps1.put("blockFileName", "testBlockFileName1");
+
+      resultProps1.put("errorMessage", "testErrorMessage1");
+      resultProps1.put("status", "Done");
+
+      resultProps1.put("hashResult", "testHashResult1".getBytes(StandardCharsets.UTF_8));
+
+      resultProps1.put("bytesHashed", 12345L);
+      resultProps1.put("filesHashed", 12345);
+      resultProps1.put("elapsedTime", 12345L);
+
+      // This map simulates the map built by the Poller service from a HasherResult object
+      Map<String, Object> resultProps2 = new HashMap<>();
+
+      resultProps2.put("requestId", "testRequestId2");
+      resultProps2.put("startTime", 67890L);
+
+      resultProps2.put("recordFileName", "testRecordFileName2");
+      resultProps2.put("blockFileName", "testBlockFileName2");
+
+      resultProps2.put("errorMessage", "testErrorMessage2");
+      resultProps2.put("status", "Done");
+
+      resultProps2.put("hashResult", "testHashResult2".getBytes(StandardCharsets.UTF_8));
+
+      resultProps2.put("bytesHashed", 67890L);
+      resultProps2.put("filesHashed", 67890);
+      resultProps2.put("elapsedTime", 67890L);
+
+      String responseBody = "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId1\"" + CRLF +
+          "Content-Type: application/json" + CRLF +
+          CRLF +
+          mapper.writeValueAsString(resultProps1) + CRLF +
+          "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId1-Block\"" + CRLF +
+          "Content-Length: 5" + CRLF +
+          // Content-Type is parsed on the client-side to create an AttachmentDataSource
+          // but it is not provided by the Poller service
+          CRLF +
+          "test1" + CRLF +
+          "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId1-Record\"" + CRLF +
+          "Content-Length: 5" + CRLF +
+          // Content-Type is parsed on the client-side to create an AttachmentDataSource
+          // but it is not provided by the Poller service
+          CRLF +
+          "test2" + CRLF +
+          "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId2\"" + CRLF +
+          "Content-Type: application/json" + CRLF +
+          CRLF +
+          mapper.writeValueAsString(resultProps2) + CRLF +
+          "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId2-Block\"" + CRLF +
+          "Content-Length: 5" + CRLF +
+          // Content-Type is parsed on the client-side to create an AttachmentDataSource
+          // but it is not provided by the Poller service
+          CRLF +
+          "test3" + CRLF +
+          "--12345\r\n" +
+          "Content-Disposition: form-data; name=\"testRequestId2-Record\"" + CRLF +
+          "Content-Length: 5" + CRLF +
+          // Content-Type is parsed on the client-side to create an AttachmentDataSource
+          // but it is not provided by the Poller service
+          CRLF +
+          "test4" + CRLF +
+          "--12345--\r\n";
+
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.setContentLength(responseBody.length());
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.OK)
+              .contentType(MediaType.parseMediaType("multipart/form-data; boundary=12345\n"))
+              .headers(responseHeaders)
+              .body(responseBody));
+
+      // Make the call through SOAP
+      // NOTE: Order of results does not match order of parts in multipart response
+      List<HasherWsAsynchronousResult> results = proxy.getAllAsynchronousHashResults();
+
+      // Assert first HasherWsAsynchronousResult
+      HasherWsAsynchronousResult result1 = results.get(1);
+
+      assertEquals(resultProps1.get("requestId"), result1.getRequestId());
+      assertEquals(resultProps1.get("startTime"), result1.getStartTime());
+      assertSameBytes(new ByteArrayInputStream((byte[])resultProps1.get("hashResult")),
+          new ByteArrayInputStream(result1.getHashResult()));
+      assertEquals(resultProps1.get("errorMessage"), result1.getErrorMessage());
+      assertEquals(resultProps1.get("status"), result1.getStatus());
+      assertEquals(resultProps1.get("bytesHashed"), result1.getBytesHashed());
+      assertEquals(resultProps1.get("filesHashed"), result1.getFilesHashed());
+      assertEquals(resultProps1.get("elapsedTime"), result1.getElapsedTime());
+
+      // Assert "block" and "record" file names and contents
+      assertEquals(resultProps1.get("blockFileName"), result1.getBlockFileName());
+      assertEquals(resultProps1.get("recordFileName"), result1.getRecordFileName());
+      assertInputStreamMatchesString("test1", result1.getBlockFileDataHandler().getInputStream());
+      assertInputStreamMatchesString("test2", result1.getRecordFileDataHandler().getInputStream());
+
+      // Assert other HasherWsAsynchronousResult
+      HasherWsAsynchronousResult result2 = results.get(0);
+
+      assertEquals(resultProps2.get("requestId"), result2.getRequestId());
+      assertEquals(resultProps2.get("startTime"), result2.getStartTime());
+      assertSameBytes(new ByteArrayInputStream((byte[])resultProps2.get("hashResult")),
+          new ByteArrayInputStream(result2.getHashResult()));
+      assertEquals(resultProps2.get("errorMessage"), result2.getErrorMessage());
+      assertEquals(resultProps2.get("status"), result2.getStatus());
+      assertEquals(resultProps2.get("bytesHashed"), result2.getBytesHashed());
+      assertEquals(resultProps2.get("filesHashed"), result2.getFilesHashed());
+      assertEquals(resultProps2.get("elapsedTime"), result2.getElapsedTime());
+
+      // Assert "block" and "record" file names and contents
+      assertEquals(resultProps2.get("blockFileName"), result2.getBlockFileName());
+      assertEquals(resultProps2.get("recordFileName"), result2.getRecordFileName());
+      assertInputStreamMatchesString("test3", result2.getBlockFileDataHandler().getInputStream());;
+      assertInputStreamMatchesString("test4", result2.getRecordFileDataHandler().getInputStream());;
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+  }
+
+  /**
+   * Test for {@link HasherService#removeAsynchronousHashRequest(String)}.
+   */
+  @Test
+  public void testRemoveAsynchronousHashRequest() throws Exception {
+    //// Test null requestId error ("400 Bad Request") handling
+    {
+      String requestId = "";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      String message = "Must supply request identifier";
+
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.setContentType(MediaType.TEXT_PLAIN);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.DELETE))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.BAD_REQUEST)
+              .headers(responseHeaders)
+              .body(message));
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.removeAsynchronousHashRequest(requestId),
+          "400 Bad Request");
+
+//      // Make the call through SOAP
+//      HasherWsAsynchronousResult result = proxy.removeAsynchronousHashRequest(requestId);
+//
+//      // Assert requestId and status
+//      assertEquals(requestId, result.getRequestId());
+//      assertEquals(message, result.getStatus());
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test bad or no auth error ("401 Unauthorized") handling
+    {
+      String requestId = "requestId";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.DELETE))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
+              .contentType(MediaType.TEXT_PLAIN)); // Suppress JSON parsing of empty body
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.removeAsynchronousHashRequest(requestId),
+          "401 Unauthorized");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test bad User Role error ("Forbidden") handling
+    {
+      String requestId = "requestId";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.DELETE))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.FORBIDDEN)
+              .contentType(MediaType.TEXT_PLAIN)); // Suppress JSON parsing of empty body
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.removeAsynchronousHashRequest(requestId),
+          "403 Forbidden");
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test missing request error ("404 Not Found") handling
+    {
+      String requestId = "requestId";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      String message = "Cannot find asynchronous hash request '" + requestId + "'";
+
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.setContentType(MediaType.TEXT_PLAIN);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.DELETE))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.NOT_FOUND)
+              .headers(responseHeaders)
+              .body(message));
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.removeAsynchronousHashRequest(requestId),
+          "404 Not Found");
+
+//      // Make the call through SOAP
+//      HasherWsAsynchronousResult result = proxy.removeAsynchronousHashRequest(requestId);
+//
+//      // Assert requestId and status
+//      assertEquals(requestId, result.getRequestId());
+//      assertEquals(message, result.getStatus());
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test unforeseen exception ("500 Internal Server Error") handling
+    {
+      String requestId = "requestId";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      String message = "Cannot deleteHash() for requestId = '" + requestId + "'";
+
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.setContentType(MediaType.TEXT_PLAIN);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.DELETE))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+              .headers(responseHeaders)
+              .body(message));
+
+      // Make the call through SOAP
+      assertThrows(LockssWebServicesFault.class,
+          () -> proxy.removeAsynchronousHashRequest(requestId),
+          "500 Internal Server Error");
+
+//      // Make the call through SOAP
+//      HasherWsAsynchronousResult result = proxy.removeAsynchronousHashRequest(requestId);
+//
+//      // Assert requestId and status
+//      assertEquals(requestId, result.getRequestId());
+//      assertEquals(message, result.getStatus());
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+
+    //// Test success
+    {
+      String requestId = "requestId";
+
+      // REST API endpoint of operation we're testing
+      URI restEndpoint = RestUtil.getRestUri(
+          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+
+      String message = "Done";
+
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.setContentType(MediaType.TEXT_PLAIN);
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(restEndpoint))
+          .andExpect(method(HttpMethod.DELETE))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.OK)
+              .headers(responseHeaders)
+              .body(message));
+
+      // Make the call through SOAP
+      HasherWsAsynchronousResult result = proxy.removeAsynchronousHashRequest(requestId);
+
+      // Assert requestId and status
+      assertEquals(requestId, result.getRequestId());
+      assertEquals(message, result.getStatus());
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+  }
 }
