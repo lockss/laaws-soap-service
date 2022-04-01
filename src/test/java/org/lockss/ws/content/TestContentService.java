@@ -128,6 +128,9 @@ public class TestContentService extends SpringLockssTestCase4 {
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
   }
 
+  /**
+   * Test for {@link ContentService#getVersions(String, String)}.
+   */
   @Test
   public void testGetVersions() throws Exception {
     //// Test success
@@ -217,6 +220,125 @@ public class TestContentService extends SpringLockssTestCase4 {
 
       // Make the call through SOAP
       List<FileWsResult> result = proxy.getVersions(url, auid);
+
+      log.info("result = {}", result);
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+  }
+
+  /**
+   * Test for {@link ContentService#isUrlCached(String, String)}.
+   */
+  @Test
+  public void testIsUrlCached() throws Exception {
+    //// Test success
+    {
+      // Parameters to SOAP and REST calls
+      String collection = "lockss";
+      String auid = "testAuid";
+      String url = "testUrl";
+
+      URI auArtifactsEndpoint =
+          new URI(env.getProperty(REPO_SVC_URL_KEY) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+
+      URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
+          .queryParam("url", url)
+          .queryParam("version", "latest")
+          .build()
+          .toUri();
+
+      Artifact artifact = new Artifact();
+      artifact.setCollection(collection);
+      artifact.setAuid(auid);
+      artifact.setUri(url);
+      artifact.setVersion(1);
+      artifact.setContentLength(1234);
+      artifact.setCollectionDate(1);
+      artifact.setCommitted(true);
+      artifact.setStorageUrl("file://test.warc?offset=0&length=1234");
+
+      PageInfo pageInfo = new PageInfo();
+      pageInfo.setTotalCount(1);
+      pageInfo.setResultsPerPage(1);
+      pageInfo.setCurLink(allUrlVersionsEndpoint.toString());
+
+      ArtifactPageInfo artifactPageInfo = new ArtifactPageInfo();
+      artifactPageInfo.setPageInfo(pageInfo);
+      artifactPageInfo.setArtifacts(ListUtil.list(artifact));
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(allUrlVersionsEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.OK)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(mapper.writeValueAsString(artifactPageInfo)));
+
+      // Make the call through SOAP
+      boolean result = proxy.isUrlCached(url, auid);
+
+      log.info("result = {}", result);
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
+  }
+
+  /**
+   * Test for {@link ContentService#isUrlVersionCached(String, String, Integer)}.
+   */
+  @Test
+  public void testIsUrlVersionCached() throws Exception {
+    //// Test success
+    {
+      // Parameters to SOAP and REST calls
+      String collection = "lockss";
+      String auid = "testAuid";
+      String url = "testUrl";
+      int version = 1234;
+
+      URI auArtifactsEndpoint =
+          new URI(env.getProperty(REPO_SVC_URL_KEY) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+
+      URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
+          .queryParam("url", url)
+          .queryParam("version", version)
+          .build()
+          .toUri();
+
+      Artifact artifact = new Artifact();
+      artifact.setCollection(collection);
+      artifact.setAuid(auid);
+      artifact.setUri(url);
+      artifact.setVersion(version);
+      artifact.setContentLength(1234);
+      artifact.setCollectionDate(1);
+      artifact.setCommitted(true);
+      artifact.setStorageUrl("file://test.warc?offset=0&length=1234");
+
+      PageInfo pageInfo = new PageInfo();
+      pageInfo.setTotalCount(1);
+      pageInfo.setResultsPerPage(1);
+      pageInfo.setCurLink(allUrlVersionsEndpoint.toString());
+
+      ArtifactPageInfo artifactPageInfo = new ArtifactPageInfo();
+      artifactPageInfo.setPageInfo(pageInfo);
+      artifactPageInfo.setArtifacts(ListUtil.list(artifact));
+
+      // Mock REST service call and response
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(allUrlVersionsEndpoint))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.OK)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(mapper.writeValueAsString(artifactPageInfo)));
+
+      // Make the call through SOAP
+      boolean result = proxy.isUrlVersionCached(url, auid, version);
 
       log.info("result = {}", result);
 
