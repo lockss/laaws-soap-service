@@ -183,8 +183,8 @@ public abstract class BaseServiceImpl {
     String[] credentials = getSoapRequestCredentials();
     log.trace("credentials = [{}, ****]", credentials[0]);
 
-    return LockssRepositoryFactory.createRestLockssRepository(
-        new URL(env.getProperty(REPO_SVC_URL_KEY)), credentials[0], credentials[1]);
+    return new RestLockssRepository(new URL(env.getProperty(REPO_SVC_URL_KEY)),
+        restTemplate, credentials[0], credentials[1]);
   }
 
   /**
