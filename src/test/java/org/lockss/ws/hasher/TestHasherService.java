@@ -142,33 +142,6 @@ public class TestHasherService extends SpringLockssTestCase4 {
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
   }
 
-  @Test
-  public void testRealDaemon() throws Exception {
-
-    Authenticator myAuth = new Authenticator() {
-      @Override
-      protected PasswordAuthentication getPasswordAuthentication()
-      {
-        return new PasswordAuthentication(USERNAME, PASSWORD.toCharArray());
-      }
-    };
-
-    Authenticator.setDefault(myAuth);
-
-    // Setup proxy to SOAP service
-    String wsdlEndpoint = "http://localhost:8081/ws/HasherService?wsdl";
-    Service srv = Service.create(new URL(wsdlEndpoint), new QName(TARGET_NAMESPACE, SERVICE_NAME));
-    HasherService proxy = srv.getPort(HasherService.class);
-
-    // Add authentication headers for SOAP request
-    BindingProvider bp = (BindingProvider) proxy;
-    Map<String, Object> requestContext = bp.getRequestContext();
-    requestContext.put(BindingProvider.USERNAME_PROPERTY, USERNAME);
-    requestContext.put(BindingProvider.PASSWORD_PROPERTY, PASSWORD);
-
-    HasherWsAsynchronousResult result = proxy.removeAsynchronousHashRequest("XXX");
-  }
-
   /**
    * Test for {@link HasherService#hash(HasherWsParams)}.
    */
