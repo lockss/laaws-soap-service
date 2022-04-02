@@ -65,9 +65,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import java.io.ByteArrayInputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -119,6 +117,9 @@ public class TestHasherService extends SpringLockssTestCase4 {
   private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
 
   private static final String CRLF = "\r\n";
+
+  // HasherStatus.RequestError.toString()
+  private static final String REQUEST_ERROR = "RequestError";
 
   // FIXME: Blank mock REST error response
   private static final RestResponseErrorBody.RestResponseError blankError =
@@ -1013,16 +1014,12 @@ public class TestHasherService extends SpringLockssTestCase4 {
               .body(message));
 
       // Make the call through SOAP
-      assertThrows(LockssWebServicesFault.class,
-          () -> proxy.removeAsynchronousHashRequest(requestId),
-          "400 Bad Request");
+      HasherWsAsynchronousResult result = proxy.removeAsynchronousHashRequest(requestId);
 
-//      // Make the call through SOAP
-//      HasherWsAsynchronousResult result = proxy.removeAsynchronousHashRequest(requestId);
-//
-//      // Assert requestId and status
-//      assertEquals(requestId, result.getRequestId());
-//      assertEquals(message, result.getStatus());
+      // Assert requestId and status
+      assertEquals(requestId, result.getRequestId());
+      assertEquals(REQUEST_ERROR, result.getStatus());
+      assertEquals(message, result.getErrorMessage());
 
       mockRestServer.verify();
       mockRestServer.reset();
@@ -1101,16 +1098,12 @@ public class TestHasherService extends SpringLockssTestCase4 {
               .body(message));
 
       // Make the call through SOAP
-      assertThrows(LockssWebServicesFault.class,
-          () -> proxy.removeAsynchronousHashRequest(requestId),
-          "404 Not Found");
+      HasherWsAsynchronousResult result = proxy.removeAsynchronousHashRequest(requestId);
 
-//      // Make the call through SOAP
-//      HasherWsAsynchronousResult result = proxy.removeAsynchronousHashRequest(requestId);
-//
-//      // Assert requestId and status
-//      assertEquals(requestId, result.getRequestId());
-//      assertEquals(message, result.getStatus());
+      // Assert requestId and status
+      assertEquals(requestId, result.getRequestId());
+      assertEquals(REQUEST_ERROR, result.getStatus());
+      assertEquals(message, result.getErrorMessage());
 
       mockRestServer.verify();
       mockRestServer.reset();
