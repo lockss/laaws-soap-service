@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestResponseErrorBody;
+import org.lockss.ws.entities.ImportWsParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -111,8 +112,27 @@ public class TestImportService {
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
   }
 
+  /**
+   * Test for {@link ImportService#importPulledFile(ImportWsParams)}.
+   */
   @Test
-  public void test() throws Exception {
+  public void testImportPulledFile() throws Exception {
+    // TODO
+  }
 
+  /**
+   * Test for {@link ImportService#importPushedFile(ImportWsParams)}.
+   */
+  @Test
+  public void testImportPushedFile() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link ImportService#getSupportedChecksumAlgorithms()}.
+   */
+  @Test
+  public void testGetSupportedChecksumAlgorithms() throws Exception {
+    // TODO
   }
 }

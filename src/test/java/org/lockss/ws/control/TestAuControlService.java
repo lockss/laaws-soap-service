@@ -54,6 +54,7 @@ import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 @RunWith(SpringRunner.class)
@@ -112,8 +113,115 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
   }
 
+  /**
+   * Test for {@link AuControlService#checkSubstanceById(String)}.
+   */
   @Test
-  public void test() throws Exception {
+  public void testCheckSubstanceById() throws Exception {
+    // TODO
+  }
 
+  /**
+   * Test for {@link AuControlService#checkSubstanceByIdList(List)}.
+   */
+  @Test
+  public void testCheckSubstanceByIdList() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#requestCrawlById(String, Integer, boolean)}.
+   */
+  @Test
+  public void testRequestCrawlById() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#requestCrawlByIdList(List, Integer, boolean)}.
+   */
+  @Test
+  public void testRequestCrawlByIdList() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#requestDeepCrawlById(String, int, Integer, boolean)}.
+   */
+  @Test
+  public void testRequestDeepCrawlById() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#requestDeepCrawlByIdList(List, int, Integer, boolean)}.
+   */
+  @Test
+  public void testRequestDeepCrawlByIdList() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#requestPollById(String)}.
+   */
+  @Test
+  public void testRequestPollById() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#requestPollByIdList(List)}.
+   */
+  @Test
+  public void testRequestPollByIdList() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#requestMdIndexingById(String, boolean)}.
+   */
+  @Test
+  public void testRequestMdIndexingById() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#requestMdIndexingByIdList(List, boolean)}.
+   */
+  @Test
+  public void testRequestMdIndexingByIdList() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#disableMdIndexingById(String)}.
+   */
+  @Test
+  public void testDisableMdIndexingById() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#disableMdIndexingByIdList(List)}.
+   */
+  @Test
+  public void testDisableMdIndexingByIdList() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#enableMdIndexingById(String)}.
+   */
+  @Test
+  public void testEnableMdIndexingById() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link AuControlService#enableMdIndexingByIdList(List)}.
+   */
+  @Test
+  public void testEnableMdIndexingByIdList() throws Exception {
+    // TODO
   }
 }

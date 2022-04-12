@@ -112,9 +112,19 @@ public class TestMtomContentService extends SpringLockssTestCase4 {
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
   }
 
+  /**
+   * Test for {@link MtomContentService#fetchFile(String, String)}.
+   */
   @Test
-  public void test() throws Exception {
-
+  public void testFetchFile() throws Exception {
+    // TODO
   }
 
+  /**
+   * Test for {@link MtomContentService#fetchVersionedFile(String, String, Integer)}.
+   */
+  @Test
+  public void testFetchVersionedFile() throws Exception {
+    // TODO
+  }
 }

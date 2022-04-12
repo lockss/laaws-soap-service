@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestResponseErrorBody;
+import org.lockss.ws.entities.CounterReportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -111,8 +112,11 @@ public class TestCounterReportsService {
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
   }
 
+  /**
+   * Test for {@link CounterReportsService#getCounterReport(CounterReportParams)}.
+   */
   @Test
-  public void test() throws Exception {
-
+  public void testGetCounterReport() throws Exception {
+    // TODO
   }
 }

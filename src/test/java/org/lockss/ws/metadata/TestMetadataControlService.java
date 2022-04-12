@@ -112,8 +112,19 @@ public class TestMetadataControlService extends SpringLockssTestCase4 {
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
   }
 
+  /**
+   * Test for {@link MetadataControlService#deletePublicationIssn(Long, String, String)}.
+   */
   @Test
-  public void test() throws Exception {
+  public void testDeletePublicationIssn() throws Exception {
+    // TODO
+  }
 
+  /**
+   * Test for {@link MetadataControlService#deleteAu(Long, String)}.
+   */
+  @Test
+  public void testDeleteAu() throws Exception {
+    // TODO
   }
 }

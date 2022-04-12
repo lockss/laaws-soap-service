@@ -112,8 +112,203 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
   }
 
+  /**
+   * Test for {@link MetadataMonitorService#getPublisherNames()}.
+   */
   @Test
-  public void test() throws Exception {
+  public void testGetPublisherNames() throws Exception {
+    // TODO
+  }
 
+  /**
+   * Test for {@link MetadataMonitorService#getPublishersWithMultipleDoiPrefixes()}.
+   */
+  @Test
+  public void testGetPublishersWithMultipleDoiPrefixes() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getDoiPrefixesWithMultiplePublishers()}.
+   */
+  @Test
+  public void testGetDoiPrefixesWithMultiplePublishers() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getAuIdsWithMultipleDoiPrefixes()}.
+   */
+  @Test
+  public void testGetAuIdsWithMultipleDoiPrefixes() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getAuNamesWithMultipleDoiPrefixes()}.
+   */
+  @Test
+  public void testGetAuNamesWithMultipleDoiPrefixes() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getPublicationsWithMoreThan2Isbns()}.
+   */
+  @Test
+  public void testGetPublicationsWithMoreThan2Isbns() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getPublicationsWithMoreThan2Issns()}.
+   */
+  @Test
+  public void testGetPublicationsWithMoreThan2Issns() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getIdPublicationsWithMoreThan2Issns()}.
+   */
+  @Test
+  public void testGetIdPublicationsWithMoreThan2Issns() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getIsbnsWithMultiplePublications()}.
+   */
+  @Test
+  public void testGetIsbnsWithMultiplePublications() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getIssnsWithMultiplePublications()}.
+   */
+  @Test
+  public void testGetIssnsWithMultiplePublications() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getBooksWithIssns()}.
+   */
+  @Test
+  public void testGetBooksWithIssns() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getPeriodicalsWithIsbns()}.
+   */
+  @Test
+  public void testGetPeriodicalsWithIsbns() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getUnknownProviderAuIds()}.
+   */
+  @Test
+  public void testGetUnknownProviderAuIds() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getMismatchedParentJournalArticles()}.
+   */
+  @Test
+  public void testGetMismatchedParentJournalArticles() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getMismatchedParentBookChapters()}.
+   */
+  @Test
+  public void testGetMismatchedParentBookChapters() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getMismatchedParentBookVolumes()}.
+   */
+  @Test
+  public void testGetMismatchedParentBookVolumes() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getAuIdsWithMultiplePublishers()}.
+   */
+  @Test
+  public void testGetAuIdsWithMultiplePublishers() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getAuNamesWithMultiplePublishers()}.
+   */
+  @Test
+  public void testGetAuNamesWithMultiplePublishers() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getUnnamedItems()}.
+   */
+  @Test
+  public void testGetUnnamedItems() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getPublicationsWithMultiplePids()}.
+   */
+  @Test
+  public void testGetPublicationsWithMultiplePids() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getNoDoiItems()}.
+   */
+  @Test
+  public void testGetNoDoiItems() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getNoAccessUrlItems()}.
+   */
+  @Test
+  public void testGetNoAccessUrlItems() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getNoItemsAuIds()}.
+   */
+  @Test
+  public void testGetNoItemsAuIds() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getAuMetadata(String)}.
+   */
+  @Test
+  public void testGetAuMetadata(String auId) throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link MetadataMonitorService#getDbArchivalUnitsDeletedFromDaemon()}.
+   */
+  @Test
+  public void testGetDbArchivalUnitsDeletedFromDaemon() throws Exception {
+    // TODO
   }
 }

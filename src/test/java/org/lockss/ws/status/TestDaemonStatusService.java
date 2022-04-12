@@ -112,8 +112,131 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
   }
 
+  /**
+   * Test for {@link DaemonStatusService#isDaemonReady()}.
+   */
   @Test
-  public void test() throws Exception {
+  public void testIsDaemonReady() throws Exception {
+    // TODO
+  }
 
+  /**
+   * Test for {@link DaemonStatusService#getAuIds()}.
+   */
+  @Test
+  public void testGetAuIds() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#getAuStatus(String)}.
+   */
+  @Test
+  public void testGetAuStatus() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#queryPlugins(String)}.
+   */
+  @Test
+  public void testQueryPlugins() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#queryAus(String)}.
+   */
+  @Test
+  public void testQueryAus() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#queryPeers(String)}.
+   */
+  @Test
+  public void testQueryPeers() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#queryVotes(String)}.
+   */
+  @Test
+  public void testQueryVotes() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#queryRepositorySpaces(String)}.
+   */
+  @Test
+  public void testQueryRepositorySpaces() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#queryRepositories(String)}.
+   */
+  @Test
+  public void testQueryRepositories() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#queryCrawls(String)}.
+   */
+  @Test
+  public void testQueryCrawls() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#queryPolls(String)}.
+   */
+  @Test
+  public void testQueryPolls() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#getPlatformConfiguration()}.
+   */
+  @Test
+  public void testGetPlatformConfiguration() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#queryTdbPublishers(String)}.
+   */
+  @Test
+  public void testQueryTdbPublishers() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#queryTdbTitles(String)}.
+   */
+  @Test
+  public void testQueryTdbTitles() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#queryTdbAus(String)}.
+   */
+  @Test
+  public void testQueryTdbAus() throws Exception {
+    // TODO
+  }
+
+  /**
+   * Test for {@link DaemonStatusService#getAuUrls(String, String)}.
+   */
+  @Test
+  public void testGetAuUrls() throws Exception {
+    // TODO
   }
 }
