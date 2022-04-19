@@ -63,12 +63,6 @@ POSSIBILITY OF SUCH DAMAGE.
       <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
     </jaxws:features>
   </jaxws:endpoint>
-  <jaxws:endpoint id="MtomContentService" implementor="#mtomContentServiceImpl"
-                  address="/MtomContentService">
-    <jaxws:features>
-      <bean class="org.lockss.ws.cxf.LockssLoggingFeature"></bean>
-    </jaxws:features>
-  </jaxws:endpoint>
   <jaxws:endpoint id="ExportService" implementor="#exportServiceImpl"
                   address="/ExportService">
     <jaxws:features>
