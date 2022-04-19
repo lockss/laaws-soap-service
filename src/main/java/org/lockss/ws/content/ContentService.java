@@ -27,12 +27,14 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.content;
 
-import java.util.List;
+import org.lockss.ws.entities.ContentResult;
+import org.lockss.ws.entities.FileWsResult;
+import org.lockss.ws.entities.LockssWebServicesFault;
+
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import org.lockss.ws.entities.FileWsResult;
-import org.lockss.ws.entities.LockssWebServicesFault;
+import java.util.List;
 
 /** The Content SOAP web service interface. */
 @WebService
@@ -74,6 +76,34 @@ public interface ContentService {
    */
   @WebMethod
   boolean isUrlVersionCached(
+      @WebParam(name = "url") String url,
+      @WebParam(name = "auId") String auId,
+      @WebParam(name = "version") Integer version)
+      throws LockssWebServicesFault;
+
+  /**
+   * Provides the content defined by a URL and Archival Unit.
+   *
+   * @param url A String with the URL.
+   * @param auId A String with the identifier (auid) of the archival unit.
+   * @return a ContentResult with the result of the operation.
+   * @throws LockssWebServicesFault if there are problems.
+   */
+  @WebMethod
+  ContentResult fetchFile(@WebParam(name = "url") String url, @WebParam(name = "auId") String auId)
+      throws LockssWebServicesFault;
+
+  /**
+   * Provides the content defined by a URL, an Archival Unit and a version.
+   *
+   * @param url A String with the URL.
+   * @param auId A String with the identifier (auid) of the archival unit.
+   * @param version An Integer with the requested version of the content.
+   * @return a ContentResult with the result of the operation.
+   * @throws LockssWebServicesFault if there are problems.
+   */
+  @WebMethod
+  ContentResult fetchVersionedFile(
       @WebParam(name = "url") String url,
       @WebParam(name = "auId") String auId,
       @WebParam(name = "version") Integer version)

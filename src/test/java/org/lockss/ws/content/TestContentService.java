@@ -32,41 +32,55 @@ POSSIBILITY OF SUCH DAMAGE.
 package org.lockss.ws.content;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.message.BasicStatusLine;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.lockss.laaws.rs.model.Artifact;
-import org.lockss.laaws.rs.model.ArtifactPageInfo;
-import org.lockss.laaws.rs.model.PageInfo;
+import org.lockss.laaws.rs.core.LockssRepository;
+import org.lockss.laaws.rs.core.RestLockssRepository;
+import org.lockss.laaws.rs.model.*;
+import org.lockss.laaws.rs.util.ArtifactConstants;
+import org.lockss.laaws.rs.util.ArtifactDataUtil;
+import org.lockss.laaws.rs.util.NamedByteArrayResource;
+import org.lockss.laaws.rs.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.util.ListUtil;
 import org.lockss.util.rest.RestResponseErrorBody;
+import org.lockss.ws.entities.ContentResult;
 import org.lockss.ws.entities.FileWsResult;
+import org.lockss.ws.entities.LockssWebServicesFault;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.core.io.Resource;
+import org.springframework.http.*;
+import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
+import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.lockss.ws.BaseServiceImpl.REPO_SVC_URL_KEY;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
@@ -345,5 +359,372 @@ public class TestContentService extends SpringLockssTestCase4 {
       mockRestServer.verify();
       mockRestServer.reset();
     }
+  }
+
+  /**
+   * Test for {@link ContentService#fetchFile(String, String)}.
+   */
+  @Test
+  public void testFetchFile() throws Exception {
+    {
+      String url = "testUrl";
+      String auid = null;
+      assertThrows(LockssWebServicesFault.class, () -> proxy.fetchFile(url, auid),
+          "Missing required Archival Unit identifier (auId)");
+    }
+
+    {
+      String url = null;
+      String auid = "testAuid";
+      assertThrows(LockssWebServicesFault.class, () -> proxy.fetchFile(url, auid),
+          "Missing required URL");
+    }
+
+    {
+      String collection = "lockss";
+      String auid = "testAuid";
+      String url = "testUrl";
+      String artifactId = "testArtifactId";
+
+      // REST getArtifacts endpoint
+      URI getArtifactsURL =
+          new URI(env.getProperty(REPO_SVC_URL_KEY) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+
+      URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
+          .queryParam("url", url)
+          .queryParam("version", "latest")
+          .build()
+          .toUri();
+
+      // Mock return object from REST getArtifacts call
+      Artifact artifact =
+          new Artifact(artifactId, collection, auid, url, 1, true,
+              "file:///test.warc?offset=0&length=2014", 1024L, "digest");
+
+//      artifact.setCollection(collection);
+//      artifact.setAuid(auid);
+//      artifact.setUri(url);
+//      artifact.setVersion(1);
+//      artifact.setContentLength(1024);
+      artifact.setCollectionDate(1);
+//      artifact.setCommitted(true);
+//      artifact.setStorageUrl("file:///test.warc?offset=0&length=1024");
+
+      PageInfo pageInfo = new PageInfo();
+      pageInfo.setTotalCount(1);
+      pageInfo.setResultsPerPage(1);
+      pageInfo.setCurLink(getArtifactsQuery.toString());
+
+      ArtifactPageInfo artifactsPage = new ArtifactPageInfo();
+      artifactsPage.setPageInfo(pageInfo);
+      artifactsPage.setArtifacts(ListUtil.list(artifact));
+
+      // Mock REST call for Artifact
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(getArtifactsQuery))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.OK)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(mapper.writeValueAsString(artifactsPage)));
+
+      // REST getArtifactData() endpoint
+      URI getArtifactDataURL =
+          new URI(env.getProperty(REPO_SVC_URL_KEY)
+              + "/collections/" + collection
+              + "/artifacts/" + artifactId);
+
+      URI getArtifactDataQuery = UriComponentsBuilder.fromUri(getArtifactDataURL)
+          .queryParam("includeContent", "ALWAYS")
+          .build()
+          .toUri();
+
+      byte[] data = "hello world".getBytes(StandardCharsets.UTF_8);
+
+      HttpHeaders props = new HttpHeaders();
+      props.set("test", "xyzzy");
+
+      ArtifactData artifactData = new ArtifactData(
+          artifact.getIdentifier(),
+          props,
+          new ByteArrayInputStream(data),
+          new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"),
+          new URI(artifact.getStorageUrl()),
+          new ArtifactRepositoryState(artifact.getIdentifier()));
+
+      artifactData.setContentLength(data.length);
+      artifactData.setContentDigest("testDigest");
+
+      MultiValueMap<String, Object> parts = generateMultipartResponseFromArtifactData(
+          artifactData, LockssRepository.IncludeContent.ALWAYS, 4096L);
+
+      HttpOutputMessage outputMessage = new MockHttpOutputMessage();
+      new AllEncompassingFormHttpMessageConverter().write(parts, MediaType.MULTIPART_FORM_DATA, outputMessage);
+
+//      String responseBody = ((ByteArrayOutputStream) outputMessage.getBody()).toString();
+
+//      // Set Content-Length of REST response body
+//      HttpHeaders outputHeaders = outputMessage.getHeaders();
+//      outputHeaders.setContentLength(responseBody.length());
+
+      // Mock REST call for ArtifactData
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(getArtifactDataQuery))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.OK)
+              .headers(outputMessage.getHeaders())
+              .body(outputMessage.getBody().toString()));
+
+      ContentResult contentResult = proxy.fetchFile(url, auid);
+
+      // Assert content result properties
+      Properties actualProps = contentResult.getProperties();
+      assertNotNull(actualProps);
+      assertIterableEquals(props.keySet(), actualProps.keySet());
+
+      for (String key : props.keySet())
+        assertEquals(props.getFirst(key), actualProps.getProperty(key));
+
+      // Assert content result data
+      DataHandler dh = contentResult.getDataHandler();
+      assertNotNull(dh);
+      assertInputStreamMatchesString("hello world", dh.getInputStream());
+      assertEquals(MediaType.APPLICATION_OCTET_STREAM_VALUE, dh.getContentType());
+    }
+  }
+
+  /**
+   * Test for {@link ContentService#fetchVersionedFile(String, String, Integer)}.
+   */
+  @Test
+  public void testFetchVersionedFile() throws Exception {
+    {
+      String collection = "lockss";
+      String auid = "testAuid";
+      String url = "testUrl";
+      int version = 1;
+      String artifactId = "testArtifactId";
+
+      // REST getArtifacts endpoint
+      URI getArtifactsURL =
+          new URI(env.getProperty(REPO_SVC_URL_KEY) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+
+      URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
+          .queryParam("url", url)
+          .queryParam("version", version)
+          .build()
+          .toUri();
+
+      // Mock return object from REST getArtifacts call
+      Artifact artifact =
+          new Artifact(artifactId, collection, auid, url, version, true,
+              "file:///test.warc?offset=0&length=2014", 1024L, "digest");
+
+//      artifact.setCollection(collection);
+//      artifact.setAuid(auid);
+//      artifact.setUri(url);
+//      artifact.setVersion(version);
+//      artifact.setContentLength(1024);
+      artifact.setCollectionDate(1);
+//      artifact.setCommitted(true);
+//      artifact.setStorageUrl("file:///test.warc?offset=0&length=1024");
+
+      PageInfo pageInfo = new PageInfo();
+      pageInfo.setTotalCount(1);
+      pageInfo.setResultsPerPage(1);
+      pageInfo.setCurLink(getArtifactsQuery.toString());
+
+      ArtifactPageInfo artifactsPage = new ArtifactPageInfo();
+      artifactsPage.setPageInfo(pageInfo);
+      artifactsPage.setArtifacts(ListUtil.list(artifact));
+
+      // Mock REST call for Artifact
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(getArtifactsQuery))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.OK)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(mapper.writeValueAsString(artifactsPage)));
+
+      // REST getArtifactData() endpoint
+      URI getArtifactDataURL =
+          new URI(env.getProperty(REPO_SVC_URL_KEY)
+              + "/collections/" + collection
+              + "/artifacts/" + artifactId);
+
+      URI getArtifactDataQuery = UriComponentsBuilder.fromUri(getArtifactDataURL)
+          .queryParam("includeContent", "ALWAYS")
+          .build()
+          .toUri();
+
+      byte[] data = "hello world".getBytes(StandardCharsets.UTF_8);
+
+      HttpHeaders props = new HttpHeaders();
+      props.set("test", "xyzzy");
+
+      ArtifactData artifactData = new ArtifactData(
+          artifact.getIdentifier(),
+          props,
+          new ByteArrayInputStream(data),
+          new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"),
+          new URI(artifact.getStorageUrl()),
+          new ArtifactRepositoryState(artifact.getIdentifier()));
+
+      artifactData.setContentLength(data.length);
+      artifactData.setContentDigest("testDigest");
+
+      MultiValueMap<String, Object> parts = generateMultipartResponseFromArtifactData(
+          artifactData, LockssRepository.IncludeContent.ALWAYS, 4096L);
+
+      HttpOutputMessage outputMessage = new MockHttpOutputMessage();
+      new AllEncompassingFormHttpMessageConverter().write(parts, MediaType.MULTIPART_FORM_DATA, outputMessage);
+
+//      String responseBody = ((ByteArrayOutputStream) outputMessage.getBody()).toString();
+
+//      // Set Content-Length of REST response body
+//      HttpHeaders outputHeaders = outputMessage.getHeaders();
+//      outputHeaders.setContentLength(responseBody.length());
+
+      // Mock REST call for ArtifactData
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(getArtifactDataQuery))
+          .andExpect(method(HttpMethod.GET))
+          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andRespond(withStatus(HttpStatus.OK)
+              .headers(outputMessage.getHeaders())
+              .body(outputMessage.getBody().toString()));
+
+      ContentResult contentResult = proxy.fetchVersionedFile(url, auid, version);
+
+      // Assert content result properties
+      Properties actualProps = contentResult.getProperties();
+      assertNotNull(actualProps);
+      assertIterableEquals(props.keySet(), actualProps.keySet());
+
+      for (String key : props.keySet())
+        assertEquals(props.getFirst(key), actualProps.getProperty(key));
+
+      // Assert content result data
+      DataHandler dh = contentResult.getDataHandler();
+      assertNotNull(dh);
+      assertInputStreamMatchesString("hello world", dh.getInputStream());
+      assertEquals(MediaType.APPLICATION_OCTET_STREAM_VALUE, dh.getContentType());
+    }
+  }
+
+  private static MultiValueMap<String, Object> generateMultipartResponseFromArtifactData(
+      ArtifactData artifactData, LockssRepository.IncludeContent includeContent, long smallContentThreshold)
+      throws IOException {
+
+    // Get artifact ID
+    String artifactid = artifactData.getIdentifier().getId();
+
+    // Holds multipart response parts
+    MultiValueMap<String, Object> parts = new LinkedMultiValueMap<>();
+
+    //// Add artifact repository properties multipart
+    {
+      // Part's headers
+      HttpHeaders partHeaders = new HttpHeaders();
+      partHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+      // Add repository properties multipart to multiparts list
+      parts.add(
+          RestLockssRepository.MULTIPART_ARTIFACT_REPO_PROPS,
+          new HttpEntity<>(getArtifactRepositoryProperties(artifactData), partHeaders)
+      );
+    }
+
+    //// Add artifact headers multipart
+    {
+      // Part's headers
+      HttpHeaders partHeaders = new HttpHeaders();
+      partHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+      // Add artifact headers multipart
+      parts.add(
+          RestLockssRepository.MULTIPART_ARTIFACT_HEADER,
+          new HttpEntity<>(artifactData.getMetadata(), partHeaders)
+      );
+    }
+
+    //// Add artifact HTTP status multipart if present
+    if (artifactData.getHttpStatus() != null) {
+      // Part's headers
+      HttpHeaders partHeaders = new HttpHeaders();
+      partHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
+      // Create resource containing HTTP status byte array
+      Resource resource = new NamedByteArrayResource(
+          artifactid,
+          ArtifactDataUtil.getHttpStatusByteArray(artifactData.getHttpStatus())
+      );
+
+      // Add artifact headers multipart
+      parts.add(
+          RestLockssRepository.MULTIPART_ARTIFACT_HTTP_STATUS,
+          new HttpEntity<>(resource, partHeaders)
+      );
+    }
+
+    //// Add artifact content part if requested or if small enough
+    if ((includeContent == LockssRepository.IncludeContent.ALWAYS) ||
+        (includeContent == LockssRepository.IncludeContent.IF_SMALL
+            && artifactData.getContentLength() <= smallContentThreshold)) {
+
+      // Create content part headers
+      HttpHeaders partHeaders = new HttpHeaders();
+      partHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+      partHeaders.setContentLength(artifactData.getContentLength());
+
+      // Artifact content
+      Resource resource = new NamedInputStreamResource(artifactid, artifactData.getInputStream());
+
+      // Assemble content part and add to multiparts map
+      parts.add(
+          RestLockssRepository.MULTIPART_ARTIFACT_CONTENT,
+          new HttpEntity<>(resource, partHeaders)
+      );
+    }
+
+    return parts;
+  }
+
+  private static HttpHeaders getArtifactRepositoryProperties(ArtifactData ad) {
+    HttpHeaders headers = new HttpHeaders();
+
+    //// Artifact repository ID information headers
+    ArtifactIdentifier id = ad.getIdentifier();
+    headers.set(ArtifactConstants.ARTIFACT_ID_KEY, id.getId());
+    headers.set(ArtifactConstants.ARTIFACT_COLLECTION_KEY, id.getCollection());
+    headers.set(ArtifactConstants.ARTIFACT_AUID_KEY, id.getAuid());
+    headers.set(ArtifactConstants.ARTIFACT_URI_KEY, id.getUri());
+    headers.set(ArtifactConstants.ARTIFACT_VERSION_KEY, String.valueOf(id.getVersion()));
+
+    //// Artifact repository state information headers if present
+    if (ad.getArtifactRepositoryState() != null) {
+      headers.set(
+          ArtifactConstants.ARTIFACT_STATE_COMMITTED,
+          String.valueOf(ad.getArtifactRepositoryState().getCommitted())
+      );
+
+      headers.set(
+          ArtifactConstants.ARTIFACT_STATE_DELETED,
+          String.valueOf(ad.getArtifactRepositoryState().getDeleted())
+      );
+    }
+
+    //// Unclassified artifact repository headers
+    headers.set(ArtifactConstants.ARTIFACT_LENGTH_KEY, String.valueOf(ad.getContentLength()));
+    headers.set(ArtifactConstants.ARTIFACT_DIGEST_KEY, ad.getContentDigest());
+
+//    headers.set(ArtifactConstants.ARTIFACT_ORIGIN_KEY, ???);
+//    headers.set(ArtifactConstants.ARTIFACT_COLLECTION_DATE, ???);
+
+    return headers;
   }
 }
