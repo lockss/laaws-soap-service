@@ -108,6 +108,7 @@ public class ExportServiceImpl extends BaseServiceImpl implements ExportService 
       // Make the request and obtain the response.
       MultipartResponse response =
           new MultipartConnector(uri, requestHeaders)
+              .setRestTemplate(restTemplate)
               .requestGet(getConnectionTimeout().intValue(), getReadTimeout().intValue());
 
       HttpStatus statusCode = response.getStatusCode();

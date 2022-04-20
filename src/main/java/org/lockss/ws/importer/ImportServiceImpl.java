@@ -413,6 +413,7 @@ public class ImportServiceImpl extends BaseServiceImpl implements ImportService 
     // Make the request and obtain the response.
     HttpResponseStatusAndHeaders response =
         new MultipartConnector(uri, requestHeaders, parts)
+            .setRestTemplate(restTemplate)
             .requestPut(getConnectionTimeout().intValue(), getReadTimeout().intValue());
     log.trace("response = {}", response);
 
