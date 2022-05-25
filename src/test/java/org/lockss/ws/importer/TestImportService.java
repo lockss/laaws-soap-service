@@ -33,13 +33,18 @@ package org.lockss.ws.importer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.istack.ByteArrayDataSource;
+import org.apache.commons.fileupload.FileItem;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lockss.laaws.rs.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
+import org.lockss.spring.test.SpringLockssTestCase4;
+import org.lockss.util.ListUtil;
 import org.lockss.util.rest.RestResponseErrorBody;
 import org.lockss.util.rest.RestUtil;
+import org.lockss.util.rest.multipart.MultipartMessage;
+import org.lockss.util.rest.multipart.MultipartMessageHttpMessageConverter;
 import org.lockss.ws.entities.ImportWsParams;
 import org.lockss.ws.entities.ImportWsResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,12 +53,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
+import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
+import org.springframework.mock.http.MockHttpInputMessage;
+import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.mock.http.client.MockClientHttpResponse;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -63,27 +76,40 @@ import javax.activation.DataSource;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static org.lockss.ws.BaseServiceImpl.POLLER_SVC_URL_KEY;
+import static org.lockss.ws.BaseServiceImpl.REPO_SVC_URL_KEY;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
-public class TestImportService {
+public class TestImportService extends SpringLockssTestCase4 {
   private static final L4JLogger log = L4JLogger.getLogger();
 
   @TestConfiguration
   public static class MyConfiguration {
     @Bean
     public RestTemplate restTemplate() {
-      return new RestTemplate();
+      RestTemplate restTemplate = new RestTemplate();
+
+      // Add the multipart/form-data converter
+      List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
+      messageConverters.add(new MultipartMessageHttpMessageConverter());
+
+      return restTemplate;
     }
   }
 
@@ -137,59 +163,91 @@ public class TestImportService {
    */
   @Test
   public void testImportPulledFile() throws Exception {
-    String[] props = {"hello", "world"};
-
-    DataSource ds = new ByteArrayDataSource(HELLO_WORLD, "text/plain");
-    DataHandler dh = new DataHandler(ds);
+    String[] props = {"hello=world", "xyzzy=foobar"};
 
     ImportWsParams params = new ImportWsParams();
-    params.setSourceUrl("sourceUrl");
+    params.setSourceUrl("https://www.lockss.org/hello-world.txt");
     params.setTargetId("targetId");
     params.setTargetUrl("targetUrl");
     params.setProperties(props);
-    params.setDataHandler(dh);
+
+    HttpHeaders srcHeaders = new HttpHeaders();
+    srcHeaders.setContentType(MediaType.TEXT_PLAIN);
+    srcHeaders.setContentLength(HELLO_WORLD.length);
+
+    // Mock source URL fetch
+    mockRestServer
+        .expect(ExpectedCount.once(), requestTo(new URI(params.getSourceUrl())))
+        .andExpect(method(HttpMethod.GET))
+        .andRespond(withStatus(HttpStatus.OK)
+            .headers(srcHeaders)
+            .body(HELLO_WORLD));
 
     // Prepare the endpoint URI
-    String endpointUri = env.getProperty(POLLER_SVC_URL_KEY) + "/aus/import";
-    URI uri = RestUtil.getRestUri(endpointUri, null, null);
-
+    String importEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/aus/import";
+    URI importEndpointQuery = RestUtil.getRestUri(importEndpoint, null, null);
 
     // Mock REST service call and response
     mockRestServer
-        .expect(ExpectedCount.once(), requestTo(uri))
+        .expect(ExpectedCount.once(), requestTo(importEndpointQuery))
         .andExpect(method(HttpMethod.PUT))
         .andExpect(header("Accept", "application/json"))
         .andExpect(header("Authorization", BASIC_AUTH_HASH))
-        .andExpect(content().contentType(MediaType.MULTIPART_FORM_DATA_VALUE))
-//        .andExpect(content().string(mapper.writeValueAsString(params)))
-        .andExpect(content().formData(getRequestParts(params))
-        .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(mapper.writeValueAsString(blankError)));
+        .andExpect(request -> {
+          // Get multipart request headers and body
+          HttpHeaders headers = request.getHeaders();
+          String body = request.getBody().toString();
 
+          // Construct new HttpInputMessage from request body
+          HttpInputMessage inputMessage =
+              new MockHttpInputMessage(body.getBytes(StandardCharsets.UTF_8));
+
+          // Add request headers to input message
+          inputMessage.getHeaders().putAll(headers);
+
+          // Parse request body into multipart
+          MultipartMessage mmsg =
+              new MultipartMessageHttpMessageConverter().read(null, inputMessage);
+
+          MultiValueMap<String, FileItem> parts = getRequestParts(mmsg);
+
+          // Assert parts in multipart message
+          assertIterableEquals(
+              ListUtil.list("targetBaseUrlPath", "targetUrl", "userProperties", "file"),
+              parts.keySet(),
+              "Mis-matched parts in multipart import request");
+
+          assertEquals("targetId", parts.getFirst("targetBaseUrlPath").getString());
+          assertEquals("targetUrl", parts.getFirst("targetUrl").getString());
+
+          assertTrue(MediaType.parseMediaType(parts.getFirst("userProperties").getContentType())
+              .isCompatibleWith(MediaType.APPLICATION_JSON));
+          assertEquals("[\"hello=world\",\"xyzzy=foobar\"]", parts.getFirst("userProperties").getString());
+
+          assertTrue(MediaType.parseMediaType(parts.getFirst("file").getContentType())
+              .isCompatibleWith(MediaType.TEXT_PLAIN));
+          assertEquals(HELLO_WORLD, parts.getFirst("file").get());
+        })
+        .andRespond(withStatus(HttpStatus.OK));
+//            .contentType(MediaType.APPLICATION_JSON));
+//            .body(mapper.writeValueAsString(blankError)));
+
+    // Make SOAP call
     ImportWsResult result = proxy.importPulledFile(params);
+
+    // Assert successful import result
+    assertNotNull(result);
+    assertTrue(result.getIsSuccess());
+    assertNull(result.getMessage());
   }
 
-  private MultiValueMap<String, Object> getRequestParts(ImportWsParams params) {
-    MultiValueMap<String, Object> parts = new LinkedMultiValueMap<>();
-    parts.add("targetBaseUrlPath", params.getTargetId());
-    parts.add("targetUrl", params.getTargetUrl());
-    parts.add("userProperties", params.getProperties());
-
-    Resource resource = new NamedInputStreamResource(IMPORT_CONTENT_PART_NAME, input);
-
-    // Initialize the part headers
-    HttpHeaders partHeaders = new HttpHeaders();
-    partHeaders.setContentType(MediaType.TEXT_PLAIN);
-
-    // This must be set or else AbstractResource#contentLength will read the
-    // entire InputStream to determine the content length, which will exhaust
-    // the InputStream.
-    partHeaders.setContentLength(contentLength);
-
-    parts.add(IMPORT_CONTENT_PART_NAME, new HttpEntity<>(resource, partHeaders));
-
-    return parts;
+  private MultiValueMap<String, FileItem> getRequestParts(MultipartMessage mmsg) {
+    MultiValueMap<String, FileItem> result = new LinkedMultiValueMap();
+    for (int i = 0; i < mmsg.getCount(); i++) {
+      FileItem item = mmsg.getPart(i);
+      result.add(item.getFieldName(), item);
+    }
+    return result;
   }
 
   /**
@@ -197,7 +255,78 @@ public class TestImportService {
    */
   @Test
   public void testImportPushedFile() throws Exception {
-    // TODO
+    String[] props = {"hello=world", "xyzzy=foobar"};
+
+    DataSource ds = new ByteArrayDataSource(HELLO_WORLD, "text/plain");
+    DataHandler dh = new DataHandler(ds);
+
+    ImportWsParams params = new ImportWsParams();
+    params.setTargetId("targetId");
+    params.setTargetUrl("targetUrl");
+    params.setProperties(props);
+    params.setDataHandler(dh);
+
+    // Prepare the endpoint URI
+    String importEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/aus/import";
+    URI importEndpointQuery = RestUtil.getRestUri(importEndpoint, null, null);
+
+    // Mock REST service call and response
+    mockRestServer
+        .expect(ExpectedCount.once(), requestTo(importEndpointQuery))
+        .andExpect(method(HttpMethod.PUT))
+        .andExpect(header("Accept", "application/json"))
+        .andExpect(header("Authorization", BASIC_AUTH_HASH))
+        .andExpect(request -> {
+          // Get multipart request headers and body
+          HttpHeaders headers = request.getHeaders();
+          String body = request.getBody().toString();
+
+          // Construct new HttpInputMessage from request body
+          HttpInputMessage inputMessage =
+              new MockHttpInputMessage(body.getBytes(StandardCharsets.UTF_8));
+
+          // Add request headers to input message
+          inputMessage.getHeaders().putAll(headers);
+
+          // Parse request body into multipart
+          MultipartMessage mmsg =
+              new MultipartMessageHttpMessageConverter().read(null, inputMessage);
+
+          MultiValueMap<String, FileItem> parts = getRequestParts(mmsg);
+
+          // Assert parts in multipart message
+          assertIterableEquals(
+              ListUtil.list("targetBaseUrlPath", "targetUrl", "userProperties", "file"),
+              parts.keySet(),
+              "Mis-matched parts in multipart import request");
+
+          assertEquals("targetId", parts.getFirst("targetBaseUrlPath").getString());
+          assertEquals("targetUrl", parts.getFirst("targetUrl").getString());
+
+          assertTrue(MediaType.parseMediaType(parts.getFirst("userProperties").getContentType())
+              .isCompatibleWith(MediaType.APPLICATION_JSON));
+          assertEquals("[\"hello=world\",\"xyzzy=foobar\"]", parts.getFirst("userProperties").getString());
+
+          // FIXME: The Content-Type of DataHandler is stripped from the SOAP request by the SOAP used here.
+          //  The Content-Type of the DataHandler received by the SOAP endpoint we're testing, is by default
+          //  application/octet-stream. That default is then passed in the REST call, which we assert here:
+          assertTrue(MediaType.parseMediaType(parts.getFirst("file").getContentType())
+              // .isCompatibleWith(MediaType.TEXT_PLAIN));
+              .isCompatibleWith(MediaType.APPLICATION_OCTET_STREAM));
+
+          assertEquals(HELLO_WORLD, parts.getFirst("file").get());
+        })
+        .andRespond(withStatus(HttpStatus.OK));
+//            .contentType(MediaType.APPLICATION_JSON));
+//            .body(mapper.writeValueAsString(blankError)));
+
+    // Make SOAP call
+    ImportWsResult result = proxy.importPushedFile(params);
+
+    // Assert successful import result
+    assertNotNull(result);
+    assertTrue(result.getIsSuccess());
+    assertNull(result.getMessage());
   }
 
   /**
@@ -205,6 +334,23 @@ public class TestImportService {
    */
   @Test
   public void testGetSupportedChecksumAlgorithms() throws Exception {
-    // TODO
+    List<String> supportedAlgorithms = ListUtil.list("A", "B", "C");
+
+    // Prepare the endpoint URI
+    String importEndpoint = env.getProperty(REPO_SVC_URL_KEY) + "/checksumalgorithms";
+    URI importEndpointQuery = RestUtil.getRestUri(importEndpoint, null, null);
+
+    // Mock REST service call and response
+    mockRestServer
+        .expect(ExpectedCount.once(), requestTo(importEndpointQuery))
+        .andExpect(method(HttpMethod.GET))
+        .andExpect(header("Authorization", BASIC_AUTH_HASH))
+        .andRespond(withStatus(HttpStatus.OK)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(mapper.writeValueAsString(supportedAlgorithms)));
+
+    String[] result = proxy.getSupportedChecksumAlgorithms();
+
+    assertIterableEquals(supportedAlgorithms, Arrays.asList(result));
   }
 }
