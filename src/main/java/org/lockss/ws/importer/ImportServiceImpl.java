@@ -29,24 +29,11 @@ package org.lockss.ws.importer;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import javax.activation.DataHandler;
-import javax.xml.bind.DatatypeConverter;
+import org.apache.commons.io.FileUtils;
 import org.lockss.laaws.rs.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.PropertiesUtil;
+import org.lockss.util.io.DeferredTempFileOutputStream;
 import org.lockss.util.rest.HttpResponseStatusAndHeaders;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.SpringHeaderUtil;
@@ -56,16 +43,23 @@ import org.lockss.ws.entities.ImportWsParams;
 import org.lockss.ws.entities.ImportWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StreamUtils;
+
+import javax.activation.DataHandler;
+import javax.xml.bind.DatatypeConverter;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /** The Import SOAP web service implementation. */
 @Service
@@ -106,43 +100,40 @@ public class ImportServiceImpl extends BaseServiceImpl implements ImportService 
       String[] userProperties = importParams.getProperties();
       log.trace("userProperties = {}", Arrays.asList(userProperties));
 
-      // The connection to the file to be imported.
-      URLConnection urlConnection = null;
+      // Fetch headers and content from source URL
+      HttpInputMessage src =
+          restTemplate.execute(importParams.getSourceUrl(), HttpMethod.GET, null, response -> {
+            try (DeferredTempFileOutputStream dfos =
+                     // FIXME: Parameterize DFOS threshold
+                     new DeferredTempFileOutputStream((int) FileUtils.ONE_MB, "importSourceUrl")) {
 
-      // The stream to the file to be imported.
-      InputStream input = null;
+              StreamUtils.copy(response.getBody(), dfos);
 
-      try {
-        // Get a connection to the file to be imported.
-        urlConnection =
-            getSourceUrlConnection(
-                importParams.getSourceUrl(), PropertiesUtil.convertArrayToMap(userProperties));
+              return new HttpInputMessage() {
+                @Override
+                public HttpHeaders getHeaders() {
+                  return response.getHeaders();
+                }
 
-        // Open a stream to the file to be imported.
-        input = urlConnection.getInputStream();
+                @Override
+                public InputStream getBody() throws IOException {
+                  return dfos.getDeleteOnCloseInputStream();
+                }
+              };
+            }
+          }, PropertiesUtil.convertArrayToMap(userProperties));
 
-        // Perform the REST call to import the content.
-        wsResult =
-            performRestCall(
-                importParams.getTargetId(),
-                importParams.getTargetUrl(),
-                userProperties,
-                input,
-                uri,
-                urlConnection.getContentType(),
-                urlConnection.getContentLengthLong());
-      } catch (MalformedURLException mue) {
-        wsResult.setIsSuccess(Boolean.FALSE);
-        wsResult.setMessage("Malformed source URL: " + mue.getMessage());
-      } catch (IOException ioe) {
-        wsResult.setIsSuccess(Boolean.FALSE);
+      // Perform the REST call to import the content.
+      wsResult =
+          performRestCall(
+              importParams.getTargetId(),
+              importParams.getTargetUrl(),
+              userProperties,
+              src.getBody(),
+              uri,
+              src.getHeaders().getContentType().toString(),
+              src.getHeaders().getContentLength());
 
-        if (urlConnection == null) {
-          wsResult.setMessage("Cannot open connection to source URL: " + ioe.getMessage());
-        } else {
-          wsResult.setMessage("Cannot open input stream to source URL: " + ioe.getMessage());
-        }
-      }
     } catch (Exception e) {
       wsResult.setIsSuccess(Boolean.FALSE);
       wsResult.setMessage("Cannot import pushed content: " + e.getMessage());
@@ -415,6 +406,7 @@ public class ImportServiceImpl extends BaseServiceImpl implements ImportService 
         new MultipartConnector(uri, requestHeaders, parts)
             .setRestTemplate(restTemplate)
             .requestPut(getConnectionTimeout().intValue(), getReadTimeout().intValue());
+
     log.trace("response = {}", response);
 
     // Prepare the result to be returned.
