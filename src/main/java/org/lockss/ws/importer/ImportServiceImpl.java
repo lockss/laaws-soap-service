@@ -183,27 +183,11 @@ public class ImportServiceImpl extends BaseServiceImpl implements ImportService 
       }
 
       tmpFile = File.createTempFile("imported", "", null);
-      FileOutputStream fos = null;
-      // long contentLength = -1;
 
-      try {
-        fos = new FileOutputStream(tmpFile);
-      } finally {
-        try {
-          fos.close();
-        } catch (Exception e) {
-          log.warn("Exception caught closing file output stream", e);
-        }
-      }
-
-      try {
-        /*contentLength =*/ StreamUtils.copyRange(input, fos, 0, Long.MAX_VALUE);
-      } finally {
-        try {
-          fos.close();
-        } catch (Exception e) {
-          log.warn("Exception caught closing file output stream", e);
-        }
+      try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
+        StreamUtils.copy(input, fos);
+      } catch (IOException e) {
+        log.warn("Error writing to DFOS", e);
       }
 
       // Clean up.
