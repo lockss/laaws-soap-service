@@ -210,6 +210,8 @@ public class ImportServiceImpl extends BaseServiceImpl implements ImportService 
               importParams.getProperties(),
               input,
               uri,
+              // Content-Type will default to application/octet-stream if not
+              // specified in the SOAP request:
               dataHandler.getContentType(),
               tmpFile.length());
     } catch (Exception e) {
