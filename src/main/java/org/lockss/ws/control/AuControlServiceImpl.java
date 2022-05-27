@@ -27,10 +27,6 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.control;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestUtil;
@@ -40,15 +36,16 @@ import org.lockss.util.rest.mdx.MetadataUpdateSpec;
 import org.lockss.util.rest.poller.PollDesc;
 import org.lockss.util.rest.poller.RestPollerClient;
 import org.lockss.ws.BaseServiceImpl;
-import org.lockss.ws.entities.CheckSubstanceResult;
-import org.lockss.ws.entities.LockssWebServicesFault;
-import org.lockss.ws.entities.RequestAuControlResult;
-import org.lockss.ws.entities.RequestCrawlResult;
-import org.lockss.ws.entities.RequestDeepCrawlResult;
+import org.lockss.ws.entities.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /** The AU Control SOAP web service implementation. */
 @Service
@@ -82,6 +79,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
       // Make the REST call to disable metadata indexing for the Archival Unit.
       CheckSubstanceResult response =
           new RestConfigClient(env.getProperty(CONFIG_SVC_URL_KEY))
+              .setRestTemplate(restTemplate)
               .addRequestHeaders(getAuthHeaders())
               .putAuSubstanceCheck(auId);
       log.debug2("response = {}", response);
@@ -270,6 +268,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
       String response =
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .callPoll(pollDescription);
       log.trace("response = {}", response);
 
@@ -419,9 +418,11 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
       String response =
           new RestConfigClient(env.getProperty(CONFIG_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .patchArchivalUnitState(auId, "{\"isMetadataExtractionEnabled\":false}", null);
       log.debug2("response = {}", response);
 
+      // Q: Always return successful result?
       RequestAuControlResult result = new RequestAuControlResult(auId, true, null);
       log.debug2("result = {}", result);
       return result;
@@ -470,9 +471,11 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
       String response =
           new RestConfigClient(env.getProperty(CONFIG_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .patchArchivalUnitState(auId, "{\"isMetadataExtractionEnabled\":true}", null);
       log.debug2("response = {}", response);
 
+      // Q: Always return successful result?
       RequestAuControlResult result = new RequestAuControlResult(auId, true, null);
       log.debug2("result = {}", result);
       return result;
