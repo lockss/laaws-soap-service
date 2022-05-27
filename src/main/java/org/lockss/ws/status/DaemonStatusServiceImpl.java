@@ -29,35 +29,18 @@ package org.lockss.ws.status;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.lockss.laaws.rs.model.Artifact;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.poller.RestPollerClient;
 import org.lockss.util.rest.status.RestStatusClient;
 import org.lockss.ws.BaseServiceImpl;
-import org.lockss.ws.entities.AuStatus;
-import org.lockss.ws.entities.AuWsResult;
-import org.lockss.ws.entities.CrawlWsResult;
-import org.lockss.ws.entities.IdNamePair;
-import org.lockss.ws.entities.LockssWebServicesFault;
-import org.lockss.ws.entities.PeerWsResult;
-import org.lockss.ws.entities.PlatformConfigurationWsResult;
-import org.lockss.ws.entities.PluginWsResult;
-import org.lockss.ws.entities.PollWsResult;
-import org.lockss.ws.entities.RepositorySpaceWsResult;
-import org.lockss.ws.entities.RepositoryWsResult;
-import org.lockss.ws.entities.TdbAuWsResult;
-import org.lockss.ws.entities.TdbPublisherWsResult;
-import org.lockss.ws.entities.TdbTitleWsResult;
-import org.lockss.ws.entities.VoteWsResult;
+import org.lockss.ws.entities.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
 
 /** The Daemon Status SOAP web service implementation. */
 @Service
@@ -150,7 +133,10 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
     boolean isReady = false;
 
     try {
-      isReady = new RestStatusClient(serviceUrl).getStatus().isReady();
+      isReady = new RestStatusClient(serviceUrl)
+          .setRestTemplate(restTemplate)
+          .getStatus()
+          .isReady();
     } catch (LockssRestException lre) {
       log.debug("Ignored exception caught getting status of " + serviceUrl, lre);
     }
@@ -344,6 +330,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       List<PeerWsResult> results =
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .queryPeers(peerQuery);
 
       log.debug2("results = {}", results);
@@ -370,6 +357,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       List<VoteWsResult> results =
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .queryVotes(voteQuery);
 
       log.debug2("results = {}", results);
@@ -398,6 +386,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       List<RepositorySpaceWsResult> results =
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .queryRepositorySpaces(repositorySpaceQuery);
 
       log.debug2("results = {}", results);
@@ -425,6 +414,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       List<RepositoryWsResult> results =
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .queryRepositories(repositoryQuery);
 
       log.debug2("results = {}", results);
@@ -475,6 +465,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       List<PollWsResult> results =
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
+              .setRestTemplate(restTemplate)
               .queryPolls(pollQuery);
 
       log.debug2("results = {}", results);
