@@ -296,7 +296,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    * Test for {@link MetadataMonitorService#getAuMetadata(String)}.
    */
   @Test
-  public void testGetAuMetadata(String auId) throws Exception {
+  public void testGetAuMetadata() throws Exception {
     // TODO: Not implemented
   }
 
