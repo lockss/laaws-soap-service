@@ -121,10 +121,6 @@ public class TestHasherService extends SpringLockssTestCase4 {
   // HasherStatus.RequestError.toString()
   private static final String REQUEST_ERROR = "RequestError";
 
-  // FIXME: Blank mock REST error response
-  private static final RestResponseErrorBody.RestResponseError blankError =
-      new RestResponseErrorBody.RestResponseError();
-
   @Before
   public void init() throws MalformedURLException {
     // Setup proxy to SOAP service

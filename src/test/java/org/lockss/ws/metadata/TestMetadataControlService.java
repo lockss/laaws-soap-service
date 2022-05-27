@@ -91,10 +91,6 @@ public class TestMetadataControlService extends SpringLockssTestCase4 {
   private static final String PASSWORD = "lockss-p";
   private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
 
-  // FIXME: Blank mock REST error response
-  private static final RestResponseErrorBody.RestResponseError blankError =
-      new RestResponseErrorBody.RestResponseError();
-
   @Before
   public void init() throws MalformedURLException {
     // Setup proxy to SOAP service
@@ -117,7 +113,7 @@ public class TestMetadataControlService extends SpringLockssTestCase4 {
    */
   @Test
   public void testDeletePublicationIssn() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -125,6 +121,6 @@ public class TestMetadataControlService extends SpringLockssTestCase4 {
    */
   @Test
   public void testDeleteAu() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 }

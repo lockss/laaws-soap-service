@@ -122,10 +122,6 @@ public class TestExportService extends SpringLockssTestCase4 {
   public static String CONFIG_PART_NAME = "configFile";
   public static byte[] HELLO_WORLD = "hello world".getBytes(StandardCharsets.UTF_8);
 
-  // FIXME: Blank mock REST error response
-  private static final RestResponseErrorBody.RestResponseError blankError =
-      new RestResponseErrorBody.RestResponseError();
-
   @Before
   public void init() throws MalformedURLException {
     // Setup proxy to SOAP service

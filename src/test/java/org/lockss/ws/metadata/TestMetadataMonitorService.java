@@ -91,10 +91,6 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
   private static final String PASSWORD = "lockss-p";
   private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
 
-  // FIXME: Blank mock REST error response
-  private static final RestResponseErrorBody.RestResponseError blankError =
-      new RestResponseErrorBody.RestResponseError();
-
   @Before
   public void init() throws MalformedURLException {
     // Setup proxy to SOAP service
@@ -117,7 +113,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetPublisherNames() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -125,7 +121,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetPublishersWithMultipleDoiPrefixes() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -133,7 +129,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetDoiPrefixesWithMultiplePublishers() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -141,7 +137,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetAuIdsWithMultipleDoiPrefixes() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -149,7 +145,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetAuNamesWithMultipleDoiPrefixes() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -157,7 +153,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetPublicationsWithMoreThan2Isbns() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -165,7 +161,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetPublicationsWithMoreThan2Issns() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -173,7 +169,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetIdPublicationsWithMoreThan2Issns() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -181,7 +177,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetIsbnsWithMultiplePublications() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -189,7 +185,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetIssnsWithMultiplePublications() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -197,7 +193,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetBooksWithIssns() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -205,7 +201,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetPeriodicalsWithIsbns() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -213,7 +209,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetUnknownProviderAuIds() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -221,7 +217,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetMismatchedParentJournalArticles() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -229,7 +225,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetMismatchedParentBookChapters() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -237,7 +233,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetMismatchedParentBookVolumes() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -245,7 +241,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetAuIdsWithMultiplePublishers() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -253,7 +249,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetAuNamesWithMultiplePublishers() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -261,7 +257,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetUnnamedItems() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -269,7 +265,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetPublicationsWithMultiplePids() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -277,7 +273,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetNoDoiItems() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -285,7 +281,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetNoAccessUrlItems() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -293,7 +289,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetNoItemsAuIds() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -301,7 +297,7 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetAuMetadata(String auId) throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 
   /**
@@ -309,6 +305,6 @@ public class TestMetadataMonitorService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetDbArchivalUnitsDeletedFromDaemon() throws Exception {
-    // TODO
+    // TODO: Not implemented
   }
 }
