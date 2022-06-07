@@ -150,6 +150,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
               assertEquals(isDaemonReady, proxy.isDaemonReady());
 
+              // mockRestServer.verify();
               mockRestServer.reset();
             }
   }
@@ -223,6 +224,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
       assertEquals(expected.getId(), actual.getId());
       assertEquals(expected.getName(), actual.getName());
     }
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -255,6 +259,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -288,6 +295,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertIterableEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -321,6 +331,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertIterableEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -354,6 +367,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertIterableEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -387,6 +403,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert expected result
     assertIterableEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -420,6 +439,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertIterableEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -453,6 +475,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertIterableEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -494,6 +519,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertIterableEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -521,6 +549,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -554,6 +585,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertIterableEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -587,6 +621,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertIterableEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -620,6 +657,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertIterableEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -668,5 +708,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Assert result
     assertIterableEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 }
