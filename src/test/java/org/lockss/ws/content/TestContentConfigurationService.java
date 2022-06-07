@@ -787,7 +787,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
       mockRestServer.reset();
     }
 
-    //// Test successful deletion of AU
+    //// Test successful reactivation of AU
     {
       // Mock REST response object
       ContentConfigurationResult expectedResult = new ContentConfigurationResult();
@@ -813,7 +813,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
       mockRestServer.reset();
     }
 
-    //// Test failed deletion of AU
+    //// Test failed reactivation of AU
     {
       // Mock REST response object
       ContentConfigurationResult expectedResult = new ContentConfigurationResult();
@@ -917,7 +917,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
       mockRestServer.reset();
     }
 
-    //// Test successful addition of AUs
+    //// Test successful reactivation of AUs
     {
       // Mock REST response object
       ContentConfigurationResult expected1 = new ContentConfigurationResult();
@@ -1074,7 +1074,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
       mockRestServer.reset();
     }
 
-    //// Test successful deletion of AU
+    //// Test successful deactivation of AU
     {
       // Mock REST response object
       ContentConfigurationResult expectedResult = new ContentConfigurationResult();
@@ -1100,7 +1100,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
       mockRestServer.reset();
     }
 
-    //// Test failed deletion of AU
+    //// Test failed deactivation of AU
     {
       // Mock REST response object
       ContentConfigurationResult expectedResult = new ContentConfigurationResult();
@@ -1204,7 +1204,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
       mockRestServer.reset();
     }
 
-    //// Test successful addition of AUs
+    //// Test successful deactivation of AUs
     {
       // Mock REST response object
       ContentConfigurationResult expected1 = new ContentConfigurationResult();
