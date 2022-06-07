@@ -47,7 +47,6 @@ import org.lockss.laaws.rs.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.util.ListUtil;
-import org.lockss.util.rest.RestResponseErrorBody;
 import org.lockss.ws.entities.ContentResult;
 import org.lockss.ws.entities.FileWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
@@ -76,7 +75,9 @@ import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -229,13 +230,25 @@ public class TestContentService extends SpringLockssTestCase4 {
               .body(mapper.writeValueAsString(artifactPageInfo_p2)));
 
       // Make the call through SOAP
-      List<FileWsResult> result = proxy.getVersions(url, auid);
+      List<FileWsResult> results = proxy.getVersions(url, auid);
 
-      log.info("result = {}", result);
+      // Assert artifacts match their respective FileWsResult
+      assertEquals(artifact1, results.get(0));
+      assertEquals(artifact2, results.get(1));
 
       mockRestServer.verify();
       mockRestServer.reset();
     }
+  }
+
+  /**
+   * Asserts that an {@link Artifact} matches a {@link FileWsResult} derived from it.
+   */
+  private void assertEquals(Artifact expected, FileWsResult actual) {
+    assertEquals(expected.getUri(), actual.getUrl());
+    assertEquals(expected.getVersion(), actual.getVersion());
+    assertEquals(expected.getContentLength(), (long)actual.getSize());
+    assertEquals(expected.getCollectionDate(), (long)actual.getCollectionDate());
   }
 
   /**
@@ -289,8 +302,7 @@ public class TestContentService extends SpringLockssTestCase4 {
 
       // Make the call through SOAP
       boolean result = proxy.isUrlCached(url, auid);
-
-      log.info("result = {}", result);
+      assertTrue(result);
 
       mockRestServer.verify();
       mockRestServer.reset();
@@ -348,9 +360,7 @@ public class TestContentService extends SpringLockssTestCase4 {
               .body(mapper.writeValueAsString(artifactPageInfo)));
 
       // Make the call through SOAP
-      boolean result = proxy.isUrlVersionCached(url, auid, version);
-
-      log.info("result = {}", result);
+      assertTrue(proxy.isUrlVersionCached(url, auid, version));
 
       mockRestServer.verify();
       mockRestServer.reset();
