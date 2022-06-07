@@ -32,13 +32,16 @@ POSSIBILITY OF SUCH DAMAGE.
 package org.lockss.ws.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lockss.laaws.rs.model.Artifact;
+import org.lockss.laaws.rs.model.ArtifactPageInfo;
+import org.lockss.laaws.rs.model.PageInfo;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.util.ListUtil;
-import org.lockss.util.rest.RestResponseErrorBody;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.status.ApiStatus;
 import org.lockss.ws.entities.*;
@@ -64,6 +67,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.lockss.ws.BaseServiceImpl.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
@@ -94,6 +98,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
   private DaemonStatusService proxy;
   private MockRestServiceServer mockRestServer;
+  private static EasyRandom easyRandom;
 
   private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -103,10 +108,6 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   private static final String USERNAME = "lockss-u";
   private static final String PASSWORD = "lockss-p";
   private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
-
-  // FIXME: Blank mock REST error response
-  private static final RestResponseErrorBody.RestResponseError blankError =
-      new RestResponseErrorBody.RestResponseError();
 
   @Before
   public void init() throws MalformedURLException {
@@ -123,6 +124,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Create MockRestServiceServer from RestTemplate
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
+
+    // Create EasyRandom generator
+   easyRandom = new EasyRandom();
   }
 
   /**
@@ -130,15 +134,24 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
    */
   @Test
   public void testIsDaemonReady() throws Exception {
-    mockIsServiceReady(env.getProperty(REPO_SVC_URL_KEY), true);
-    mockIsServiceReady(env.getProperty(CONFIG_SVC_URL_KEY), true);
-    mockIsServiceReady(env.getProperty(POLLER_SVC_URL_KEY), true);
-    mockIsServiceReady(env.getProperty(MDX_SVC_URL_KEY), true);
-    mockIsServiceReady(env.getProperty(MDQ_SVC_URL_KEY), true);
+    for (boolean isRepoReady : ListUtil.list(true, false))
+      for (boolean isCfgReady : ListUtil.list(true, false))
+        for (boolean isPollerReady : ListUtil.list(true, false))
+          for (boolean isMdxReady : ListUtil.list(true, false))
+            for (boolean isMdqReady : ListUtil.list(true, false)) {
+              mockIsServiceReady(env.getProperty(REPO_SVC_URL_KEY), isRepoReady);
+              mockIsServiceReady(env.getProperty(CONFIG_SVC_URL_KEY), isCfgReady);
+              mockIsServiceReady(env.getProperty(POLLER_SVC_URL_KEY), isPollerReady);
+              mockIsServiceReady(env.getProperty(MDX_SVC_URL_KEY), isMdxReady);
+              mockIsServiceReady(env.getProperty(MDQ_SVC_URL_KEY), isMdqReady);
 
-    boolean result = proxy.isDaemonReady();
+              boolean isDaemonReady =
+                  isRepoReady && isCfgReady && isPollerReady && isMdxReady && isMdqReady;
 
-    assertTrue(result);
+              assertEquals(isDaemonReady, proxy.isDaemonReady());
+
+              mockRestServer.reset();
+            }
   }
 
   private void mockIsServiceReady(String url, boolean isReady) throws Exception {
@@ -146,7 +159,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     String statusEndpoint = url + "/status";
     URI statusQuery = RestUtil.getRestUri(statusEndpoint, null, null);
 
-    ApiStatus apiStatus = new ApiStatus();
+    ApiStatus apiStatus = easyRandom.nextObject(ApiStatus.class);
     apiStatus.setReady(isReady);
 
     // Mock REST call for ArtifactData
@@ -163,15 +176,20 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetAuIds() throws Exception {
-    List<String> suffixes = ListUtil.list("A", "B", "C");
-    List<AuWsResult> expectedResult = new ArrayList<>(); // TODO
+   EasyRandom easyRandom = new EasyRandom();
 
-    for (String suffix : suffixes) {
-      AuWsResult result = new AuWsResult();
-      result.setAuId("auid" + suffix);
-      result.setName("name" + suffix);
+    // Generate REST response
+    List<AuWsResult> restResponse =
+        ListUtil.list(easyRandom.nextObject(AuWsResult[].class));
 
-      expectedResult.add(result);
+    // Generate expected SOAP response map (AUID -> IdNamePair)
+    Map<String, IdNamePair> expectedResultMap = new HashMap<>();
+
+    int processed = 0;
+    for (AuWsResult result : restResponse) {
+      processed++;
+      IdNamePair resultElement = new IdNamePair(result.getAuId(), result.getName());
+      expectedResultMap.put(result.getAuId(), resultElement);
     }
 
     String auQuery = "select auId, name";
@@ -190,12 +208,21 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
         .andExpect(header("Authorization", BASIC_AUTH_HASH))
         .andRespond(withStatus(HttpStatus.OK)
             .contentType(MediaType.APPLICATION_JSON)
-            .body(mapper.writeValueAsString(expectedResult)));
+            .body(mapper.writeValueAsString(restResponse)));
 
+    // Make SOAP call
     Collection<IdNamePair> result = proxy.getAuIds();
 
-    assertEquals(expectedResult.size(), result.size());
-    // TODO: Assert
+    // Assert expected result
+    assertEquals(expectedResultMap.size(), result.size());
+
+    for (IdNamePair actual : result) {
+      IdNamePair expected = expectedResultMap.get(actual.getId());
+
+      assertNotNull(expected);
+      assertEquals(expected.getId(), actual.getId());
+      assertEquals(expected.getName(), actual.getName());
+    }
   }
 
   /**
@@ -205,7 +232,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   public void testGetAuStatus() throws Exception {
     String auId = "test";
 
-    AuStatus expectedResult = new AuStatus(); // TODO
+    AuStatus expectedResult = easyRandom.nextObject(AuStatus.class);
 
     // Prepare the URI path variables.
     Map<String, String> uriVariables = new HashMap<>(1);
@@ -223,9 +250,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     AuStatus result = proxy.getAuStatus(auId);
 
-    // TODO: Assert
+    // Assert result
+    assertEquals(expectedResult, result);
   }
 
   /**
@@ -235,7 +264,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   public void testQueryPlugins() throws Exception {
     String pluginQuery = "plugin query";
 
-    List<PluginWsResult> expectedResult = new ArrayList<>(); // TODO
+    List<PluginWsResult> expectedResult =
+        ListUtil.list(easyRandom.nextObject(PluginWsResult[].class));
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
@@ -253,9 +283,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     List<PluginWsResult> result = proxy.queryPlugins(pluginQuery);
 
-    // TODO: Assert
+    // Assert result
+    assertIterableEquals(expectedResult, result);
   }
 
   /**
@@ -265,7 +297,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   public void testQueryAus() throws Exception {
     String auQuery = "au query";
 
-    List<AuWsResult> expectedResult = new ArrayList<>(); // TODO
+    List<AuWsResult> expectedResult =
+        ListUtil.list(easyRandom.nextObject(AuWsResult[].class));
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
@@ -283,9 +316,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     List<AuWsResult> result = proxy.queryAus(auQuery);
 
-    // TODO: Assert
+    // Assert result
+    assertIterableEquals(expectedResult, result);
   }
 
   /**
@@ -295,7 +330,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   public void testQueryPeers() throws Exception {
     String peerQuery = "peer query";
 
-    List<PeerWsResult> expectedResult = new ArrayList<>(); // TODO
+    List<PeerWsResult> expectedResult =
+        ListUtil.list(easyRandom.nextObject(PeerWsResult[].class));
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
@@ -313,9 +349,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     List<PeerWsResult> result = proxy.queryPeers(peerQuery);
 
-    // TODO: Assert
+    // Assert result
+    assertIterableEquals(expectedResult, result);
   }
 
   /**
@@ -325,7 +363,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   public void testQueryVotes() throws Exception {
     String voteQuery = "vote query";
 
-    List<VoteWsResult> expectedResult = new ArrayList<>(); // TODO
+    List<VoteWsResult> expectedResult =
+        ListUtil.list(easyRandom.nextObject(VoteWsResult[].class));
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
@@ -343,9 +382,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     List<VoteWsResult> result = proxy.queryVotes(voteQuery);
 
-    // TODO: Assert
+    // Assert expected result
+    assertIterableEquals(expectedResult, result);
   }
 
   /**
@@ -355,7 +396,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   public void testQueryRepositorySpaces() throws Exception {
     String repositorySpaceQuery = "repository space query";
 
-    List<VoteWsResult> expectedResult = new ArrayList<>(); // TODO
+    List<RepositorySpaceWsResult> expectedResult =
+        ListUtil.list(easyRandom.nextObject(RepositorySpaceWsResult[].class));
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
@@ -373,9 +415,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     List<RepositorySpaceWsResult> result = proxy.queryRepositorySpaces(repositorySpaceQuery);
 
-    // TODO: Assert
+    // Assert result
+    assertIterableEquals(expectedResult, result);
   }
 
   /**
@@ -385,7 +429,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   public void testQueryRepositories() throws Exception {
     String repositoryQuery = "repository query";
 
-    List<RepositoryWsResult> expectedResult = new ArrayList<>(); // TODO
+    List<RepositoryWsResult> expectedResult =
+        ListUtil.list(easyRandom.nextObject(RepositoryWsResult[].class));
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
@@ -403,9 +448,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     List<RepositoryWsResult> result = proxy.queryRepositories(repositoryQuery);
 
-    // TODO: Assert
+    // Assert result
+    assertIterableEquals(expectedResult, result);
   }
 
   /**
@@ -423,7 +470,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   public void testQueryPolls() throws Exception {
     String pollQuery = "repository query";
 
-    List<PollWsResult> expectedResult = new ArrayList<>(); // TODO
+    List<PollWsResult> expectedResult =
+        ListUtil.list(easyRandom.nextObject(PollWsResult[].class));
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
@@ -441,9 +489,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     List<PollWsResult> result = proxy.queryPolls(pollQuery);
 
-    // TODO: Assert
+    // Assert result
+    assertIterableEquals(expectedResult, result);
   }
 
   /**
@@ -451,7 +501,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetPlatformConfiguration() throws Exception {
-    PlatformConfigurationWsResult expectedResult = new PlatformConfigurationWsResult(); // TODO
+    PlatformConfigurationWsResult expectedResult =
+        easyRandom.nextObject(PlatformConfigurationWsResult.class);
 
     // Prepare the endpoint URI
     String platformConfigEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/config/platform";
@@ -465,9 +516,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     PlatformConfigurationWsResult result = proxy.getPlatformConfiguration();
 
-    // TODO: Assert
+    // Assert result
+    assertEquals(expectedResult, result);
   }
 
   /**
@@ -477,7 +530,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   public void testQueryTdbPublishers() throws Exception {
     String tdbPublisherQuery = "tdb publisher query";
 
-    List<TdbPublisherWsResult> expectedResult = new ArrayList<>(); // TODO
+    List<TdbPublisherWsResult> expectedResult =
+        ListUtil.list(easyRandom.nextObject(TdbPublisherWsResult[].class));
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
@@ -495,9 +549,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     List<TdbPublisherWsResult> result = proxy.queryTdbPublishers(tdbPublisherQuery);
 
-    // TODO: Assert
+    // Assert result
+    assertIterableEquals(expectedResult, result);
   }
 
   /**
@@ -507,7 +563,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   public void testQueryTdbTitles() throws Exception {
     String tdbTitleQuery = "tdb title query";
 
-    List<TdbTitleWsResult> expectedResult = new ArrayList<>(); // TODO
+    List<TdbTitleWsResult> expectedResult =
+        ListUtil.list(easyRandom.nextObject(TdbTitleWsResult[].class));
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
@@ -525,9 +582,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     List<TdbTitleWsResult> result = proxy.queryTdbTitles(tdbTitleQuery);
 
-    // TODO: Assert
+    // Assert result
+    assertIterableEquals(expectedResult, result);
   }
 
   /**
@@ -537,7 +596,8 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
   public void testQueryTdbAus() throws Exception {
     String tdbAuQuery = "tdb au query";
 
-    List<TdbAuWsResult> expectedResult = new ArrayList<>(); // TODO
+    List<TdbAuWsResult> expectedResult =
+        ListUtil.list(easyRandom.nextObject(TdbAuWsResult[].class));
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
@@ -555,9 +615,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(expectedResult)));
 
+    // Make SOAP call
     List<TdbAuWsResult> result = proxy.queryTdbAus(tdbAuQuery);
 
-    // TODO: Assert
+    // Assert result
+    assertIterableEquals(expectedResult, result);
   }
 
   /**
@@ -568,7 +630,17 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     String auId = "auId";
     String urlPrefix = "urlPrefix";
 
-    List<String> expectedResult = new ArrayList<>(); // TODO
+    List<Artifact> artifacts = ListUtil.list(easyRandom.nextObject(Artifact[].class));
+
+    PageInfo pageInfo = new PageInfo();
+    pageInfo.setResultsPerPage(artifacts.size());
+    pageInfo.setTotalCount(artifacts.size());
+
+    ArtifactPageInfo page = new ArtifactPageInfo();
+    page.setPageInfo(pageInfo);
+    page.setArtifacts(artifacts);
+
+    List<String> expectedResult = artifacts.stream().map(Artifact::getUri).collect(Collectors.toList());
 
     // Prepare the URI path variables
     Map<String, String> uriVariables = new HashMap<>(1);
@@ -589,10 +661,12 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
         .andExpect(header("Authorization", BASIC_AUTH_HASH))
         .andRespond(withStatus(HttpStatus.OK)
             .contentType(MediaType.APPLICATION_JSON)
-            .body(mapper.writeValueAsString(expectedResult)));
+            .body(mapper.writeValueAsString(page)));
 
+    // Make SOAP call
     List<String> result = proxy.getAuUrls(auId, urlPrefix);
 
-    // TODO: Assert
+    // Assert result
+    assertIterableEquals(expectedResult, result);
   }
 }
