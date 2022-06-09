@@ -422,7 +422,6 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
               .patchArchivalUnitState(auId, "{\"isMetadataExtractionEnabled\":false}", null);
       log.debug2("response = {}", response);
 
-      // Q: Always return successful result?
       RequestAuControlResult result = new RequestAuControlResult(auId, true, null);
       log.debug2("result = {}", result);
       return result;
