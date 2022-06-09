@@ -158,6 +158,9 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     CheckSubstanceResult result = proxy.checkSubstanceById(auId);
 
     assertEquals(expectedResult, result);
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   private void assertEquals(CheckSubstanceResult expected, CheckSubstanceResult actual) {
@@ -208,6 +211,9 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     for (int i = 0; i < auids.size(); i++) {
       assertEquals(expectedResults.get(i), actualResults.get(i));
     }
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -271,6 +277,9 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     assertEquals(auId, result.getId());
     assertTrue(result.isSuccess());
     assertNull(result.getErrorMessage());
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -312,6 +321,9 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     for (int i = 0; i < auids.size(); i++) {
       assertEquals(expectedResults.get(i), actualResults.get(i));
     }
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   private void assertEquals(RequestAuControlResult expected, RequestAuControlResult actual) {
@@ -355,6 +367,9 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     assertEquals(auId, result.getId());
     assertTrue(result.isSuccess());
     assertNull(result.getErrorMessage());
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -403,6 +418,9 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     for (int i = 0; i < auids.size(); i++) {
       assertEquals(expectedResults.get(i), actualResults.get(i));
     }
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -437,6 +455,9 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     assertEquals(auId, result.getId());
     assertTrue(result.isSuccess());
     assertNull(result.getErrorMessage());
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -481,6 +502,9 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     for (int i = 0; i < auids.size(); i++) {
       assertEquals(expectedResults.get(i), actualResults.get(i));
     }
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -515,6 +539,9 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     assertEquals(auId, result.getId());
     assertTrue(result.isSuccess());
     assertNull(result.getErrorMessage());
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -559,5 +586,8 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     for (int i = 0; i < auids.size(); i++) {
       assertEquals(expectedResults.get(i), actualResults.get(i));
     }
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 }

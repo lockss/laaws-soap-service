@@ -235,6 +235,9 @@ public class TestImportService extends SpringLockssTestCase4 {
     assertNotNull(result);
     assertTrue(result.getIsSuccess());
     assertNull(result.getMessage());
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   private MultiValueMap<String, FileItem> getRequestParts(MultipartMessage mmsg) {
@@ -323,6 +326,9 @@ public class TestImportService extends SpringLockssTestCase4 {
     assertNotNull(result);
     assertTrue(result.getIsSuccess());
     assertNull(result.getMessage());
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -348,5 +354,8 @@ public class TestImportService extends SpringLockssTestCase4 {
     String[] result = proxy.getSupportedChecksumAlgorithms();
 
     assertIterableEquals(supportedAlgorithms, Arrays.asList(result));
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 }

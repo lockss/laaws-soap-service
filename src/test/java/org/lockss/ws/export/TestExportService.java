@@ -204,5 +204,8 @@ public class TestExportService extends SpringLockssTestCase4 {
     assertEquals(1, wrappers.length);
     assertInputStreamMatchesString("hello world",
         wrappers[0].getDataHandler().getInputStream());
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 }

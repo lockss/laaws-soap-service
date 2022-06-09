@@ -498,6 +498,9 @@ public class TestContentService extends SpringLockssTestCase4 {
       assertNotNull(dh);
       assertInputStreamMatchesString("hello world", dh.getInputStream());
       assertEquals(MediaType.APPLICATION_OCTET_STREAM_VALUE, dh.getContentType());
+
+      mockRestServer.verify();
+      mockRestServer.reset();
     }
   }
 
@@ -619,6 +622,9 @@ public class TestContentService extends SpringLockssTestCase4 {
       assertNotNull(dh);
       assertInputStreamMatchesString("hello world", dh.getInputStream());
       assertEquals(MediaType.APPLICATION_OCTET_STREAM_VALUE, dh.getContentType());
+
+      mockRestServer.verify();
+      mockRestServer.reset();
     }
   }
 
