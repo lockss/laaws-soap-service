@@ -30,6 +30,7 @@ package org.lockss.ws.importer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.lockss.laaws.rs.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.PropertiesUtil;
@@ -157,80 +158,41 @@ public class ImportServiceImpl extends BaseServiceImpl implements ImportService 
 
     ImportWsResult wsResult = new ImportWsResult();
 
-    // The stream to the file to be imported.
-    InputStream input = null;
+    // Prepare the endpoint URI.
+    URI uri = getImportEndpointUri();
+    log.trace("uri = {}", uri);
 
-    // The temporary file used to find the content length.
-    File tmpFile = null;
+    // Get the wrapper of the pushed file to be imported.
+    DataHandler dataHandler = importParams.getDataHandler();
 
-    try {
-      // Prepare the endpoint URI.
-      URI uri = getImportEndpointUri();
-      log.trace("uri = {}", uri);
+    try (InputStream in = dataHandler.getInputStream()) {
+      try (DeferredTempFileOutputStream dfos =
+               new DeferredTempFileOutputStream((int) (128 * FileUtils.ONE_KB))) {
 
-      // Get the wrapper of the pushed file to be imported.
-      DataHandler dataHandler = importParams.getDataHandler();
+        IOUtils.copyLarge(in, dfos);
 
-      try {
-        // Open a stream to the pushed file to be imported.
-        input = dataHandler.getInputStream();
-      } catch (IOException ioe) {
+        // Perform the REST call to import the content.
+        wsResult =
+            performRestCall(
+                importParams.getTargetId(),
+                importParams.getTargetUrl(),
+                importParams.getProperties(),
+                dfos.getDeleteOnCloseInputStream(),
+                uri,
+                // Content-Type will default to application/octet-stream if not
+                // specified in the SOAP request:
+                dataHandler.getContentType(),
+                dfos.getByteCount());
+      } catch (Exception e) {
         wsResult.setIsSuccess(Boolean.FALSE);
-        wsResult.setMessage("Cannot open input stream to pushed content: " + ioe.getMessage());
-
-        log.debug2("wsResult = {}", wsResult);
-        return wsResult;
+        wsResult.setMessage("Cannot import pushed content: " + e.getMessage());
       }
-
-      tmpFile = File.createTempFile("imported", "", null);
-
-      try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
-        StreamUtils.copy(input, fos);
-      } catch (IOException e) {
-        log.warn("Error writing to DFOS", e);
-      }
-
-      // Clean up.
-      if (input != null) {
-        try {
-          input.close();
-        } catch (IOException ioe) {
-          log.warn("Exception caught closing input stream", ioe);
-        }
-      }
-
-      // Continue using the copy just made.
-      input = new FileInputStream(tmpFile);
-
-      // Perform the REST call to import the content.
-      wsResult =
-          performRestCall(
-              importParams.getTargetId(),
-              importParams.getTargetUrl(),
-              importParams.getProperties(),
-              input,
-              uri,
-              // Content-Type will default to application/octet-stream if not
-              // specified in the SOAP request:
-              dataHandler.getContentType(),
-              tmpFile.length());
-    } catch (Exception e) {
+    } catch (IOException ioe) {
       wsResult.setIsSuccess(Boolean.FALSE);
-      wsResult.setMessage("Cannot import pushed content: " + e.getMessage());
-    } finally {
-      if (input != null) {
-        try {
-          input.close();
-        } catch (IOException ioe) {
-          log.warn("Exception caught closing input stream", ioe);
-        }
-      }
+      wsResult.setMessage("Cannot open input stream to pushed content: " + ioe.getMessage());
 
-      if (tmpFile != null) {
-        if (!tmpFile.delete()) {
-          tmpFile.deleteOnExit();
-        }
-      }
+      log.debug2("wsResult = {}", wsResult);
+      return wsResult;
     }
 
     log.debug2("wsResult = {}", wsResult);
