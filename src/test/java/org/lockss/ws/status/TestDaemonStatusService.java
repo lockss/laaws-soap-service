@@ -177,8 +177,6 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
    */
   @Test
   public void testGetAuIds() throws Exception {
-   EasyRandom easyRandom = new EasyRandom();
-
     // Generate REST response
     List<AuWsResult> restResponse =
         ListUtil.list(easyRandom.nextObject(AuWsResult[].class));
@@ -186,9 +184,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     // Generate expected SOAP response map (AUID -> IdNamePair)
     Map<String, IdNamePair> expectedResultMap = new HashMap<>();
 
-    int processed = 0;
     for (AuWsResult result : restResponse) {
-      processed++;
       IdNamePair resultElement = new IdNamePair(result.getAuId(), result.getName());
       expectedResultMap.put(result.getAuId(), resultElement);
     }
