@@ -126,7 +126,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
 
     // Create EasyRandom generator
-   easyRandom = new EasyRandom();
+    easyRandom = new EasyRandom();
   }
 
   /**
@@ -134,31 +134,46 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
    */
   @Test
   public void testIsDaemonReady() throws Exception {
-    for (boolean isRepoReady : ListUtil.list(true, false))
-      for (boolean isCfgReady : ListUtil.list(true, false))
-        for (boolean isPollerReady : ListUtil.list(true, false))
-          for (boolean isMdxReady : ListUtil.list(true, false))
-            for (boolean isMdqReady : ListUtil.list(true, false)) {
-              mockIsServiceReady(env.getProperty(REPO_SVC_URL_KEY), isRepoReady);
-              mockIsServiceReady(env.getProperty(CONFIG_SVC_URL_KEY), isCfgReady);
-              mockIsServiceReady(env.getProperty(POLLER_SVC_URL_KEY), isPollerReady);
-              mockIsServiceReady(env.getProperty(MDX_SVC_URL_KEY), isMdxReady);
-              mockIsServiceReady(env.getProperty(MDQ_SVC_URL_KEY), isMdqReady);
+    int allSvcsStopped = 0b00000;
+    int allSvcsReady = 0b11111;
 
-              boolean isDaemonReady =
-                  isRepoReady && isCfgReady && isPollerReady && isMdxReady && isMdqReady;
+    for (int svcsReady = allSvcsStopped; svcsReady <= allSvcsReady; svcsReady++) {
 
-              assertEquals(isDaemonReady, proxy.isDaemonReady());
+      boolean isRepoReady = (svcsReady & 0b10000) != 0;
+      boolean isCfgReady = (svcsReady & 0b01000) != 0;
+      boolean isPollerReady = (svcsReady & 0b00100) != 0;
+      boolean isMdxReady = (svcsReady & 0b00010) != 0;
+      boolean isMdqReady = (svcsReady & 0b00001) != 0;
 
-              // mockRestServer.verify();
-              mockRestServer.reset();
-            }
+      boolean isPollerCallExpected = (svcsReady & 0b11000) == 0b11000;
+      boolean isMdxCallExpected = (svcsReady & 0b11100) == 0b11100;
+      boolean isMdqCallExpected = (svcsReady & 0b11110) == 0b11110;
+
+      // boolean isDaemonReady = isRepoReady & isCfgReady & isPollerReady && isMdxReady & isMdqReady;
+      boolean isDaemonReady = svcsReady == allSvcsReady;
+
+      mockIsServiceReady(env.getProperty(REPO_SVC_URL_KEY), isRepoReady, true);
+      mockIsServiceReady(env.getProperty(CONFIG_SVC_URL_KEY), isCfgReady, isRepoReady);
+      mockIsServiceReady(env.getProperty(POLLER_SVC_URL_KEY), isPollerReady, isPollerCallExpected);
+      mockIsServiceReady(env.getProperty(MDX_SVC_URL_KEY), isMdxReady, isMdxCallExpected);
+      mockIsServiceReady(env.getProperty(MDQ_SVC_URL_KEY), isMdqReady, isMdqCallExpected);
+
+      assertEquals(isDaemonReady, proxy.isDaemonReady());
+
+      mockRestServer.verify();
+      mockRestServer.reset();
+    }
   }
 
-  private void mockIsServiceReady(String url, boolean isReady) throws Exception {
+  private void mockIsServiceReady(String url, boolean isReady, boolean isCallExpected) throws Exception {
     // Prepare the endpoint URI
     String statusEndpoint = url + "/status";
     URI statusQuery = RestUtil.getRestUri(statusEndpoint, null, null);
+
+    if (isCallExpected) {
+      mockRestServer
+          .expect(ExpectedCount.never(), requestTo(statusQuery));
+    }
 
     ApiStatus apiStatus = easyRandom.nextObject(ApiStatus.class);
     apiStatus.setReady(isReady);
