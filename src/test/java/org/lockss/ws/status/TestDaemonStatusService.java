@@ -149,7 +149,6 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
       boolean isMdxCallExpected = (svcsReady & 0b11100) == 0b11100;
       boolean isMdqCallExpected = (svcsReady & 0b11110) == 0b11110;
 
-      // boolean isDaemonReady = isRepoReady & isCfgReady & isPollerReady && isMdxReady & isMdqReady;
       boolean isDaemonReady = svcsReady == allSvcsReady;
 
       mockIsServiceReady(env.getProperty(REPO_SVC_URL_KEY), isRepoReady, true);
