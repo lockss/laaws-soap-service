@@ -170,9 +170,9 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     String statusEndpoint = url + "/status";
     URI statusQuery = RestUtil.getRestUri(statusEndpoint, null, null);
 
-    if (isCallExpected) {
-      mockRestServer
-          .expect(ExpectedCount.never(), requestTo(statusQuery));
+    if (!isCallExpected) {
+      mockRestServer.expect(ExpectedCount.never(), requestTo(statusQuery));
+      return;
     }
 
     ApiStatus apiStatus = easyRandom.nextObject(ApiStatus.class);
