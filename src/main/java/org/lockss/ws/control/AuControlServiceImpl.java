@@ -31,6 +31,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.config.RestConfigClient;
+import org.lockss.util.rest.crawler.CrawlDesc;
+import org.lockss.util.rest.crawler.CrawlJob;
+import org.lockss.util.rest.crawler.RestCrawlerClient;
+import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.exception.LockssRestHttpException;
 import org.lockss.util.rest.mdx.MetadataUpdateSpec;
 import org.lockss.util.rest.poller.PollDesc;
@@ -46,6 +50,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 /** The AU Control SOAP web service implementation. */
 @Service
@@ -129,12 +135,29 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
     log.debug2("auId = {}, priority = {}, force = {}", auId, priority, force);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      RequestCrawlResult result = new RequestCrawlResult(auId, true, "No delay", "It worked!");
-      // TODO: END OF BLOCK TO BE REPLACED.
+      CrawlDesc crawlDesc = new CrawlDesc();
+      crawlDesc.setAuId(auId);
+      crawlDesc.setPriority(priority);
+      crawlDesc.setForceCrawl(force);
 
-      log.debug2("result = {}", result);
-      return result;
+      try {
+        CrawlJob job = new RestCrawlerClient(env.getProperty(CRAWLER_SVC_URL_KEY))
+            .addRequestHeaders(getAuthHeaders())
+            .setRestTemplate(restTemplate)
+            .callCrawl(crawlDesc);
+
+        return new RequestCrawlResult(auId, true, job.getDelayReason(), null);
+      } catch (LockssRestHttpException e) {
+        String msg = e.getMessage();
+
+        // Handle a missing Archival Unit.
+        if (e.getHttpStatus().equals(HttpStatus.NOT_FOUND)) {
+        } else if (e.getCause() != null) {
+          msg = e.getCause().getMessage();
+        }
+
+        return new RequestCrawlResult(auId, false, null, msg);
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
@@ -190,17 +213,34 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
         force);
 
     try {
-      // TODO: REPLACE THIS BLOCK WITH THE ACTUAL IMPLEMENTATION.
-      RequestDeepCrawlResult result =
-          new RequestDeepCrawlResult(auId, 1, true, "No delay", "It worked!");
-      // TODO: END OF BLOCK TO BE REPLACED.
+      CrawlDesc crawlDesc = new CrawlDesc();
+      crawlDesc.setAuId(auId);
+      crawlDesc.setPriority(priority);
+      crawlDesc.setForceCrawl(force);
 
-      log.debug2("result = {}", result);
-      return result;
+      try {
+        CrawlJob job = new RestCrawlerClient(env.getProperty(CRAWLER_SVC_URL_KEY))
+            .addRequestHeaders(getAuthHeaders())
+            .setRestTemplate(restTemplate)
+            .callCrawl(crawlDesc);
+
+        return new RequestDeepCrawlResult(auId, refetchDepth, true, job.getDelayReason(), null);
+      } catch (LockssRestHttpException e) {
+        String msg = e.getMessage();
+
+        // Handle a missing Archival Unit.
+        if (e.getHttpStatus().equals(HttpStatus.NOT_FOUND)) {
+        } else if (e.getCause() != null) {
+          msg = e.getCause().getMessage();
+        }
+
+        return new RequestDeepCrawlResult(auId, refetchDepth, false, null, msg);
+      }
     } catch (Exception e) {
       throw new LockssWebServicesFault(e);
     }
   }
+
 
   /**
    * Requests the deep crawl of the archival units defined by a list with their identifiers.
@@ -278,7 +318,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
       log.trace("message = {}", message);
 
       // Handle a missing Archival Unit.
-      if (lrhe.getHttpStatus().equals(HttpStatus.NOT_FOUND)) {
+      if (lrhe.getHttpStatus().equals(NOT_FOUND)) {
         message = NO_SUCH_AU_ERROR_MESSAGE;
       } else if (lrhe.getCause() != null) {
         message = lrhe.getCause().getMessage();
