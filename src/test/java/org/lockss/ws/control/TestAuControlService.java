@@ -39,10 +39,14 @@ import org.lockss.log.L4JLogger;
 import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.util.ListUtil;
 import org.lockss.util.rest.RestUtil;
+import org.lockss.util.rest.crawler.CrawlDesc;
+import org.lockss.util.rest.crawler.CrawlJob;
 import org.lockss.util.rest.mdx.MetadataUpdateSpec;
 import org.lockss.util.rest.poller.PollDesc;
 import org.lockss.ws.entities.CheckSubstanceResult;
 import org.lockss.ws.entities.RequestAuControlResult;
+import org.lockss.ws.entities.RequestCrawlResult;
+import org.lockss.ws.entities.RequestDeepCrawlResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -221,7 +225,40 @@ public class TestAuControlService extends SpringLockssTestCase4 {
    */
   @Test
   public void testRequestCrawlById() throws Exception {
-    // TODO: Not implemented
+    String auId = "testAuid";
+    int priority = 1;
+    boolean force = true;
+
+    CrawlJob job = new CrawlJob();
+
+    CrawlDesc crawlDesc = new CrawlDesc();
+    crawlDesc.setAuId(auId);
+    crawlDesc.setPriority(priority);
+    crawlDesc.setForceCrawl(force);
+
+    // Prepare the endpoint URI
+    URI crawlsEndpoint =
+        RestUtil.getRestUri(env.getProperty(CRAWLER_SVC_URL_KEY) + "/crawls", null, null);
+
+    // Mock REST call for ArtifactData
+    mockRestServer
+        .expect(ExpectedCount.once(), requestTo(crawlsEndpoint))
+        .andExpect(method(HttpMethod.POST))
+        .andExpect(header("Authorization", BASIC_AUTH_HASH))
+        .andExpect(content().string(mapper.writeValueAsString(crawlDesc)))
+        .andRespond(withStatus(HttpStatus.OK)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(mapper.writeValueAsString(job)));
+
+    RequestCrawlResult result = proxy.requestCrawlById(auId, priority, force);
+
+    assertEquals(auId, result.getId());
+    assertTrue(result.isSuccess());
+    assertNull(result.getDelayReason());
+    assertNull(result.getErrorMessage());
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -229,7 +266,47 @@ public class TestAuControlService extends SpringLockssTestCase4 {
    */
   @Test
   public void testRequestCrawlByIdList() throws Exception {
-    // TODO: Not implemented
+    List<String> auids = ListUtil.list("A", "B", "C");
+    int priority = 1;
+    boolean force = true;
+
+    // Empy CrawlJob: SOAP endpoint only looks at HTTP status code anyway
+    CrawlJob job = new CrawlJob();
+
+    // Prepare the endpoint URI
+    URI crawlsEndpoint =
+        RestUtil.getRestUri(env.getProperty(CRAWLER_SVC_URL_KEY) + "/crawls", null, null);
+
+    for (String auId : auids) {
+      CrawlDesc crawlDesc = new CrawlDesc();
+      crawlDesc.setAuId(auId);
+      crawlDesc.setPriority(priority);
+      crawlDesc.setForceCrawl(force);
+
+      // Mock REST call for ArtifactData
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(crawlsEndpoint))
+          .andExpect(method(HttpMethod.POST))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andExpect(content().string(mapper.writeValueAsString(crawlDesc)))
+          .andRespond(withStatus(HttpStatus.OK)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(mapper.writeValueAsString(job)));
+    }
+
+    List<RequestCrawlResult> results = proxy.requestCrawlByIdList(auids, priority, force);
+
+    assertEquals(auids.size(), results.size());
+
+    for (RequestCrawlResult result : results) {
+      assertTrue(auids.contains(result.getId()));
+      assertTrue(result.isSuccess());
+      assertNull(result.getDelayReason());
+      assertNull(result.getErrorMessage());
+    }
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -237,7 +314,42 @@ public class TestAuControlService extends SpringLockssTestCase4 {
    */
   @Test
   public void testRequestDeepCrawlById() throws Exception {
-    // TODO: Not implemented
+    String auId = "testAuid";
+    int priority = 1;
+    int refetchDepth = 123;
+    boolean force = true;
+
+    CrawlJob job = new CrawlJob();
+
+    CrawlDesc crawlDesc = new CrawlDesc();
+    crawlDesc.setAuId(auId);
+    crawlDesc.setPriority(priority);
+    crawlDesc.setRefetchDepth(refetchDepth);
+    crawlDesc.setForceCrawl(force);
+
+    // Prepare the endpoint URI
+    URI crawlsEndpoint =
+        RestUtil.getRestUri(env.getProperty(CRAWLER_SVC_URL_KEY) + "/crawls", null, null);
+
+    // Mock REST call for ArtifactData
+    mockRestServer
+        .expect(ExpectedCount.once(), requestTo(crawlsEndpoint))
+        .andExpect(method(HttpMethod.POST))
+        .andExpect(header("Authorization", BASIC_AUTH_HASH))
+        .andExpect(content().string(mapper.writeValueAsString(crawlDesc)))
+        .andRespond(withStatus(HttpStatus.OK)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(mapper.writeValueAsString(job)));
+
+    RequestCrawlResult result = proxy.requestDeepCrawlById(auId, refetchDepth, priority, force);
+
+    assertEquals(auId, result.getId());
+    assertTrue(result.isSuccess());
+    assertNull(result.getDelayReason());
+    assertNull(result.getErrorMessage());
+
+    mockRestServer.verify();
+    mockRestServer.reset();
   }
 
   /**
@@ -245,8 +357,50 @@ public class TestAuControlService extends SpringLockssTestCase4 {
    */
   @Test
   public void testRequestDeepCrawlByIdList() throws Exception {
-    // TODO: Not implemented
-  }
+    List<String> auids = ListUtil.list("A", "B", "C");
+    int priority = 1;
+    int refetchDepth = -1;
+    boolean force = true;
+
+    // Empy CrawlJob: SOAP endpoint only looks at HTTP status code anyway
+    CrawlJob job = new CrawlJob();
+
+    // Prepare the endpoint URI
+    URI crawlsEndpoint =
+        RestUtil.getRestUri(env.getProperty(CRAWLER_SVC_URL_KEY) + "/crawls", null, null);
+
+    for (String auId : auids) {
+      CrawlDesc crawlDesc = new CrawlDesc();
+      crawlDesc.setAuId(auId);
+      crawlDesc.setPriority(priority);
+      crawlDesc.setRefetchDepth(refetchDepth);
+      crawlDesc.setForceCrawl(force);
+
+      // Mock REST call for ArtifactData
+      mockRestServer
+          .expect(ExpectedCount.once(), requestTo(crawlsEndpoint))
+          .andExpect(method(HttpMethod.POST))
+          .andExpect(header("Authorization", BASIC_AUTH_HASH))
+          .andExpect(content().string(mapper.writeValueAsString(crawlDesc)))
+          .andRespond(withStatus(HttpStatus.OK)
+              .contentType(MediaType.APPLICATION_JSON)
+              .body(mapper.writeValueAsString(job)));
+    }
+
+    List<RequestDeepCrawlResult> results = proxy.requestDeepCrawlByIdList(auids, refetchDepth, priority, force);
+
+    assertEquals(auids.size(), results.size());
+
+    for (RequestDeepCrawlResult result : results) {
+      assertTrue(auids.contains(result.getId()));
+      assertTrue(result.isSuccess());
+      assertNull(result.getDelayReason());
+      assertNull(result.getErrorMessage());
+      assertEquals(refetchDepth, result.getRefetchDepth());
+    }
+
+    mockRestServer.verify();
+    mockRestServer.reset();  }
 
   /**
    * Test for {@link AuControlService#requestPollById(String)}.

@@ -215,6 +215,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
     try {
       CrawlDesc crawlDesc = new CrawlDesc();
       crawlDesc.setAuId(auId);
+      crawlDesc.setRefetchDepth(refetchDepth);
       crawlDesc.setPriority(priority);
       crawlDesc.setForceCrawl(force);
 
