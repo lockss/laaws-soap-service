@@ -39,6 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lockss.laaws.rs.core.LockssRepository;
 import org.lockss.laaws.rs.core.RestLockssRepository;
+import org.lockss.laaws.rs.io.storage.warc.ArtifactState;
 import org.lockss.laaws.rs.model.*;
 import org.lockss.laaws.rs.util.ArtifactConstants;
 import org.lockss.laaws.rs.util.ArtifactDataUtil;
@@ -456,7 +457,7 @@ public class TestContentService extends SpringLockssTestCase4 {
           new ByteArrayInputStream(data),
           new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"),
           new URI(artifact.getStorageUrl()),
-          new ArtifactRepositoryState(artifact.getIdentifier()));
+          ArtifactState.UNCOMMITTED);
 
       artifactData.setContentLength(data.length);
       artifactData.setContentDigest("testDigest");
@@ -580,7 +581,7 @@ public class TestContentService extends SpringLockssTestCase4 {
           new ByteArrayInputStream(data),
           new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"),
           new URI(artifact.getStorageUrl()),
-          new ArtifactRepositoryState(artifact.getIdentifier()));
+          ArtifactState.UNCOMMITTED);
 
       artifactData.setContentLength(data.length);
       artifactData.setContentDigest("testDigest");
@@ -717,16 +718,18 @@ public class TestContentService extends SpringLockssTestCase4 {
     headers.set(ArtifactConstants.ARTIFACT_URI_KEY, id.getUri());
     headers.set(ArtifactConstants.ARTIFACT_VERSION_KEY, String.valueOf(id.getVersion()));
 
+    ArtifactState state = ad.getArtifactState();
+
     //// Artifact repository state information headers if present
-    if (ad.getArtifactRepositoryState() != null) {
+    if (state != null) {
       headers.set(
           ArtifactConstants.ARTIFACT_STATE_COMMITTED,
-          String.valueOf(ad.getArtifactRepositoryState().getCommitted())
+          String.valueOf(state.isCommitted())
       );
 
       headers.set(
           ArtifactConstants.ARTIFACT_STATE_DELETED,
-          String.valueOf(ad.getArtifactRepositoryState().getDeleted())
+          String.valueOf(state.isDeleted())
       );
     }
 
