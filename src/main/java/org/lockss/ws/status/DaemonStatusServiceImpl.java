@@ -415,7 +415,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
           new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
-              .queryRepositories(repositoryQuery);
+              .queryAuRepositories(repositoryQuery);
 
       log.debug2("results = {}", results);
       return results;
