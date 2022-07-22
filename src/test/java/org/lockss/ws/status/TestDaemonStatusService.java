@@ -469,7 +469,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("repositoryQuery", repositoryQuery);
 
     // Prepare the endpoint URI
-    String repositoriesEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/repositories";
+    String repositoriesEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/aurepositories";
     URI repositoriesQuery = RestUtil.getRestUri(repositoriesEndpoint, null, queryParams);
 
     mockRestServer
