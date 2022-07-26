@@ -58,6 +58,11 @@ POSSIBILITY OF SUCH DAMAGE.
     <!-- Not a LAAWS Spring project but needs to be packaged with dependencies -->
     <build.java.spring.repackageJar.skip>false</build.java.spring.repackageJar.skip>
     <build.java.mainClass>org.lockss.ws.SoapApplication</build.java.mainClass>
+
+    <!-- Is a Docker project -->
+    <build.docker.skip>false</build.docker.skip>
+    <build.docker.dockerBuild.restPort>24675</build.docker.dockerBuild.restPort>
+    <!-- <build.docker.dockerBuild.uiPort>246xx</build.docker.dockerBuild.uiPort> -->
   </properties>
 
   <dependencies>
