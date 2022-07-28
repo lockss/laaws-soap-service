@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.test.SpringLockssTestCase4;
+import org.lockss.app.*;
 import org.lockss.util.ListUtil;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.crawler.CrawlDesc;
@@ -47,6 +48,7 @@ import org.lockss.ws.entities.CheckSubstanceResult;
 import org.lockss.ws.entities.RequestAuControlResult;
 import org.lockss.ws.entities.RequestCrawlResult;
 import org.lockss.ws.entities.RequestDeepCrawlResult;
+import org.lockss.ws.test.BaseSoapTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -80,7 +82,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
-public class TestAuControlService extends SpringLockssTestCase4 {
+public class TestAuControlService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
 
   @TestConfiguration
@@ -118,6 +120,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     String wsdlEndpoint = "http://localhost:" + port + "/ws/AuControlService?wsdl";
     Service srv = Service.create(new URL(wsdlEndpoint), new QName(TARGET_NAMESPACE, SERVICE_NAME));
     proxy = srv.getPort(AuControlService.class);
+    initBindings();
 
     // Add authentication headers for SOAP request
     BindingProvider bp = (BindingProvider) proxy;
@@ -147,7 +150,8 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     log.trace("uriVariables = {}", uriVariables);
 
     // Prepare the endpoint URI
-    String checkSubstanceEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/ausubstances/{auid}";
+    log.fatal("test endpoint: {}", getServiceEndpoint(ServiceDescr.SVC_CONFIG));
+    String checkSubstanceEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ausubstances/{auid}";
     URI checkSubstanceQuery = RestUtil.getRestUri(checkSubstanceEndpoint, uriVariables, null);
 
     // Mock REST call for ArtifactData
@@ -194,7 +198,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
       log.trace("uriVariables = {}", uriVariables);
 
       // Prepare the endpoint URI
-      String checkSubstanceEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/ausubstances/{auid}";
+      String checkSubstanceEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ausubstances/{auid}";
       URI checkSubstanceQuery = RestUtil.getRestUri(checkSubstanceEndpoint, uriVariables, null);
 
       // Mock REST call for ArtifactData
@@ -238,7 +242,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
 
     // Prepare the endpoint URI
     URI crawlsEndpoint =
-        RestUtil.getRestUri(env.getProperty(CRAWLER_SVC_URL_KEY) + "/crawls", null, null);
+      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/crawls", null, null);
 
     // Mock REST call for ArtifactData
     mockRestServer
@@ -275,7 +279,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
 
     // Prepare the endpoint URI
     URI crawlsEndpoint =
-        RestUtil.getRestUri(env.getProperty(CRAWLER_SVC_URL_KEY) + "/crawls", null, null);
+      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/crawls", null, null);
 
     for (String auId : auids) {
       CrawlDesc crawlDesc = new CrawlDesc();
@@ -329,7 +333,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
 
     // Prepare the endpoint URI
     URI crawlsEndpoint =
-        RestUtil.getRestUri(env.getProperty(CRAWLER_SVC_URL_KEY) + "/crawls", null, null);
+      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/crawls", null, null);
 
     // Mock REST call for ArtifactData
     mockRestServer
@@ -367,7 +371,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
 
     // Prepare the endpoint URI
     URI crawlsEndpoint =
-        RestUtil.getRestUri(env.getProperty(CRAWLER_SVC_URL_KEY) + "/crawls", null, null);
+      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/crawls", null, null);
 
     for (String auId : auids) {
       CrawlDesc crawlDesc = new CrawlDesc();
@@ -413,7 +417,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     pollDescription.setAuId(auId);
 
     // Prepare the endpoint URI
-    String requestPollEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/polls";
+    String requestPollEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/polls";
     URI requestPollQuery = RestUtil.getRestUri(requestPollEndpoint, null, null);
 
     // Mock REST call for ArtifactData
@@ -445,7 +449,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     List<RequestAuControlResult> expectedResults = new ArrayList<>(auids.size());
 
     // Prepare the endpoint URI
-    String requestPollEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/polls";
+    String requestPollEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/polls";
     URI requestPollQuery = RestUtil.getRestUri(requestPollEndpoint, null, null);
 
     for (String auId : auids) {
@@ -503,7 +507,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     queryParams.put("force", String.valueOf(force));
 
     // Prepare the endpoint URI
-    String requestMdIndexingEndpoint = env.getProperty(MDX_SVC_URL_KEY) + "/mdupdates";
+    String requestMdIndexingEndpoint = getServiceEndpoint(ServiceDescr.SVC_MDX) + "/mdupdates";
     URI requestMdIndexingQuery = RestUtil.getRestUri(requestMdIndexingEndpoint, null, queryParams);
 
     // Mock REST call for ArtifactData
@@ -551,7 +555,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
       queryParams.put("force", String.valueOf(force));
 
       // Prepare the endpoint URI
-      String requestMdIndexingEndpoint = env.getProperty(MDX_SVC_URL_KEY) + "/mdupdates";
+      String requestMdIndexingEndpoint = getServiceEndpoint(ServiceDescr.SVC_MDX) + "/mdupdates";
       URI requestMdIndexingQuery = RestUtil.getRestUri(requestMdIndexingEndpoint, null, queryParams);
 
       // Mock REST call for ArtifactData
@@ -589,7 +593,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     uriVariables.put("auid", auId);
 
     // Prepare the endpoint URI
-    String requestMdIndexingEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/austates/{auid}";
+    String requestMdIndexingEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/austates/{auid}";
     URI requestMdIndexingQuery = RestUtil.getRestUri(requestMdIndexingEndpoint, uriVariables, null);
 
     // Mock REST call for ArtifactData
@@ -633,7 +637,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
       uriVariables.put("auid", auId);
 
       // Prepare the endpoint URI
-      String requestMdIndexingEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/austates/{auid}";
+      String requestMdIndexingEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/austates/{auid}";
       URI requestMdIndexingQuery = RestUtil.getRestUri(requestMdIndexingEndpoint, uriVariables, null);
 
       // Mock REST call for ArtifactData
@@ -673,7 +677,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
     uriVariables.put("auid", auId);
 
     // Prepare the endpoint URI
-    String requestMdIndexingEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/austates/{auid}";
+    String requestMdIndexingEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/austates/{auid}";
     URI requestMdIndexingQuery = RestUtil.getRestUri(requestMdIndexingEndpoint, uriVariables, null);
 
     // Mock REST call for ArtifactData
@@ -717,7 +721,7 @@ public class TestAuControlService extends SpringLockssTestCase4 {
       uriVariables.put("auid", auId);
 
       // Prepare the endpoint URI
-      String requestMdIndexingEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/austates/{auid}";
+      String requestMdIndexingEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/austates/{auid}";
       URI requestMdIndexingQuery = RestUtil.getRestUri(requestMdIndexingEndpoint, uriVariables, null);
 
       // Mock REST call for ArtifactData

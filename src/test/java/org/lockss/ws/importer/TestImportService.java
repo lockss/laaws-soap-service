@@ -88,8 +88,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.lockss.ws.BaseServiceImpl.POLLER_SVC_URL_KEY;
-import static org.lockss.ws.BaseServiceImpl.REPO_SVC_URL_KEY;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
@@ -97,6 +95,8 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
 public class TestImportService extends SpringLockssTestCase4 {
+String POLLER_SVC_URL_KEY="";
+String REPO_SVC_URL_KEY="";
   private static final L4JLogger log = L4JLogger.getLogger();
 
   @TestConfiguration

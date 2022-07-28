@@ -39,6 +39,7 @@ import org.lockss.log.L4JLogger;
 import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.util.ListUtil;
 import org.lockss.util.rest.RestResponseErrorBody;
+import org.lockss.ws.test.BaseSoapTest;
 import org.lockss.ws.entities.ContentConfigurationResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-import static org.lockss.ws.BaseServiceImpl.CONFIG_SVC_URL_KEY;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
@@ -73,6 +73,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
 public class TestContentConfigurationService extends SpringLockssTestCase4 {
+  String CONFIG_SVC_URL_KEY = "";
   private static final L4JLogger log = L4JLogger.getLogger();
 
   @TestConfiguration

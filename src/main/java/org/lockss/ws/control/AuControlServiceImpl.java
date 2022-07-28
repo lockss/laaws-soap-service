@@ -28,6 +28,7 @@ in this Software without prior written authorization from Stanford University.
 package org.lockss.ws.control;
 
 import org.apache.commons.lang3.StringUtils;
+import org.lockss.app.*;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.config.RestConfigClient;
@@ -84,7 +85,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
     try {
       // Make the REST call to disable metadata indexing for the Archival Unit.
       CheckSubstanceResult response =
-          new RestConfigClient(env.getProperty(CONFIG_SVC_URL_KEY))
+          new RestConfigClient(getServiceEndpoint(ServiceDescr.SVC_CONFIG))
               .setRestTemplate(restTemplate)
               .addRequestHeaders(getAuthHeaders())
               .putAuSubstanceCheck(auId);
@@ -141,7 +142,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
       crawlDesc.setForceCrawl(force);
 
       try {
-        CrawlJob job = new RestCrawlerClient(env.getProperty(CRAWLER_SVC_URL_KEY))
+        CrawlJob job = new RestCrawlerClient(getServiceEndpoint(ServiceDescr.SVC_CRAWLER))
             .addRequestHeaders(getAuthHeaders())
             .setRestTemplate(restTemplate)
             .callCrawl(crawlDesc);
@@ -220,7 +221,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
       crawlDesc.setForceCrawl(force);
 
       try {
-        CrawlJob job = new RestCrawlerClient(env.getProperty(CRAWLER_SVC_URL_KEY))
+        CrawlJob job = new RestCrawlerClient(getServiceEndpoint(ServiceDescr.SVC_CRAWLER))
             .addRequestHeaders(getAuthHeaders())
             .setRestTemplate(restTemplate)
             .callCrawl(crawlDesc);
@@ -307,7 +308,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
 
       // Make the REST call to request the poll.
       String response =
-          new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .callPoll(pollDescription);
@@ -393,7 +394,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              env.getProperty(MDX_SVC_URL_KEY),
+              getServiceEndpoint(ServiceDescr.SVC_MDX),
               "/mdupdates",
               null,
               queryParams,
@@ -457,7 +458,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
     try {
       // Make the REST call to disable metadata indexing for the Archival Unit.
       String response =
-          new RestConfigClient(env.getProperty(CONFIG_SVC_URL_KEY))
+          new RestConfigClient(getServiceEndpoint(ServiceDescr.SVC_CONFIG))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .patchArchivalUnitState(auId, "{\"isMetadataExtractionEnabled\":false}", null);
@@ -509,7 +510,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
     try {
       // Make the REST call to disable metadata indexing for the Archival Unit.
       String response =
-          new RestConfigClient(env.getProperty(CONFIG_SVC_URL_KEY))
+          new RestConfigClient(getServiceEndpoint(ServiceDescr.SVC_CONFIG))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .patchArchivalUnitState(auId, "{\"isMetadataExtractionEnabled\":true}", null);

@@ -43,6 +43,8 @@ import org.apache.cxf.helpers.CastUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
+import org.lockss.app.*;
+import org.lockss.config.*;
 import org.lockss.laaws.rs.core.LockssRepositoryFactory;
 import org.lockss.laaws.rs.core.RestLockssRepository;
 import org.lockss.log.L4JLogger;
@@ -53,6 +55,7 @@ import org.lockss.util.rest.SpringHeaderUtil;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.multipart.MultipartConnector;
 import org.lockss.util.rest.multipart.MultipartResponse;
+import org.lockss.spring.base.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
@@ -63,7 +66,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 /** Base class for the various SOAP web service implementations. */
-public abstract class BaseServiceImpl {
+public class BaseServiceImpl
+  extends BaseSpringApiServiceImpl
+  implements LockssConfigurableService {
+
+  public static final String PREFIX = "org.lockss.soap.";
+
   /** The configuration key for the URL of the Repository REST service. */
   public static final String REPO_SVC_URL_KEY = "repository.service.url";
   /** The configuration key for the URL of the Configuration REST service. */
@@ -84,15 +92,28 @@ public abstract class BaseServiceImpl {
   public static final String CONNECTION_TIMEOUT_KEY = "connection.timeout";
   /** The configuration key for the read timeout. */
   public static final String READ_TIMEOUT_KEY = "read.timeout";
+  /** collection identifier. */
+  public static final String PARAM_REPO_COLLECTION = PREFIX + "repository.collection";
+  public static final String DEFAULT_REPO_COLLECTION = "lockss";
+
+  /** connection timeout. */
+  public static final String PARAM_CONNECTION_TIMEOUT = PREFIX + "connection.timeout";
+  public static final long DEFAULT_CONNECTION_TIMEOUT = 10 * Constants.SECOND;
+
+  /** read timeout. */
+  public static final String PARAM_READ_TIMEOUT = PREFIX + "read.timeout";
+  public static final long DEFAULT_READ_TIMEOUT = 120 * Constants.SECOND;
 
   private static final L4JLogger log = L4JLogger.getLogger();
 
   @Autowired protected Environment env;
   @Autowired protected RestTemplate restTemplate;
 
-  // Default timeouts.
-  private final long defaultConnectTimeout = 10 * Constants.SECOND;
-  private final long defaultReadTimeout = 120 * Constants.SECOND;
+  // Timeouts.
+
+  protected long connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+  protected long readTimeout = DEFAULT_READ_TIMEOUT;
+  protected String repoCollection = DEFAULT_REPO_COLLECTION;
 
   /**
    * Provides the configured connection timeout in milliseconds.
@@ -100,7 +121,16 @@ public abstract class BaseServiceImpl {
    * @return a Long with the configured connection timeout in milliseconds.
    */
   protected Long getConnectionTimeout() {
-    return env.getProperty(CONNECTION_TIMEOUT_KEY, Long.class, defaultConnectTimeout);
+    return connectionTimeout;
+  }
+
+  protected ServiceBinding getServiceBinding(ServiceDescr sd) {
+    return getRunningLockssDaemon().getServiceBinding(sd);
+//     return LockssDaemon.getLockssDaemon().getServiceBinding(sd);
+  }
+
+  public String getServiceEndpoint(ServiceDescr sd) {
+    return getServiceBinding(sd).getRestStem();
   }
 
   /**
@@ -109,7 +139,7 @@ public abstract class BaseServiceImpl {
    * @return a Long with the configured read timeout in milliseconds.
    */
   protected Long getReadTimeout() {
-    return env.getProperty(READ_TIMEOUT_KEY, Long.class, defaultReadTimeout);
+    return readTimeout;
   }
 
   protected HttpHeaders getAuthHeaders() {
@@ -183,7 +213,7 @@ public abstract class BaseServiceImpl {
     String[] credentials = getSoapRequestCredentials();
     log.trace("credentials = [{}, ****]", credentials[0]);
 
-    return new RestLockssRepository(new URL(env.getProperty(REPO_SVC_URL_KEY)),
+    return new RestLockssRepository(new URL(getServiceEndpoint(ServiceDescr.SVC_REPO)),
         restTemplate, credentials[0], credentials[1]);
   }
 
@@ -398,5 +428,20 @@ public abstract class BaseServiceImpl {
       sb.append(separatorLast);
     }
     return sb;
+  }
+
+  @Override
+  public void setConfig(Configuration newConfig,
+                        Configuration prevConfig,
+                        Configuration.Differences changedKeys) {
+    if (changedKeys.contains(PREFIX)) {
+      connectionTimeout =
+        newConfig.getTimeInterval(PARAM_CONNECTION_TIMEOUT,
+                                  DEFAULT_CONNECTION_TIMEOUT);
+      readTimeout = newConfig.getTimeInterval(PARAM_READ_TIMEOUT,
+                                              DEFAULT_READ_TIMEOUT);
+      repoCollection = newConfig.get(PARAM_REPO_COLLECTION,
+                                  DEFAULT_REPO_COLLECTION);
+    }
   }
 }

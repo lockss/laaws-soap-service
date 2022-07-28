@@ -79,7 +79,7 @@ public class SoapApplication implements CommandLineRunner {
    */
   public void run(String... args) {
     // Check whether there are command line arguments available.
-    if (args != null && args.length > 0) {
+    if (true/* || args != null && args.length > 0*/) {
       // Yes: Start the LOCKSS daemon.
       log.info("Starting the LOCKSS SOAP Service");
 

@@ -31,6 +31,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
+import org.lockss.app.*;
 import org.lockss.log.L4JLogger;
 import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.ContentConfigurationResult;
@@ -81,8 +82,7 @@ public class ContentConfigurationServiceImpl extends BaseServiceImpl
     try {
       // Make the REST call.
       ResponseEntity<String> response =
-          callRestServiceEndpoint(
-              env.getProperty(CONFIG_SVC_URL_KEY),
+              callRestServiceEndpoint(getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/aus/add",
               null,
               null,
@@ -145,7 +145,7 @@ public class ContentConfigurationServiceImpl extends BaseServiceImpl
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              env.getProperty(CONFIG_SVC_URL_KEY),
+              getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/aus/delete",
               null,
               null,
@@ -208,7 +208,7 @@ public class ContentConfigurationServiceImpl extends BaseServiceImpl
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              env.getProperty(CONFIG_SVC_URL_KEY),
+              getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/aus/reactivate",
               null,
               null,
@@ -271,7 +271,7 @@ public class ContentConfigurationServiceImpl extends BaseServiceImpl
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              env.getProperty(CONFIG_SVC_URL_KEY),
+              getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/aus/deactivate",
               null,
               null,

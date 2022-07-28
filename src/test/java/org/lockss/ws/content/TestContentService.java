@@ -37,6 +37,7 @@ import org.apache.http.message.BasicStatusLine;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lockss.app.*;
 import org.lockss.laaws.rs.core.LockssRepository;
 import org.lockss.laaws.rs.core.RestLockssRepository;
 import org.lockss.laaws.rs.io.storage.warc.ArtifactState;
@@ -51,6 +52,7 @@ import org.lockss.util.ListUtil;
 import org.lockss.ws.entities.ContentResult;
 import org.lockss.ws.entities.FileWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
+import org.lockss.ws.test.BaseSoapTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -84,14 +86,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.lockss.ws.BaseServiceImpl.REPO_SVC_URL_KEY;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
-public class TestContentService extends SpringLockssTestCase4 {
+public class TestContentService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
 
   @TestConfiguration
@@ -153,7 +154,7 @@ public class TestContentService extends SpringLockssTestCase4 {
       String url = "testUrl";
 
       URI auArtifactsEndpoint =
-          new URI(env.getProperty(REPO_SVC_URL_KEY) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
 
       URI allUrlVersionsEndpoint_p1 = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
           .queryParam("url", url)
@@ -265,7 +266,7 @@ public class TestContentService extends SpringLockssTestCase4 {
       String url = "testUrl";
 
       URI auArtifactsEndpoint =
-          new URI(env.getProperty(REPO_SVC_URL_KEY) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
 
       URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
           .queryParam("url", url)
@@ -324,7 +325,7 @@ public class TestContentService extends SpringLockssTestCase4 {
       int version = 1234;
 
       URI auArtifactsEndpoint =
-          new URI(env.getProperty(REPO_SVC_URL_KEY) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
 
       URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
           .queryParam("url", url)
@@ -395,7 +396,7 @@ public class TestContentService extends SpringLockssTestCase4 {
 
       // REST getArtifacts endpoint
       URI getArtifactsURL =
-          new URI(env.getProperty(REPO_SVC_URL_KEY) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
 
       URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
           .queryParam("url", url)
@@ -437,7 +438,7 @@ public class TestContentService extends SpringLockssTestCase4 {
 
       // REST getArtifactData() endpoint
       URI getArtifactDataURL =
-          new URI(env.getProperty(REPO_SVC_URL_KEY)
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO)
               + "/collections/" + collection
               + "/artifacts/" + artifactId);
 
@@ -519,7 +520,7 @@ public class TestContentService extends SpringLockssTestCase4 {
 
       // REST getArtifacts endpoint
       URI getArtifactsURL =
-          new URI(env.getProperty(REPO_SVC_URL_KEY) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
 
       URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
           .queryParam("url", url)
@@ -561,7 +562,7 @@ public class TestContentService extends SpringLockssTestCase4 {
 
       // REST getArtifactData() endpoint
       URI getArtifactDataURL =
-          new URI(env.getProperty(REPO_SVC_URL_KEY)
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO)
               + "/collections/" + collection
               + "/artifacts/" + artifactId);
 

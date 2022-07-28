@@ -34,6 +34,7 @@ import java.util.Map;
 import javax.activation.DataHandler;
 import javax.xml.ws.soap.MTOM;
 import org.apache.cxf.attachment.AttachmentDataSource;
+import org.lockss.app.*;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.SpringHeaderUtil;
@@ -74,7 +75,7 @@ public class ExportServiceImpl extends BaseServiceImpl implements ExportService 
 
     try {
       // Prepare the endpoint URI.
-      String endpointUri = env.getProperty(POLLER_SVC_URL_KEY) + "/aus/{auId}/export";
+      String endpointUri = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/{auId}/export";
       log.trace("endpointUri = {}", endpointUri);
 
       // Prepare the URI path variables.
