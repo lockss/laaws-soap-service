@@ -88,6 +88,10 @@ POSSIBILITY OF SUCH DAMAGE.
           <groupId>org.apache.solr</groupId>
           <artifactId>solr-solrj</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>jetty-util</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
