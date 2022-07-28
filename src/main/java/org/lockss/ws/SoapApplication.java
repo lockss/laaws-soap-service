@@ -31,14 +31,37 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.lockss.ws;
 
+import org.lockss.app.LockssApp;
+import org.lockss.app.LockssApp.AppSpec;
+import org.lockss.app.LockssDaemon;
+import org.lockss.app.ServiceDescr;
+import org.lockss.log.L4JLogger;
+import org.lockss.plugin.PluginManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ImportResource;
+
+import static org.lockss.app.LockssApp.PARAM_START_PLUGINS;
+import static org.lockss.app.ManagerDescs.ACCOUNT_MANAGER_DESC;
 
 /** Launcher of the Spring Boot application. */
 @SpringBootApplication
 @ImportResource({"classpath:webservice-definition-beans.xml"})
-public class SoapApplication {
+public class SoapApplication implements CommandLineRunner {
+  private static L4JLogger log = L4JLogger.getLogger();
+
+  @Autowired
+  private ApplicationContext appCtx;
+
+  // Manager descriptors.  The order of this table determines the order in
+  // which managers are initialized and started.
+  private static final LockssApp.ManagerDesc[] myManagerDescs = {
+      ACCOUNT_MANAGER_DESC
+  };
+
   /**
    * The entry point of the application.
    *
@@ -46,5 +69,33 @@ public class SoapApplication {
    */
   public static void main(String[] args) {
     SpringApplication.run(SoapApplication.class, args);
+  }
+
+  /**
+   * Callback used to run the application starting the LOCKSS daemon.
+   *
+   * @param args
+   *          A String[] with the command line arguments.
+   */
+  public void run(String... args) {
+    // Check whether there are command line arguments available.
+    if (args != null && args.length > 0) {
+      // Yes: Start the LOCKSS daemon.
+      log.info("Starting the LOCKSS SOAP Service");
+
+      AppSpec spec = new AppSpec()
+          .setService(ServiceDescr.SVC_SOAP)
+          .setArgs(args)
+          .addAppConfig(PARAM_START_PLUGINS, "false")
+          .addAppDefault(PluginManager.PARAM_START_ALL_AUS, "false")
+          .setSpringApplicatonContext(appCtx)
+          .setAppManagers(myManagerDescs);
+
+      LockssApp.startStatic(LockssDaemon.class, spec);
+    } else {
+      // No: Do nothing. This happens when a test is started and before the
+      // test setup has got a chance to inject the appropriate command line
+      // parameters.
+    }
   }
 }

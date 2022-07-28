@@ -186,6 +186,23 @@ POSSIBILITY OF SUCH DAMAGE.
 
     <dependency>
       <groupId>org.lockss</groupId>
+      <artifactId>lockss-core-bundle</artifactId>
+      <version>${version.lockss.lockss-core}</version>
+      <type>pom</type>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.woodstox</groupId>
+          <artifactId>stax2-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.cxf</groupId>
+          <artifactId>cxf-bundle</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lockss</groupId>
       <artifactId>lockss-core-tests-bundle</artifactId>
       <version>${version.lockss.lockss-core-bundle}</version>
       <type>pom</type>
