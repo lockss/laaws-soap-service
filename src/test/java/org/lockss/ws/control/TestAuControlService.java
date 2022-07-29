@@ -50,9 +50,11 @@ import org.lockss.ws.entities.RequestCrawlResult;
 import org.lockss.ws.entities.RequestDeepCrawlResult;
 import org.lockss.ws.test.BaseSoapTest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
@@ -67,6 +69,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -93,6 +96,11 @@ public class TestAuControlService extends BaseSoapTest {
     }
   }
 
+  // The application Context used to specify the command line arguments to be
+  // used for the tests.
+  @Autowired
+  ApplicationContext appCtx;
+
   @Autowired
   protected Environment env;
 
@@ -114,8 +122,31 @@ public class TestAuControlService extends BaseSoapTest {
   private static final String PASSWORD = "lockss-p";
   private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
 
+//   @Before
+//   public void setup() throws Exception {
+//     super.setUp();
+//   }
+
+  /**
+   * Provides the standard command line arguments to start the server.
+   *
+   * @return a List<String> with the command line arguments.
+   */
+  private List<String> getCommandLineArguments() {
+    log.debug2("Invoked");
+
+    List<String> cmdLineArgs = new ArrayList<String>();
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add(getPlatformDiskSpaceConfigPath());
+    log.debug2("cmdLineArgs = {}", cmdLineArgs);
+    return cmdLineArgs;
+  }
+
   @Before
-  public void init() throws MalformedURLException {
+  public void init() throws Exception {
+    // Set up the temporary directory where the test data will reside.
+    setUpTempDirectory(TestAuControlService.class.getCanonicalName());
+
     // Setup proxy to SOAP service
     String wsdlEndpoint = "http://localhost:" + port + "/ws/AuControlService?wsdl";
     Service srv = Service.create(new URL(wsdlEndpoint), new QName(TARGET_NAMESPACE, SERVICE_NAME));
@@ -130,6 +161,13 @@ public class TestAuControlService extends BaseSoapTest {
 
     // Create MockRestServiceServer from RestTemplate
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
+    List<String> cmdLineArgs = getCommandLineArguments();
+    cmdLineArgs.add("-g");
+    cmdLineArgs.add("demo");
+    CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
+    log.fatal("cmdLineArgs: {}", cmdLineArgs);
+    runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
+
   }
 
   /**
