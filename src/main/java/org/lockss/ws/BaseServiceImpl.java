@@ -125,11 +125,20 @@ public class BaseServiceImpl
   }
 
   protected ServiceBinding getServiceBinding(ServiceDescr sd) {
-    return getRunningLockssDaemon().getServiceBinding(sd);
-//     return LockssDaemon.getLockssDaemon().getServiceBinding(sd);
+    LockssDaemon daemon = getRunningLockssDaemon();
+    if (daemon == null) {
+      log.fatal("getServiceBinding no running LockssDaemon");
+      throw new IllegalStateException("No running LockssDaemon, can't access service bindings");
+    }
+    log.fatal("getServiceBinding LockssDaemon: {}", getRunningLockssDaemon());
+    return daemon.getServiceBinding(sd);
   }
 
   public String getServiceEndpoint(ServiceDescr sd) {
+    ServiceBinding binding = getServiceBinding(sd);
+    if (binding == null) {
+      throw new IllegalArgumentException("No service binding for " + sd);
+    }
     return getServiceBinding(sd).getRestStem();
   }
 

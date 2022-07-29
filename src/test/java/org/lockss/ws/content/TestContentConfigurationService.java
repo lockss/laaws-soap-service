@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lockss.app.*;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.util.ListUtil;
@@ -43,11 +44,12 @@ import org.lockss.ws.test.BaseSoapTest;
 import org.lockss.ws.entities.ContentConfigurationResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -60,7 +62,6 @@ import org.springframework.web.client.RestTemplate;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.Service;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -72,8 +73,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
-public class TestContentConfigurationService extends SpringLockssTestCase4 {
-  String CONFIG_SVC_URL_KEY = "";
+public class TestContentConfigurationService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
 
   @TestConfiguration
@@ -84,8 +84,10 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
     }
   }
 
+  // The application Context used to specify the command line arguments to be
+  // used for the tests.
   @Autowired
-  protected Environment env;
+  ApplicationContext appCtx;
 
   @Autowired
   private RestTemplate restTemplate;
@@ -110,7 +112,10 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
       new RestResponseErrorBody.RestResponseError();
 
   @Before
-  public void init() throws MalformedURLException {
+  public void init() throws Exception {
+    // Set up the temporary directory where the test data will reside.
+    setUpTempDirectory(this.getClass().getCanonicalName());
+
     // Setup proxy to SOAP service
     String wsdlEndpoint = "http://localhost:" + port + "/ws/ContentConfigurationService?wsdl";
     Service srv = Service.create(new URL(wsdlEndpoint), new QName(TARGET_NAMESPACE, SERVICE_NAME));
@@ -124,6 +129,15 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
 
     // Create MockRestServiceServer from RestTemplate
     mockRestServer = MockRestServiceServer.createServer(restTemplate);
+
+    List<String> cmdLineArgs = getCommandLineArguments();
+    cmdLineArgs.add("-g");
+    cmdLineArgs.add("demo");
+    CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
+    log.fatal("cmdLineArgs: {}", cmdLineArgs);
+    log.fatal("mocklockssdaemon: {}", getMockLockssDaemon());
+    runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
+    initBindings();                     // must follow run()
   }
 
   /**
@@ -132,7 +146,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
   @Test
   public void testAddAuById() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(env.getProperty(CONFIG_SVC_URL_KEY) + "/aus/add");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/add");
 
     List<String> auids = ListUtil.list("auid1");
 
@@ -261,7 +275,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
   @Test
   public void testAddAusByIdList() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(env.getProperty(CONFIG_SVC_URL_KEY) + "/aus/add");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/add");
 
     //// Test bad or no auth error ("Unauthorized") handling
     {
@@ -432,7 +446,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
   @Test
   public void testDeleteAuById() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(env.getProperty(CONFIG_SVC_URL_KEY) + "/aus/delete");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/delete");
 
     List<String> auids = ListUtil.list("auid1");
 
@@ -560,7 +574,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
   @Test
   public void testDeleteAusByIdList() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(env.getProperty(CONFIG_SVC_URL_KEY) + "/aus/delete");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/delete");
 
     //// Test bad or no auth error ("Unauthorized") handling
     {
@@ -719,7 +733,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
   @Test
   public void testReactivateAuById() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(env.getProperty(CONFIG_SVC_URL_KEY) + "/aus/reactivate");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/reactivate");
 
     List<String> auids = ListUtil.list("auid1");
 
@@ -847,7 +861,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
   @Test
   public void testReactivateAusByIdList() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(env.getProperty(CONFIG_SVC_URL_KEY) + "/aus/reactivate");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/reactivate");
 
     //// Test bad or no auth error ("Unauthorized") handling
     {
@@ -1006,7 +1020,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
   @Test
   public void testDeactivateAuById() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(env.getProperty(CONFIG_SVC_URL_KEY) + "/aus/deactivate");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/deactivate");
 
     List<String> auids = ListUtil.list("auid1");
 
@@ -1134,7 +1148,7 @@ public class TestContentConfigurationService extends SpringLockssTestCase4 {
   @Test
   public void testDeactivateAusByIdList() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(env.getProperty(CONFIG_SVC_URL_KEY) + "/aus/deactivate");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/deactivate");
 
     //// Test bad or no auth error ("Unauthorized") handling
     {

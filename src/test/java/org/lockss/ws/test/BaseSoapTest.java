@@ -41,6 +41,9 @@ import java.util.*;
 
 import static org.lockss.ws.BaseServiceImpl.*;
 
+import org.springframework.test.web.client.MockRestServiceServer;
+import javax.xml.ws.BindingProvider;
+
 public abstract class BaseSoapTest extends SpringLockssTestCase4 {
   private static L4JLogger log = L4JLogger.getLogger();
 
@@ -63,6 +66,9 @@ public abstract class BaseSoapTest extends SpringLockssTestCase4 {
     "mdx=localhost:5;" +
     "mdq=localhost:6";
 
+  protected static final String USERNAME = "lockss-u";
+  protected static final String PASSWORD = "lockss-p";
+
   protected void initBindings() throws MalformedURLException {
     log.fatal("Calling config");
     ConfigurationUtil.addFromArgs(LockssApp.PARAM_SERVICE_BINDINGS, BINDINGS);
@@ -73,4 +79,48 @@ public abstract class BaseSoapTest extends SpringLockssTestCase4 {
   protected String getServiceEndpoint(ServiceDescr descr) {
     return endpointMap.get(descr);
   }
+
+  protected MockRestServiceServer mockRestServer;
+
+//   protected void setUpCommonTestEnv(Object proxy) throws Exception {
+//     // Set up the temporary directory where the test data will reside.
+//     setUpTempDirectory(this.getClass().getCanonicalName());
+
+//     // Add authentication headers for SOAP request
+//     BindingProvider bp = (BindingProvider) proxy;
+//     Map<String, Object> requestContext = bp.getRequestContext();
+//     requestContext.put(BindingProvider.USERNAME_PROPERTY, USERNAME);
+//     requestContext.put(BindingProvider.PASSWORD_PROPERTY, PASSWORD);
+
+//     // Create MockRestServiceServer from RestTemplate
+//     mockRestServer = MockRestServiceServer.createServer(restTemplate);
+//     List<String> cmdLineArgs = getCommandLineArguments();
+//     cmdLineArgs.add("-g");
+//     cmdLineArgs.add("demo");
+//     CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
+//     log.fatal("cmdLineArgs: {}", cmdLineArgs);
+//     log.fatal("mocklockssdaemon: {}", getMockLockssDaemon());
+//     runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
+//     initBindings();                     // must follow run()
+//   }
+
+  /**
+   * Provides the standard command line arguments to start the server.
+   *
+   * @return a List<String> with the command line arguments.
+   */
+  protected List<String> getCommandLineArguments() {
+    log.debug2("Invoked");
+
+    List<String> cmdLineArgs = new ArrayList<String>();
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add(getPlatformDiskSpaceConfigPath());
+    log.debug2("cmdLineArgs = {}", cmdLineArgs);
+    return cmdLineArgs;
+  }
+
+//   @Override
+//   protected Class getMockDaemonClass() {
+//     return LockssDaemon.class;
+//   }
 }

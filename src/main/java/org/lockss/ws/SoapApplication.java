@@ -53,11 +53,11 @@ import static org.lockss.app.ManagerDescs.ACCOUNT_MANAGER_DESC;
 @SpringBootApplication(exclude = {SolrAutoConfiguration.class})
 //@SpringBootApplication
 @ImportResource({"classpath:webservice-definition-beans.xml"})
-public class SoapApplication extends BaseSpringBootApplication implements CommandLineRunner {
+public class SoapApplication implements CommandLineRunner {
   private static L4JLogger log = L4JLogger.getLogger();
 
-//   @Autowired
-//   private ApplicationContext appCtx;
+  @Autowired
+  private ApplicationContext appCtx;
 
   // Manager descriptors.  The order of this table determines the order in
   // which managers are initialized and started.
@@ -95,8 +95,7 @@ public class SoapApplication extends BaseSpringBootApplication implements Comman
           .setArgs(args)
           .addAppConfig(PARAM_START_PLUGINS, "false")
           .addAppDefault(PluginManager.PARAM_START_ALL_AUS, "false")
-	.setSpringApplicatonContext(getApplicationContext())
-//           .setSpringApplicatonContext(appCtx)
+          .setSpringApplicatonContext(appCtx)
           .setAppManagers(myManagerDescs);
 
       LockssApp.startStatic(LockssDaemon.class, spec);
