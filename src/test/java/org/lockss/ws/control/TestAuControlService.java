@@ -34,9 +34,8 @@ package org.lockss.ws.control;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lockss.app.ServiceDescr;
 import org.lockss.log.L4JLogger;
-import org.lockss.spring.test.SpringLockssTestCase4;
-import org.lockss.app.*;
 import org.lockss.util.ListUtil;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.crawler.CrawlDesc;
@@ -56,14 +55,12 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.ExpectedCount;
 
-import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.lockss.ws.BaseServiceImpl.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 

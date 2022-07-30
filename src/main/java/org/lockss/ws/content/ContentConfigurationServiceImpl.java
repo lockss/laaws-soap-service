@@ -29,9 +29,7 @@ package org.lockss.ws.content;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.ArrayList;
-import java.util.List;
-import org.lockss.app.*;
+import org.lockss.app.ServiceDescr;
 import org.lockss.log.L4JLogger;
 import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.ContentConfigurationResult;
@@ -39,6 +37,9 @@ import org.lockss.ws.entities.LockssWebServicesFault;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** The Content Configuration SOAP web service implementation. */
 @Service

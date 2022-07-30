@@ -27,12 +27,13 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.reports;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
 import org.lockss.ws.entities.CounterReportParams;
 import org.lockss.ws.entities.CounterReportResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
 
 /** The Counter Reports SOAP web service interface. */
 @WebService

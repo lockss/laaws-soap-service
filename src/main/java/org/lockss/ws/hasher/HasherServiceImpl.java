@@ -27,8 +27,7 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.hasher;
 
-import java.util.List;
-import org.lockss.app.*;
+import org.lockss.app.ServiceDescr;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.Constants;
 import org.lockss.util.rest.poller.RestPollerClient;
@@ -38,6 +37,8 @@ import org.lockss.ws.entities.HasherWsParams;
 import org.lockss.ws.entities.HasherWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /** The Hasher SOAP web service implementation. */
 @Service

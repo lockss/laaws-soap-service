@@ -27,14 +27,8 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.export;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import javax.activation.DataHandler;
-import javax.xml.ws.soap.MTOM;
 import org.apache.cxf.attachment.AttachmentDataSource;
-import org.lockss.app.*;
+import org.lockss.app.ServiceDescr;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.SpringHeaderUtil;
@@ -52,6 +46,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+
+import javax.activation.DataHandler;
+import javax.xml.ws.soap.MTOM;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /** The Export SOAP web service implementation. */
 @MTOM

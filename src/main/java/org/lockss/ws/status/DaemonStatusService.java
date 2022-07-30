@@ -27,26 +27,13 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.status;
 
-import java.util.Collection;
-import java.util.List;
+import org.lockss.ws.entities.*;
+
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import org.lockss.ws.entities.AuStatus;
-import org.lockss.ws.entities.AuWsResult;
-import org.lockss.ws.entities.CrawlWsResult;
-import org.lockss.ws.entities.IdNamePair;
-import org.lockss.ws.entities.LockssWebServicesFault;
-import org.lockss.ws.entities.PeerWsResult;
-import org.lockss.ws.entities.PlatformConfigurationWsResult;
-import org.lockss.ws.entities.PluginWsResult;
-import org.lockss.ws.entities.PollWsResult;
-import org.lockss.ws.entities.RepositorySpaceWsResult;
-import org.lockss.ws.entities.RepositoryWsResult;
-import org.lockss.ws.entities.TdbAuWsResult;
-import org.lockss.ws.entities.TdbPublisherWsResult;
-import org.lockss.ws.entities.TdbTitleWsResult;
-import org.lockss.ws.entities.VoteWsResult;
+import java.util.Collection;
+import java.util.List;
 
 /** The Daemon Status SOAP web service interface. */
 @WebService

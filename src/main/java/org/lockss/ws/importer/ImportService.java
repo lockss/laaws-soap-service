@@ -27,12 +27,13 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.importer;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
 import org.lockss.ws.entities.ImportWsParams;
 import org.lockss.ws.entities.ImportWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
 
 /** The Import SOAP web service interface. */
 @WebService

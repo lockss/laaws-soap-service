@@ -31,7 +31,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.lockss.app.*;
+import org.lockss.app.ServiceDescr;
 import org.lockss.laaws.rs.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.PropertiesUtil;
@@ -53,7 +53,8 @@ import org.springframework.util.StreamUtils;
 
 import javax.activation.DataHandler;
 import javax.xml.bind.DatatypeConverter;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;

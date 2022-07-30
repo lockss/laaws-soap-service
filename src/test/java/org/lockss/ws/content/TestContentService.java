@@ -31,13 +31,12 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 package org.lockss.ws.content;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.message.BasicStatusLine;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.lockss.app.*;
+import org.lockss.app.ServiceDescr;
 import org.lockss.laaws.rs.core.LockssRepository;
 import org.lockss.laaws.rs.core.RestLockssRepository;
 import org.lockss.laaws.rs.io.storage.warc.ArtifactState;
@@ -47,18 +46,12 @@ import org.lockss.laaws.rs.util.ArtifactDataUtil;
 import org.lockss.laaws.rs.util.NamedByteArrayResource;
 import org.lockss.laaws.rs.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
-import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.util.ListUtil;
 import org.lockss.ws.entities.ContentResult;
 import org.lockss.ws.entities.FileWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 import org.lockss.ws.test.BaseSoapTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
@@ -66,24 +59,16 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.activation.DataHandler;
-import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;

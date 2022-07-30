@@ -27,27 +27,19 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import javax.mail.MessagingException;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.helpers.CastUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
-import org.lockss.app.*;
-import org.lockss.config.*;
-import org.lockss.laaws.rs.core.LockssRepositoryFactory;
+import org.lockss.app.LockssDaemon;
+import org.lockss.app.ServiceBinding;
+import org.lockss.app.ServiceDescr;
+import org.lockss.config.Configuration;
 import org.lockss.laaws.rs.core.RestLockssRepository;
 import org.lockss.log.L4JLogger;
+import org.lockss.spring.base.BaseSpringApiServiceImpl;
+import org.lockss.spring.base.LockssConfigurableService;
 import org.lockss.util.Constants;
 import org.lockss.util.auth.AuthUtil;
 import org.lockss.util.rest.RestUtil;
@@ -55,15 +47,17 @@ import org.lockss.util.rest.SpringHeaderUtil;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.multipart.MultipartConnector;
 import org.lockss.util.rest.multipart.MultipartResponse;
-import org.lockss.spring.base.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
+
+import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.*;
 
 /** Base class for the various SOAP web service implementations. */
 public class BaseServiceImpl

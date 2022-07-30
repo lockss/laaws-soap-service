@@ -31,41 +31,26 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 package org.lockss.ws.content;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.lockss.app.*;
+import org.lockss.app.ServiceDescr;
 import org.lockss.log.L4JLogger;
-import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.util.ListUtil;
 import org.lockss.util.rest.RestResponseErrorBody;
-import org.lockss.ws.test.BaseSoapTest;
 import org.lockss.ws.entities.ContentConfigurationResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.context.embedded.LocalServerPort;
+import org.lockss.ws.test.BaseSoapTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.client.RestTemplate;
 
-import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
 import java.net.URI;
-import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;

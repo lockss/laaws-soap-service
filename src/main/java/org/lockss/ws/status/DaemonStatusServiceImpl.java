@@ -29,7 +29,7 @@ package org.lockss.ws.status;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.lockss.app.*;
+import org.lockss.app.ServiceDescr;
 import org.lockss.laaws.rs.model.Artifact;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.exception.LockssRestException;

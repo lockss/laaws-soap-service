@@ -37,7 +37,6 @@ import org.lockss.app.LockssDaemon;
 import org.lockss.app.ServiceDescr;
 import org.lockss.log.L4JLogger;
 import org.lockss.plugin.PluginManager;
-import org.lockss.spring.base.BaseSpringBootApplication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;

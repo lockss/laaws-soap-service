@@ -27,14 +27,15 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.hasher;
 
-import java.util.List;
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
 import org.lockss.ws.entities.HasherWsAsynchronousResult;
 import org.lockss.ws.entities.HasherWsParams;
 import org.lockss.ws.entities.HasherWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import java.util.List;
 
 /** The Hasher SOAP web service interface. */
 @WebService

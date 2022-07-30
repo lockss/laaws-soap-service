@@ -27,15 +27,12 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.control;
 
-import java.util.List;
+import org.lockss.ws.entities.*;
+
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import org.lockss.ws.entities.CheckSubstanceResult;
-import org.lockss.ws.entities.LockssWebServicesFault;
-import org.lockss.ws.entities.RequestAuControlResult;
-import org.lockss.ws.entities.RequestCrawlResult;
-import org.lockss.ws.entities.RequestDeepCrawlResult;
+import java.util.List;
 
 /** The AU Control SOAP web service interface. */
 @WebService

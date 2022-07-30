@@ -36,7 +36,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lockss.log.L4JLogger;
-import org.lockss.util.rest.RestResponseErrorBody;
 import org.lockss.ws.entities.CounterReportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;

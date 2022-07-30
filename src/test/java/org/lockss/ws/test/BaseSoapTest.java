@@ -31,30 +31,29 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 package org.lockss.ws.test;
 
-import org.lockss.log.L4JLogger;
-import org.lockss.app.*;
-import org.lockss.spring.test.SpringLockssTestCase4;
-import org.lockss.test.*;
-import org.lockss.util.rest.multipart.MultipartMessageHttpMessageConverter;
-import static org.lockss.ws.BaseServiceImpl.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
-import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
-
+import org.lockss.app.LockssApp;
+import org.lockss.app.ServiceDescr;
+import org.lockss.log.L4JLogger;
+import org.lockss.spring.test.SpringLockssTestCase4;
+import org.lockss.test.ConfigurationUtil;
+import org.lockss.util.rest.multipart.MultipartMessageHttpMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.Service;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 public abstract class BaseSoapTest extends SpringLockssTestCase4 {
   private static L4JLogger log = L4JLogger.getLogger();

@@ -28,14 +28,13 @@ in this Software without prior written authorization from Stanford University.
 package org.lockss.ws.control;
 
 import org.apache.commons.lang3.StringUtils;
-import org.lockss.app.*;
+import org.lockss.app.ServiceDescr;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.config.RestConfigClient;
 import org.lockss.util.rest.crawler.CrawlDesc;
 import org.lockss.util.rest.crawler.CrawlJob;
 import org.lockss.util.rest.crawler.RestCrawlerClient;
-import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.exception.LockssRestHttpException;
 import org.lockss.util.rest.mdx.MetadataUpdateSpec;
 import org.lockss.util.rest.poller.PollDesc;
