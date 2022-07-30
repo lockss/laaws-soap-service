@@ -37,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.test.SpringLockssTestCase4;
+import org.lockss.app.*;
 import org.lockss.util.rest.RestResponseErrorBody;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.multipart.MultipartMessageHttpMessageConverter;
@@ -44,6 +45,7 @@ import org.lockss.ws.entities.HasherWsAsynchronousResult;
 import org.lockss.ws.entities.HasherWsParams;
 import org.lockss.ws.entities.HasherWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
+import org.lockss.ws.test.BaseSoapTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -77,44 +79,12 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
-public class TestHasherService extends SpringLockssTestCase4 {
-String POLLER_SVC_URL_KEY = "";
+public class TestHasherService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
-
-  @TestConfiguration
-  public static class MyConfiguration {
-    @Bean
-    public RestTemplate restTemplate() {
-      RestTemplate restTemplate = new RestTemplate();
-
-      // Add multipart/form-data support
-      List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
-      messageConverters.add(new MultipartMessageHttpMessageConverter());
-
-      return restTemplate;
-    }
-  }
-
-  @Autowired
-  protected Environment env;
-
-  @Autowired
-  private RestTemplate restTemplate;
-
-  @LocalServerPort
-  private int port;
-
-  private HasherService proxy;
-  private MockRestServiceServer mockRestServer;
-
-  private static final ObjectMapper mapper = new ObjectMapper();
 
   private static final String TARGET_NAMESPACE = "http://hasher.ws.lockss.org/";
   private static final String SERVICE_NAME = "HasherServiceImplService";
-
-  private static final String USERNAME = "lockss-u";
-  private static final String PASSWORD = "lockss-p";
-  private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
+  private static final String ENDPOINT_NAME = "HasherService";
 
   private static final String CRLF = "\r\n";
 
@@ -125,21 +95,15 @@ String POLLER_SVC_URL_KEY = "";
   private static final RestResponseErrorBody.RestResponseError blankError =
       new RestResponseErrorBody.RestResponseError();
 
+  private HasherService proxy;
+
   @Before
-  public void init() throws MalformedURLException {
-    // Setup proxy to SOAP service
-    String wsdlEndpoint = "http://localhost:" + port + "/ws/HasherService?wsdl";
-    Service srv = Service.create(new URL(wsdlEndpoint), new QName(TARGET_NAMESPACE, SERVICE_NAME));
-    proxy = srv.getPort(HasherService.class);
+  public void init() throws Exception {
+    setUpMultipartFormConverter();
 
-    // Add authentication headers for SOAP request
-    BindingProvider bp = (BindingProvider) proxy;
-    Map<String, Object> requestContext = bp.getRequestContext();
-    requestContext.put(BindingProvider.USERNAME_PROPERTY, USERNAME);
-    requestContext.put(BindingProvider.PASSWORD_PROPERTY, PASSWORD);
-
-    // Create MockRestServiceServer from RestTemplate
-    mockRestServer = MockRestServiceServer.createServer(restTemplate);
+    proxy = setUpProxyAndCommonTestEnv(TARGET_NAMESPACE,
+                                       ENDPOINT_NAME, SERVICE_NAME,
+                                       HasherService.class);
   }
 
   /**
@@ -156,8 +120,7 @@ String POLLER_SVC_URL_KEY = "";
       queryParams.put("isAsynchronous", "false");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -189,8 +152,7 @@ String POLLER_SVC_URL_KEY = "";
       queryParams.put("isAsynchronous", "false");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -222,8 +184,7 @@ String POLLER_SVC_URL_KEY = "";
       queryParams.put("isAsynchronous", "false");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -255,8 +216,7 @@ String POLLER_SVC_URL_KEY = "";
       queryParams.put("isAsynchronous", "false");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
 
       // This map simulates the map built by the Poller service from a HasherResult object
       Map<String, Object> resultProps = new HashMap<>();
@@ -353,8 +313,7 @@ String POLLER_SVC_URL_KEY = "";
       queryParams.put("isAsynchronous", "true");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -386,8 +345,7 @@ String POLLER_SVC_URL_KEY = "";
       queryParams.put("isAsynchronous", "true");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -419,8 +377,7 @@ String POLLER_SVC_URL_KEY = "";
       queryParams.put("isAsynchronous", "true");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -452,8 +409,7 @@ String POLLER_SVC_URL_KEY = "";
       queryParams.put("isAsynchronous", "true");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
 
       // This map simulates the map built by the Poller service from a HasherResult object
       Map<String, Object> resultProps = new HashMap<>();
@@ -544,8 +500,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       String message = "Must supply request identifier";
 
@@ -573,8 +528,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       // Mock REST service call and response
       mockRestServer
@@ -599,8 +553,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       // Mock REST service call and response
       mockRestServer
@@ -625,8 +578,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       String message = "Cannot find asynchronous hash request '" + requestId + "'";
 
@@ -654,8 +606,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       String message = "Cannot getHash() for requestId = '" + requestId + "'";
 
@@ -683,8 +634,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       // This map simulates the map built by the Poller service from a HasherResult object
       Map<String, Object> resultProps = new HashMap<>();
@@ -771,8 +721,7 @@ String POLLER_SVC_URL_KEY = "";
     //// Test bad or no auth error ("401 Unauthorized") handling
     {
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, null);
 
       // Mock REST service call and response
       mockRestServer
@@ -795,8 +744,7 @@ String POLLER_SVC_URL_KEY = "";
     //// Test bad User Role error ("Forbidden") handling
     {
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, null);
 
       // Mock REST service call and response
       mockRestServer
@@ -819,8 +767,7 @@ String POLLER_SVC_URL_KEY = "";
     //// Test unforeseen exception ("500 Internal Server Error") handling
     {
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, null);
 
       String message = "Cannot getAllHashes()";
 
@@ -846,8 +793,7 @@ String POLLER_SVC_URL_KEY = "";
     //// Test success
     {
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes", null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, null);
 
       // This map simulates the map built by the Poller service from a HasherResult object
       Map<String, Object> resultProps1 = new HashMap<>();
@@ -996,8 +942,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       String message = "Must supply request identifier";
 
@@ -1030,8 +975,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       // Mock REST service call and response
       mockRestServer
@@ -1055,8 +999,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       // Mock REST service call and response
       mockRestServer
@@ -1080,8 +1023,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       String message = "Cannot find asynchronous hash request '" + requestId + "'";
 
@@ -1114,8 +1056,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       String message = "Cannot deleteHash() for requestId = '" + requestId + "'";
 
@@ -1148,8 +1089,7 @@ String POLLER_SVC_URL_KEY = "";
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(
-          env.getProperty(POLLER_SVC_URL_KEY) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
 
       String message = "Done";
 

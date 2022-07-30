@@ -70,67 +70,39 @@ public class BaseServiceImpl
   extends BaseSpringApiServiceImpl
   implements LockssConfigurableService {
 
+  // Config params
+
   public static final String PREFIX = "org.lockss.soap.";
 
-  /** The configuration key for the URL of the Repository REST service. */
-  public static final String REPO_SVC_URL_KEY = "repository.service.url";
-  /** The configuration key for the URL of the Configuration REST service. */
-  public static final String CONFIG_SVC_URL_KEY = "configuration.service.url";
-  /** The configuration key for the URL of the Poller REST service. */
-  public static final String POLLER_SVC_URL_KEY = "poller.service.url";
-  /** The configuration key for the URL of the Metadata Extractor REST service. */
-  public static final String MDX_SVC_URL_KEY = "metadataextractor.service.url";
-  /** The configuration key for the URL of the Metadata REST service. */
-  public static final String MDQ_SVC_URL_KEY = "metadata.service.url";
-  /** The configuration key for the URL of the Crawler REST service. */
-  public static final String CRAWLER_SVC_URL_KEY = "crawler.service.url";
-
-  /** The configuration key for the Repository collection identifier. */
-  public static final String REPO_COLLECTION_KEY = "repository.collection";
-
-  /** The configuration key for the connection timeout. */
-  public static final String CONNECTION_TIMEOUT_KEY = "connection.timeout";
-  /** The configuration key for the read timeout. */
-  public static final String READ_TIMEOUT_KEY = "read.timeout";
-  /** collection identifier. */
-  public static final String PARAM_REPO_COLLECTION = PREFIX + "repository.collection";
+  /** Repository collection identifier. */
+  public static final String PARAM_REPO_COLLECTION =
+    PREFIX + "repository.collection";
   public static final String DEFAULT_REPO_COLLECTION = "lockss";
 
-  /** connection timeout. */
-  public static final String PARAM_CONNECTION_TIMEOUT = PREFIX + "connection.timeout";
+  /** Connection timeout. */
+  public static final String PARAM_CONNECTION_TIMEOUT =
+    PREFIX + "connection.timeout";
   public static final long DEFAULT_CONNECTION_TIMEOUT = 10 * Constants.SECOND;
 
-  /** read timeout. */
+  /** Read timeout. */
   public static final String PARAM_READ_TIMEOUT = PREFIX + "read.timeout";
   public static final long DEFAULT_READ_TIMEOUT = 120 * Constants.SECOND;
 
   private static final L4JLogger log = L4JLogger.getLogger();
 
-  @Autowired protected Environment env;
   @Autowired protected RestTemplate restTemplate;
 
   // Timeouts.
-
   protected long connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
   protected long readTimeout = DEFAULT_READ_TIMEOUT;
-  protected String repoCollection = DEFAULT_REPO_COLLECTION;
 
-  /**
-   * Provides the configured connection timeout in milliseconds.
-   *
-   * @return a Long with the configured connection timeout in milliseconds.
-   */
-  protected Long getConnectionTimeout() {
-    return connectionTimeout;
-  }
+  protected String repoCollection = DEFAULT_REPO_COLLECTION;
 
   protected ServiceBinding getServiceBinding(ServiceDescr sd) {
     LockssDaemon daemon = getRunningLockssDaemon();
     if (daemon == null) {
-      log.fatal("getServiceBinding no running LockssDaemon");
       throw new IllegalStateException("No running LockssDaemon, can't access service bindings");
     }
-    log.fatal("getServiceBinding LockssDaemon: {}", getRunningLockssDaemon());
     return daemon.getServiceBinding(sd);
   }
 
@@ -140,6 +112,15 @@ public class BaseServiceImpl
       throw new IllegalArgumentException("No service binding for " + sd);
     }
     return getServiceBinding(sd).getRestStem();
+  }
+
+  /**
+   * Provides the configured connection timeout in milliseconds.
+   *
+   * @return a Long with the configured connection timeout in milliseconds.
+   */
+  protected Long getConnectionTimeout() {
+    return connectionTimeout;
   }
 
   /**
@@ -198,9 +179,9 @@ public class BaseServiceImpl
   }
 
   /**
-   * Provides the Authorization header in the current SOAP request message, if any.
+   * Provides the requestor IP of the current SOAP request message
    *
-   * @return a String with the Authorization header.
+   * @return a String with the requestor IP.
    */
   protected static String getRequestorIpAddress() {
     // Get the message from the SOAP request.
@@ -450,7 +431,7 @@ public class BaseServiceImpl
       readTimeout = newConfig.getTimeInterval(PARAM_READ_TIMEOUT,
                                               DEFAULT_READ_TIMEOUT);
       repoCollection = newConfig.get(PARAM_REPO_COLLECTION,
-                                  DEFAULT_REPO_COLLECTION);
+                                     DEFAULT_REPO_COLLECTION);
     }
   }
 }

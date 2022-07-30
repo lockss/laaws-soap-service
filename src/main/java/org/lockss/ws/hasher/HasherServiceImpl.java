@@ -86,7 +86,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
     try {
       // Make the REST call to perform the hash.
       HasherWsAsynchronousResult result =
-          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_CONFIG))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .hashAsynchronously(wsParams);
@@ -113,7 +113,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
     try {
       // Make the REST call to get the hash.
       HasherWsAsynchronousResult result =
-          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_CONFIG))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .getAsynchronousHashResult(requestId);
@@ -139,7 +139,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
     try {
       // Make the REST call to get all the hashes.
       List<HasherWsAsynchronousResult> wsResults =
-          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_CONFIG))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .getAllAsynchronousHashResults();
@@ -167,7 +167,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
     try {
       // Make the REST call to remove the hash.
       HasherWsAsynchronousResult result =
-          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_CONFIG))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .removeAsynchronousHashRequest(requestId);

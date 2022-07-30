@@ -490,7 +490,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              getServiceEndpoint(ServiceDescr.SVC_POLLER),
+              getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/config/platform",
               null,
               null,
@@ -679,7 +679,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       // Loop through all the artifacts in the response from the REST service.
       for (Artifact artifact :
           getRestLockssRepository()
-              .getArtifactsWithPrefix(getServiceEndpoint(ServiceDescr.SVC_POLLER), auId, prefixUrl)) {
+              .getArtifactsWithPrefix(repoCollection, auId, prefixUrl)) {
         log.trace("artifact = {}", artifact);
 
         // Add this artifact URL to the results.

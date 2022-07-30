@@ -248,7 +248,7 @@ public class ImportServiceImpl extends BaseServiceImpl implements ImportService 
     log.debug2("Invoked");
 
     // Prepare the endpoint URI.
-    String endpointUri = 
+    String endpointUri =
       getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/aus/import";
     log.trace("endpointUri = {}", endpointUri);
 

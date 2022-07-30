@@ -95,50 +95,17 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 public class TestContentService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
 
-  @TestConfiguration
-  public static class MyConfiguration {
-    @Bean
-    public RestTemplate restTemplate() {
-      return new RestTemplate();
-    }
-  }
-
-  @Autowired
-  protected Environment env;
-
-  @Autowired
-  private RestTemplate restTemplate;
-
-  @LocalServerPort
-  private int port;
-
-  private ContentService proxy;
-  private MockRestServiceServer mockRestServer;
-
-  private static final ObjectMapper mapper = new ObjectMapper();
-
   private static final String TARGET_NAMESPACE = "http://content.ws.lockss.org/";
   private static final String SERVICE_NAME = "ContentServiceImplService";
+  private static final String ENDPOINT_NAME = "ContentService";
 
-  private static final String USERNAME = "lockss-u";
-  private static final String PASSWORD = "lockss-p";
-  private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
+  private ContentService proxy;
 
   @Before
-  public void init() throws MalformedURLException {
-    // Setup proxy to SOAP service
-    String wsdlEndpoint = "http://localhost:" + port + "/ws/ContentService?wsdl";
-    Service srv = Service.create(new URL(wsdlEndpoint), new QName(TARGET_NAMESPACE, SERVICE_NAME));
-    proxy = srv.getPort(ContentService.class);
-
-    // Add authentication headers for SOAP request
-    BindingProvider bp = (BindingProvider) proxy;
-    Map<String, Object> requestContext = bp.getRequestContext();
-    requestContext.put(BindingProvider.USERNAME_PROPERTY, USERNAME);
-    requestContext.put(BindingProvider.PASSWORD_PROPERTY, PASSWORD);
-
-    // Create MockRestServiceServer from RestTemplate
-    mockRestServer = MockRestServiceServer.createServer(restTemplate);
+  public void init() throws Exception {
+    proxy = setUpProxyAndCommonTestEnv(TARGET_NAMESPACE,
+                                       ENDPOINT_NAME, SERVICE_NAME,
+                                       ContentService.class);
   }
 
   /**

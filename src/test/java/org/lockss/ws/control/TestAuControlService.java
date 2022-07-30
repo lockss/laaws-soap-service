@@ -31,7 +31,6 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 package org.lockss.ws.control;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -49,29 +48,16 @@ import org.lockss.ws.entities.RequestAuControlResult;
 import org.lockss.ws.entities.RequestCrawlResult;
 import org.lockss.ws.entities.RequestDeepCrawlResult;
 import org.lockss.ws.test.BaseSoapTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.client.RestTemplate;
 
-import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -87,64 +73,17 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 public class TestAuControlService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
 
-  @TestConfiguration
-  public static class MyConfiguration {
-    @Bean
-    public RestTemplate restTemplate() {
-      return new RestTemplate();
-    }
-  }
-
-  // The application Context used to specify the command line arguments to be
-  // used for the tests.
-  @Autowired
-  ApplicationContext appCtx;
-
-  @Autowired
-  private RestTemplate restTemplate;
-
-  @LocalServerPort
-  private int port;
-
-  private AuControlService proxy;
-  private MockRestServiceServer mockRestServer;
-
-  private static final ObjectMapper mapper = new ObjectMapper();
-
   private static final String TARGET_NAMESPACE = "http://control.ws.lockss.org/";
   private static final String SERVICE_NAME = "AuControlServiceImplService";
+  private static final String ENDPOINT_NAME = "AuControlService";
 
-  private static final String USERNAME = "lockss-u";
-  private static final String PASSWORD = "lockss-p";
-  private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
+  private AuControlService proxy;
 
   @Before
   public void init() throws Exception {
-    // Set up the temporary directory where the test data will reside.
-    setUpTempDirectory(TestAuControlService.class.getCanonicalName());
-
-    // Setup proxy to SOAP service
-    String wsdlEndpoint = "http://localhost:" + port + "/ws/AuControlService?wsdl";
-    Service srv = Service.create(new URL(wsdlEndpoint), new QName(TARGET_NAMESPACE, SERVICE_NAME));
-    proxy = srv.getPort(AuControlService.class);
-
-    // Add authentication headers for SOAP request
-    BindingProvider bp = (BindingProvider) proxy;
-    Map<String, Object> requestContext = bp.getRequestContext();
-    requestContext.put(BindingProvider.USERNAME_PROPERTY, USERNAME);
-    requestContext.put(BindingProvider.PASSWORD_PROPERTY, PASSWORD);
-
-    // Create MockRestServiceServer from RestTemplate
-    mockRestServer = MockRestServiceServer.createServer(restTemplate);
-
-    List<String> cmdLineArgs = getCommandLineArguments();
-    cmdLineArgs.add("-g");
-    cmdLineArgs.add("demo");
-    CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
-    log.fatal("cmdLineArgs: {}", cmdLineArgs);
-    log.fatal("mocklockssdaemon: {}", getMockLockssDaemon());
-    runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
-    initBindings();                     // must follow run()
+    proxy = setUpProxyAndCommonTestEnv(TARGET_NAMESPACE,
+                                       ENDPOINT_NAME, SERVICE_NAME,
+                                       AuControlService.class);
   }
 
   /**
@@ -165,7 +104,6 @@ public class TestAuControlService extends BaseSoapTest {
     log.trace("uriVariables = {}", uriVariables);
 
     // Prepare the endpoint URI
-    log.fatal("test endpoint: {}", getServiceEndpoint(ServiceDescr.SVC_CONFIG));
     String checkSubstanceEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ausubstances/{auid}";
     URI checkSubstanceQuery = RestUtil.getRestUri(checkSubstanceEndpoint, uriVariables, null);
 

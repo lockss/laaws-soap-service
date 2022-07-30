@@ -32,17 +32,29 @@ POSSIBILITY OF SUCH DAMAGE.
 package org.lockss.ws.test;
 
 import org.lockss.log.L4JLogger;
-import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.app.*;
+import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.test.*;
-
-import java.net.MalformedURLException;
-import java.util.*;
-
+import org.lockss.util.rest.multipart.MultipartMessageHttpMessageConverter;
 import static org.lockss.ws.BaseServiceImpl.*;
 
-import org.springframework.test.web.client.MockRestServiceServer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
+import javax.xml.ws.Service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.context.embedded.LocalServerPort;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestTemplate;
 
 public abstract class BaseSoapTest extends SpringLockssTestCase4 {
   private static L4JLogger log = L4JLogger.getLogger();
@@ -68,12 +80,32 @@ public abstract class BaseSoapTest extends SpringLockssTestCase4 {
 
   protected static final String USERNAME = "lockss-u";
   protected static final String PASSWORD = "lockss-p";
+  protected static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
+  protected static final ObjectMapper mapper = new ObjectMapper();
+
+
+
+  @TestConfiguration
+  public static class MyConfiguration {
+    @Bean
+    public RestTemplate restTemplate() {
+      return new RestTemplate();
+    }
+  }
+
+  @Autowired
+  protected RestTemplate restTemplate;
+
+  @LocalServerPort
+  private int port;
+
+  // The application Context used to specify the command line arguments to be
+  // used for the tests.
+  @Autowired
+  ApplicationContext appCtx;
 
   protected void initBindings() throws MalformedURLException {
-    log.fatal("Calling config");
     ConfigurationUtil.addFromArgs(LockssApp.PARAM_SERVICE_BINDINGS, BINDINGS);
-    log.fatal("Called config");
-//     proxy.setServiceEndpoints(endpointMap);
   }
 
   protected String getServiceEndpoint(ServiceDescr descr) {
@@ -82,33 +114,55 @@ public abstract class BaseSoapTest extends SpringLockssTestCase4 {
 
   protected MockRestServiceServer mockRestServer;
 
-//   protected void setUpCommonTestEnv(Object proxy) throws Exception {
-//     // Set up the temporary directory where the test data will reside.
-//     setUpTempDirectory(this.getClass().getCanonicalName());
+  protected <T> T setUpProxyAndCommonTestEnv(String targetNamespace,
+                                             String endpointName,
+                                             String serviceName,
+                                             Class<T> serviceClass)
+      throws Exception {
 
-//     // Add authentication headers for SOAP request
-//     BindingProvider bp = (BindingProvider) proxy;
-//     Map<String, Object> requestContext = bp.getRequestContext();
-//     requestContext.put(BindingProvider.USERNAME_PROPERTY, USERNAME);
-//     requestContext.put(BindingProvider.PASSWORD_PROPERTY, PASSWORD);
+    // Set up the temporary directory where the test data will reside.
+    setUpTempDirectory(this.getClass().getCanonicalName());
 
-//     // Create MockRestServiceServer from RestTemplate
-//     mockRestServer = MockRestServiceServer.createServer(restTemplate);
-//     List<String> cmdLineArgs = getCommandLineArguments();
-//     cmdLineArgs.add("-g");
-//     cmdLineArgs.add("demo");
-//     CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
-//     log.fatal("cmdLineArgs: {}", cmdLineArgs);
-//     log.fatal("mocklockssdaemon: {}", getMockLockssDaemon());
-//     runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
-//     initBindings();                     // must follow run()
-//   }
+    String wsdlEndpoint =
+      "http://localhost:" + port + "/ws/" + endpointName + "?wsdl";
+
+    Service srv = Service.create(new URL(wsdlEndpoint),
+                                 new QName(targetNamespace, serviceName));
+    T proxy = srv.getPort(serviceClass);
+
+    // Add authentication headers for SOAP request
+    BindingProvider bp = (BindingProvider) proxy;
+    Map<String, Object> requestContext = bp.getRequestContext();
+    requestContext.put(BindingProvider.USERNAME_PROPERTY, USERNAME);
+    requestContext.put(BindingProvider.PASSWORD_PROPERTY, PASSWORD);
+
+    // Create MockRestServiceServer from RestTemplate
+    mockRestServer = MockRestServiceServer.createServer(restTemplate);
+
+    // Start LockssDaemon, load config w/ service bindings
+    List<String> cmdLineArgs = getCommandLineArguments();
+    cmdLineArgs.add("-g");
+    cmdLineArgs.add("demo");
+    CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
+    runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
+    initBindings();                     // must follow run()
+
+    return proxy;
+  }
+
+  /** Add the multipart/form-data converter to the REST template */
+  protected void setUpMultipartFormConverter() {
+    List<HttpMessageConverter<?>> messageConverters =
+      restTemplate.getMessageConverters();
+    messageConverters.add(new MultipartMessageHttpMessageConverter());
+  }
 
   /**
    * Provides the standard command line arguments to start the server.
    *
    * @return a List<String> with the command line arguments.
    */
+  // statup hangs without "-p <file>", not sure why
   protected List<String> getCommandLineArguments() {
     log.debug2("Invoked");
 
@@ -118,9 +172,4 @@ public abstract class BaseSoapTest extends SpringLockssTestCase4 {
     log.debug2("cmdLineArgs = {}", cmdLineArgs);
     return cmdLineArgs;
   }
-
-//   @Override
-//   protected Class getMockDaemonClass() {
-//     return LockssDaemon.class;
-//   }
 }

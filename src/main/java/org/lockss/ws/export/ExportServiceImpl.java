@@ -75,7 +75,7 @@ public class ExportServiceImpl extends BaseServiceImpl implements ExportService 
 
     try {
       // Prepare the endpoint URI.
-      String endpointUri = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/{auId}/export";
+      String endpointUri = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/aus/{auId}/export";
       log.trace("endpointUri = {}", endpointUri);
 
       // Prepare the URI path variables.

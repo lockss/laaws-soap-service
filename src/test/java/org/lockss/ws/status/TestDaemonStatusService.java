@@ -36,6 +36,8 @@ import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lockss.app.*;
+import org.lockss.config.*;
 import org.lockss.laaws.rs.model.Artifact;
 import org.lockss.laaws.rs.model.ArtifactPageInfo;
 import org.lockss.laaws.rs.model.PageInfo;
@@ -44,7 +46,9 @@ import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.util.ListUtil;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.status.ApiStatus;
+import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.*;
+import org.lockss.ws.test.BaseSoapTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -76,54 +80,21 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
-public class TestDaemonStatusService extends SpringLockssTestCase4 {
+public class TestDaemonStatusService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
-
-  @TestConfiguration
-  public static class MyConfiguration {
-    @Bean
-    public RestTemplate restTemplate() {
-      return new RestTemplate();
-    }
-  }
-
-  @Autowired
-  protected Environment env;
-
-  @Autowired
-  private RestTemplate restTemplate;
-
-  @LocalServerPort
-  private int port;
-
-  private DaemonStatusService proxy;
-  private MockRestServiceServer mockRestServer;
-  private static EasyRandom easyRandom;
-
-  private static final ObjectMapper mapper = new ObjectMapper();
 
   private static final String TARGET_NAMESPACE = "http://status.ws.lockss.org/";
   private static final String SERVICE_NAME = "DaemonStatusServiceImplService";
+  private static final String ENDPOINT_NAME = "DaemonStatusService";
 
-  private static final String USERNAME = "lockss-u";
-  private static final String PASSWORD = "lockss-p";
-  private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
+  private DaemonStatusService proxy;
+  private static EasyRandom easyRandom;
 
   @Before
-  public void init() throws MalformedURLException {
-    // Setup proxy to SOAP service
-    String wsdlEndpoint = "http://localhost:" + port + "/ws/DaemonStatusService?wsdl";
-    Service srv = Service.create(new URL(wsdlEndpoint), new QName(TARGET_NAMESPACE, SERVICE_NAME));
-    proxy = srv.getPort(DaemonStatusService.class);
-
-    // Add authentication headers for SOAP request
-    BindingProvider bp = (BindingProvider) proxy;
-    Map<String, Object> requestContext = bp.getRequestContext();
-    requestContext.put(BindingProvider.USERNAME_PROPERTY, USERNAME);
-    requestContext.put(BindingProvider.PASSWORD_PROPERTY, PASSWORD);
-
-    // Create MockRestServiceServer from RestTemplate
-    mockRestServer = MockRestServiceServer.createServer(restTemplate);
+  public void init() throws Exception {
+    proxy = setUpProxyAndCommonTestEnv(TARGET_NAMESPACE,
+                                       ENDPOINT_NAME, SERVICE_NAME,
+                                       DaemonStatusService.class);
 
     // Create EasyRandom generator
     easyRandom = new EasyRandom();
@@ -151,11 +122,11 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
       boolean isDaemonReady = svcsReady == allSvcsReady;
 
-      mockIsServiceReady(env.getProperty(REPO_SVC_URL_KEY), isRepoReady, true);
-      mockIsServiceReady(env.getProperty(CONFIG_SVC_URL_KEY), isCfgReady, isRepoReady);
-      mockIsServiceReady(env.getProperty(POLLER_SVC_URL_KEY), isPollerReady, isPollerCallExpected);
-      mockIsServiceReady(env.getProperty(MDX_SVC_URL_KEY), isMdxReady, isMdxCallExpected);
-      mockIsServiceReady(env.getProperty(MDQ_SVC_URL_KEY), isMdqReady, isMdqCallExpected);
+      mockIsServiceReady(getServiceEndpoint(ServiceDescr.SVC_REPO), isRepoReady, true);
+      mockIsServiceReady(getServiceEndpoint(ServiceDescr.SVC_CONFIG), isCfgReady, isRepoReady);
+      mockIsServiceReady(getServiceEndpoint(ServiceDescr.SVC_POLLER), isPollerReady, isPollerCallExpected);
+      mockIsServiceReady(getServiceEndpoint(ServiceDescr.SVC_MDX), isMdxReady, isMdxCallExpected);
+      mockIsServiceReady(getServiceEndpoint(ServiceDescr.SVC_MDQ), isMdqReady, isMdqCallExpected);
 
       assertEquals(isDaemonReady, proxy.isDaemonReady());
 
@@ -210,7 +181,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("auQuery", auQuery);
 
     // Prepare the endpoint URI
-    String auQueriesEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/auqueries";
+    String auQueriesEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/auqueries";
     URI auQueriesQuery = RestUtil.getRestUri(auQueriesEndpoint, null, queryParams);
 
     mockRestServer
@@ -253,7 +224,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     uriVariables.put("auId", auId);
 
     // Prepare the endpoint URI
-    String auStatusesEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/austatuses/{auId}";
+    String auStatusesEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/austatuses/{auId}";
     URI auStatusesQuery = RestUtil.getRestUri(auStatusesEndpoint, uriVariables, null);
 
     mockRestServer
@@ -289,7 +260,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("pluginQuery", pluginQuery);
 
     // Prepare the endpoint URI
-    String pluginsEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/plugins";
+    String pluginsEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/plugins";
     URI pluginsQuery = RestUtil.getRestUri(pluginsEndpoint, null, queryParams);
 
     mockRestServer
@@ -325,7 +296,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("auQuery", auQuery);
 
     // Prepare the endpoint URI
-    String auQueriesEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/auqueries";
+    String auQueriesEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/auqueries";
     URI auQueriesQuery = RestUtil.getRestUri(auQueriesEndpoint, null, queryParams);
 
     mockRestServer
@@ -361,7 +332,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("peerQuery", peerQuery);
 
     // Prepare the endpoint URI
-    String peersEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/peers";
+    String peersEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/peers";
     URI peersQuery = RestUtil.getRestUri(peersEndpoint, null, queryParams);
 
     mockRestServer
@@ -397,7 +368,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("voteQuery", voteQuery);
 
     // Prepare the endpoint URI
-    String votesEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/votes";
+    String votesEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/votes";
     URI votesQuery = RestUtil.getRestUri(votesEndpoint, null, queryParams);
 
     mockRestServer
@@ -433,7 +404,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("repositorySpaceQuery", repositorySpaceQuery);
 
     // Prepare the endpoint URI
-    String repoSpacesEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/repositoryspaces";
+    String repoSpacesEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/repositoryspaces";
     URI repoSpacesQuery = RestUtil.getRestUri(repoSpacesEndpoint, null, queryParams);
 
     mockRestServer
@@ -469,7 +440,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("repositoryQuery", repositoryQuery);
 
     // Prepare the endpoint URI
-    String repositoriesEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/aurepositories";
+    String repositoriesEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/aurepositories";
     URI repositoriesQuery = RestUtil.getRestUri(repositoriesEndpoint, null, queryParams);
 
     mockRestServer
@@ -513,7 +484,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("pollQuery", pollQuery);
 
     // Prepare the endpoint URI
-    String pollsEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/polls";
+    String pollsEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/polls";
     URI pollsQuery = RestUtil.getRestUri(pollsEndpoint, null, queryParams);
 
     mockRestServer
@@ -543,7 +514,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
         easyRandom.nextObject(PlatformConfigurationWsResult.class);
 
     // Prepare the endpoint URI
-    String platformConfigEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/config/platform";
+    String platformConfigEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/config/platform";
     URI platformConfigQuery = RestUtil.getRestUri(platformConfigEndpoint, null, null);
 
     mockRestServer
@@ -579,7 +550,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("tdbPublisherQuery", tdbPublisherQuery);
 
     // Prepare the endpoint URI
-    String tdbPublishersEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/tdbpublishers";
+    String tdbPublishersEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/tdbpublishers";
     URI tdbPublishersQuery = RestUtil.getRestUri(tdbPublishersEndpoint, null, queryParams);
 
     mockRestServer
@@ -615,7 +586,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("tdbTitleQuery", tdbTitleQuery);
 
     // Prepare the endpoint URI
-    String tdbTitlesEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/tdbtitles";
+    String tdbTitlesEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/tdbtitles";
     URI tdbTitlesQuery = RestUtil.getRestUri(tdbTitlesEndpoint, null, queryParams);
 
     mockRestServer
@@ -651,7 +622,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("tdbAuQuery", tdbAuQuery);
 
     // Prepare the endpoint URI
-    String tdbAusEndpoint = env.getProperty(CONFIG_SVC_URL_KEY) + "/tdbaus";
+    String tdbAusEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/tdbaus";
     URI tdbAusQuery = RestUtil.getRestUri(tdbAusEndpoint, null, queryParams);
 
     mockRestServer
@@ -694,7 +665,10 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
 
     // Prepare the URI path variables
     Map<String, String> uriVariables = new HashMap<>(1);
-    uriVariables.put("collection", env.getProperty(REPO_COLLECTION_KEY));
+    Configuration config = ConfigManager.getCurrentConfig();
+    uriVariables.put("collection",
+                     config.get(BaseServiceImpl.PARAM_REPO_COLLECTION,
+                                BaseServiceImpl.DEFAULT_REPO_COLLECTION));
     uriVariables.put("auId", auId);
 
     // Prepare the query parameters
@@ -702,7 +676,7 @@ public class TestDaemonStatusService extends SpringLockssTestCase4 {
     queryParams.put("urlPrefix", urlPrefix);
 
     // Prepare the endpoint URI
-    String auArtifactsEndpoint = env.getProperty(REPO_SVC_URL_KEY) + "/collections/{collection}/aus/{auId}/artifacts";
+    String auArtifactsEndpoint = getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/{collection}/aus/{auId}/artifacts";
     URI auArtifactsQuery = RestUtil.getRestUri(auArtifactsEndpoint, uriVariables, queryParams);
 
     mockRestServer

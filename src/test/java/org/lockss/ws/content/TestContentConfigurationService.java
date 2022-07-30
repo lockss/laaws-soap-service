@@ -76,36 +76,11 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 public class TestContentConfigurationService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
 
-  @TestConfiguration
-  public static class MyConfiguration {
-    @Bean
-    public RestTemplate restTemplate() {
-      return new RestTemplate();
-    }
-  }
-
-  // The application Context used to specify the command line arguments to be
-  // used for the tests.
-  @Autowired
-  ApplicationContext appCtx;
-
-  @Autowired
-  private RestTemplate restTemplate;
-
-  @LocalServerPort
-  private int port;
-
-  private ContentConfigurationService proxy;
-  private MockRestServiceServer mockRestServer;
-
-  private static final ObjectMapper mapper = new ObjectMapper();
-
   private static final String TARGET_NAMESPACE = "http://content.ws.lockss.org/";
   private static final String SERVICE_NAME = "ContentConfigurationServiceImplService";
+  private static final String ENDPOINT_NAME = "ContentConfigurationService";
 
-  private static final String USERNAME = "lockss-u";
-  private static final String PASSWORD = "lockss-p";
-  private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
+  private ContentConfigurationService proxy;
 
   // FIXME: Blank mock REST error response
   private static final RestResponseErrorBody.RestResponseError blankError =
@@ -113,31 +88,9 @@ public class TestContentConfigurationService extends BaseSoapTest {
 
   @Before
   public void init() throws Exception {
-    // Set up the temporary directory where the test data will reside.
-    setUpTempDirectory(this.getClass().getCanonicalName());
-
-    // Setup proxy to SOAP service
-    String wsdlEndpoint = "http://localhost:" + port + "/ws/ContentConfigurationService?wsdl";
-    Service srv = Service.create(new URL(wsdlEndpoint), new QName(TARGET_NAMESPACE, SERVICE_NAME));
-    proxy = srv.getPort(ContentConfigurationService.class);
-
-    // Add authentication headers for SOAP request
-    BindingProvider bp = (BindingProvider) proxy;
-    Map<String, Object> requestContext = bp.getRequestContext();
-    requestContext.put(BindingProvider.USERNAME_PROPERTY, USERNAME);
-    requestContext.put(BindingProvider.PASSWORD_PROPERTY, PASSWORD);
-
-    // Create MockRestServiceServer from RestTemplate
-    mockRestServer = MockRestServiceServer.createServer(restTemplate);
-
-    List<String> cmdLineArgs = getCommandLineArguments();
-    cmdLineArgs.add("-g");
-    cmdLineArgs.add("demo");
-    CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
-    log.fatal("cmdLineArgs: {}", cmdLineArgs);
-    log.fatal("mocklockssdaemon: {}", getMockLockssDaemon());
-    runner.run(cmdLineArgs.toArray(new String[cmdLineArgs.size()]));
-    initBindings();                     // must follow run()
+    proxy = setUpProxyAndCommonTestEnv(TARGET_NAMESPACE,
+                                       ENDPOINT_NAME, SERVICE_NAME,
+                                       ContentConfigurationService.class);
   }
 
   /**

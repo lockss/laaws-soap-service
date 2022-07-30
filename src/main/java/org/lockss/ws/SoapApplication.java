@@ -51,7 +51,6 @@ import static org.lockss.app.ManagerDescs.ACCOUNT_MANAGER_DESC;
 
 /** Launcher of the Spring Boot application. */
 @SpringBootApplication(exclude = {SolrAutoConfiguration.class})
-//@SpringBootApplication
 @ImportResource({"classpath:webservice-definition-beans.xml"})
 public class SoapApplication implements CommandLineRunner {
   private static L4JLogger log = L4JLogger.getLogger();

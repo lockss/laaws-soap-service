@@ -35,6 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.lockss.app.*;
 import org.lockss.laaws.rs.util.NamedByteArrayResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.test.SpringLockssTestCase4;
@@ -44,6 +45,7 @@ import org.lockss.util.rest.multipart.MultipartMessageHttpMessageConverter;
 import org.lockss.ws.entities.DataHandlerWrapper;
 import org.lockss.ws.entities.ExportServiceParams;
 import org.lockss.ws.entities.ExportServiceWsResult;
+import org.lockss.ws.test.BaseSoapTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -80,63 +82,27 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
-public class TestExportService extends SpringLockssTestCase4 {
-String POLLER_SVC_URL_KEY="";
+public class TestExportService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
 
-  @TestConfiguration
-  public static class MyConfiguration {
-    @Bean
-    public RestTemplate restTemplate() {
-      RestTemplate restTemplate = new RestTemplate();
-
-      // Add the multipart/form-data converter
-      List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
-      messageConverters.add(new MultipartMessageHttpMessageConverter());
-
-      return restTemplate;
-    }
-  }
-
-  @Autowired
-  protected Environment env;
-
-  @Autowired
-  private RestTemplate restTemplate;
-
-  @LocalServerPort
-  private int port;
-
   private ExportService proxy;
-  private MockRestServiceServer mockRestServer;
 
   private static final ObjectMapper mapper = new ObjectMapper();
 
   private static final String TARGET_NAMESPACE = "http://export.ws.lockss.org/";
   private static final String SERVICE_NAME = "ExportServiceImplService";
-
-  private static final String USERNAME = "lockss-u";
-  private static final String PASSWORD = "lockss-p";
-  private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
+  private static final String ENDPOINT_NAME = "ExportService";
 
   public static String CONFIG_PART_NAME = "configFile";
   public static byte[] HELLO_WORLD = "hello world".getBytes(StandardCharsets.UTF_8);
 
   @Before
-  public void init() throws MalformedURLException {
-    // Setup proxy to SOAP service
-    String wsdlEndpoint = "http://localhost:" + port + "/ws/ExportService?wsdl";
-    Service srv = Service.create(new URL(wsdlEndpoint), new QName(TARGET_NAMESPACE, SERVICE_NAME));
-    proxy = srv.getPort(ExportService.class);
+  public void init() throws Exception {
 
-    // Add authentication headers for SOAP request
-    BindingProvider bp = (BindingProvider) proxy;
-    Map<String, Object> requestContext = bp.getRequestContext();
-    requestContext.put(BindingProvider.USERNAME_PROPERTY, USERNAME);
-    requestContext.put(BindingProvider.PASSWORD_PROPERTY, PASSWORD);
-
-    // Create MockRestServiceServer from RestTemplate
-    mockRestServer = MockRestServiceServer.createServer(restTemplate);
+    setUpMultipartFormConverter();
+    proxy = setUpProxyAndCommonTestEnv(TARGET_NAMESPACE,
+                                       ENDPOINT_NAME, SERVICE_NAME,
+                                       ExportService.class);
   }
 
   /**
@@ -148,7 +114,7 @@ String POLLER_SVC_URL_KEY="";
     params.setAuid("testAuid");
 
     // Prepare the endpoint URI
-    String endpointUri = env.getProperty(POLLER_SVC_URL_KEY) + "/aus/{auId}/export";
+    String endpointUri = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/aus/{auId}/export";
 
     // Prepare the URI path variables
     Map<String, String> uriVariables = new HashMap<>(1);
