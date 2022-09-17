@@ -27,7 +27,7 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.hasher;
 
-import java.util.List;
+import org.lockss.app.ServiceDescr;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.Constants;
 import org.lockss.util.rest.poller.RestPollerClient;
@@ -37,6 +37,8 @@ import org.lockss.ws.entities.HasherWsParams;
 import org.lockss.ws.entities.HasherWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /** The Hasher SOAP web service implementation. */
 @Service
@@ -57,7 +59,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
     try {
       // Make the REST call to perform the hash.
       HasherWsResult result =
-          new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setTimeouts(10 * Constants.SECOND, Constants.DAY)
               .setRestTemplate(restTemplate)
@@ -85,7 +87,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
     try {
       // Make the REST call to perform the hash.
       HasherWsAsynchronousResult result =
-          new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .hashAsynchronously(wsParams);
@@ -112,7 +114,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
     try {
       // Make the REST call to get the hash.
       HasherWsAsynchronousResult result =
-          new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .getAsynchronousHashResult(requestId);
@@ -138,7 +140,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
     try {
       // Make the REST call to get all the hashes.
       List<HasherWsAsynchronousResult> wsResults =
-          new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .getAllAsynchronousHashResults();
@@ -166,7 +168,7 @@ public class HasherServiceImpl extends BaseServiceImpl implements HasherService 
     try {
       // Make the REST call to remove the hash.
       HasherWsAsynchronousResult result =
-          new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .removeAsynchronousHashRequest(requestId);

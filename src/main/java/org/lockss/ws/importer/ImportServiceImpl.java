@@ -31,6 +31,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.lockss.app.ServiceDescr;
 import org.lockss.laaws.rs.util.NamedInputStreamResource;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.PropertiesUtil;
@@ -52,7 +53,8 @@ import org.springframework.util.StreamUtils;
 
 import javax.activation.DataHandler;
 import javax.xml.bind.DatatypeConverter;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -211,8 +213,7 @@ public class ImportServiceImpl extends BaseServiceImpl implements ImportService 
     try {
       // Make the REST call.
       ResponseEntity<String> response =
-          callRestServiceEndpoint(
-              env.getProperty(REPO_SVC_URL_KEY),
+              callRestServiceEndpoint(getServiceEndpoint(ServiceDescr.SVC_REPO),
               "/checksumalgorithms",
               null,
               null,
@@ -248,7 +249,8 @@ public class ImportServiceImpl extends BaseServiceImpl implements ImportService 
     log.debug2("Invoked");
 
     // Prepare the endpoint URI.
-    String endpointUri = env.getProperty(POLLER_SVC_URL_KEY) + "/aus/import";
+    String endpointUri =
+      getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/aus/import";
     log.trace("endpointUri = {}", endpointUri);
 
     URI uri = RestUtil.getRestUri(endpointUri, null, null);

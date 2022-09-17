@@ -27,10 +27,11 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.metadata;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
 import org.lockss.ws.entities.LockssWebServicesFault;
 import org.lockss.ws.entities.MetadataControlResult;
+
+import javax.jws.WebMethod;
+import javax.jws.WebService;
 
 /** The Metadata Control SOAP web service interface. */
 @WebService

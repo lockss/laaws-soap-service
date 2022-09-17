@@ -27,25 +27,19 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import javax.mail.MessagingException;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.helpers.CastUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
-import org.lockss.laaws.rs.core.LockssRepositoryFactory;
+import org.lockss.app.LockssDaemon;
+import org.lockss.app.ServiceBinding;
+import org.lockss.app.ServiceDescr;
+import org.lockss.config.Configuration;
 import org.lockss.laaws.rs.core.RestLockssRepository;
 import org.lockss.log.L4JLogger;
+import org.lockss.spring.base.BaseSpringApiServiceImpl;
+import org.lockss.spring.base.LockssConfigurableService;
 import org.lockss.util.Constants;
 import org.lockss.util.auth.AuthUtil;
 import org.lockss.util.rest.RestUtil;
@@ -54,45 +48,65 @@ import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.multipart.MultipartConnector;
 import org.lockss.util.rest.multipart.MultipartResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
+import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.*;
+
 /** Base class for the various SOAP web service implementations. */
-public abstract class BaseServiceImpl {
-  /** The configuration key for the URL of the Repository REST service. */
-  public static final String REPO_SVC_URL_KEY = "repository.service.url";
-  /** The configuration key for the URL of the Configuration REST service. */
-  public static final String CONFIG_SVC_URL_KEY = "configuration.service.url";
-  /** The configuration key for the URL of the Poller REST service. */
-  public static final String POLLER_SVC_URL_KEY = "poller.service.url";
-  /** The configuration key for the URL of the Metadata Extractor REST service. */
-  public static final String MDX_SVC_URL_KEY = "metadataextractor.service.url";
-  /** The configuration key for the URL of the Metadata REST service. */
-  public static final String MDQ_SVC_URL_KEY = "metadata.service.url";
-  /** The configuration key for the URL of the Crawler REST service. */
-  public static final String CRAWLER_SVC_URL_KEY = "crawler.service.url";
+public class BaseServiceImpl
+  extends BaseSpringApiServiceImpl
+  implements LockssConfigurableService {
 
-  /** The configuration key for the Repository collection identifier. */
-  public static final String REPO_COLLECTION_KEY = "repository.collection";
+  // Config params
 
-  /** The configuration key for the connection timeout. */
-  public static final String CONNECTION_TIMEOUT_KEY = "connection.timeout";
-  /** The configuration key for the read timeout. */
-  public static final String READ_TIMEOUT_KEY = "read.timeout";
+  public static final String PREFIX = "org.lockss.soap.";
+
+  /** Repository collection identifier. */
+  public static final String PARAM_REPO_COLLECTION =
+    PREFIX + "repository.collection";
+  public static final String DEFAULT_REPO_COLLECTION = "lockss";
+
+  /** Connection timeout. */
+  public static final String PARAM_CONNECTION_TIMEOUT =
+    PREFIX + "connection.timeout";
+  public static final long DEFAULT_CONNECTION_TIMEOUT = 10 * Constants.SECOND;
+
+  /** Read timeout. */
+  public static final String PARAM_READ_TIMEOUT = PREFIX + "read.timeout";
+  public static final long DEFAULT_READ_TIMEOUT = 120 * Constants.SECOND;
 
   private static final L4JLogger log = L4JLogger.getLogger();
 
-  @Autowired protected Environment env;
   @Autowired protected RestTemplate restTemplate;
 
-  // Default timeouts.
-  private final long defaultConnectTimeout = 10 * Constants.SECOND;
-  private final long defaultReadTimeout = 120 * Constants.SECOND;
+  // Timeouts.
+  protected long connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+  protected long readTimeout = DEFAULT_READ_TIMEOUT;
+
+  protected String repoCollection = DEFAULT_REPO_COLLECTION;
+
+  protected ServiceBinding getServiceBinding(ServiceDescr sd) {
+    LockssDaemon daemon = getRunningLockssDaemon();
+    if (daemon == null) {
+      throw new IllegalStateException("No running LockssDaemon, can't access service bindings");
+    }
+    return daemon.getServiceBinding(sd);
+  }
+
+  public String getServiceEndpoint(ServiceDescr sd) {
+    ServiceBinding binding = getServiceBinding(sd);
+    if (binding == null) {
+      throw new IllegalArgumentException("No service binding for " + sd);
+    }
+    return getServiceBinding(sd).getRestStem();
+  }
 
   /**
    * Provides the configured connection timeout in milliseconds.
@@ -100,7 +114,7 @@ public abstract class BaseServiceImpl {
    * @return a Long with the configured connection timeout in milliseconds.
    */
   protected Long getConnectionTimeout() {
-    return env.getProperty(CONNECTION_TIMEOUT_KEY, Long.class, defaultConnectTimeout);
+    return connectionTimeout;
   }
 
   /**
@@ -109,7 +123,7 @@ public abstract class BaseServiceImpl {
    * @return a Long with the configured read timeout in milliseconds.
    */
   protected Long getReadTimeout() {
-    return env.getProperty(READ_TIMEOUT_KEY, Long.class, defaultReadTimeout);
+    return readTimeout;
   }
 
   protected HttpHeaders getAuthHeaders() {
@@ -159,9 +173,9 @@ public abstract class BaseServiceImpl {
   }
 
   /**
-   * Provides the Authorization header in the current SOAP request message, if any.
+   * Provides the requestor IP of the current SOAP request message
    *
-   * @return a String with the Authorization header.
+   * @return a String with the requestor IP.
    */
   protected static String getRequestorIpAddress() {
     // Get the message from the SOAP request.
@@ -183,7 +197,7 @@ public abstract class BaseServiceImpl {
     String[] credentials = getSoapRequestCredentials();
     log.trace("credentials = [{}, ****]", credentials[0]);
 
-    return new RestLockssRepository(new URL(env.getProperty(REPO_SVC_URL_KEY)),
+    return new RestLockssRepository(new URL(getServiceEndpoint(ServiceDescr.SVC_REPO)),
         restTemplate, credentials[0], credentials[1]);
   }
 
@@ -398,5 +412,20 @@ public abstract class BaseServiceImpl {
       sb.append(separatorLast);
     }
     return sb;
+  }
+
+  @Override
+  public void setConfig(Configuration newConfig,
+                        Configuration prevConfig,
+                        Configuration.Differences changedKeys) {
+    if (changedKeys.contains(PREFIX)) {
+      connectionTimeout =
+        newConfig.getTimeInterval(PARAM_CONNECTION_TIMEOUT,
+                                  DEFAULT_CONNECTION_TIMEOUT);
+      readTimeout = newConfig.getTimeInterval(PARAM_READ_TIMEOUT,
+                                              DEFAULT_READ_TIMEOUT);
+      repoCollection = newConfig.get(PARAM_REPO_COLLECTION,
+                                     DEFAULT_REPO_COLLECTION);
+    }
   }
 }

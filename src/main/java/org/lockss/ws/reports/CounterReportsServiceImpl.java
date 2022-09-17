@@ -27,7 +27,6 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.reports;
 
-import javax.xml.ws.soap.MTOM;
 import org.lockss.log.L4JLogger;
 import org.lockss.ws.entities.CounterReportParams;
 import org.lockss.ws.entities.CounterReportResult;
@@ -35,6 +34,8 @@ import org.lockss.ws.entities.LockssWebServicesFault;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+
+import javax.xml.ws.soap.MTOM;
 
 /** The COUNTER Reports SOAP web service implementation. */
 @MTOM

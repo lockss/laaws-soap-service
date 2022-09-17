@@ -29,6 +29,7 @@ package org.lockss.ws.status;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.lockss.app.ServiceDescr;
 import org.lockss.laaws.rs.model.Artifact;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.exception.LockssRestException;
@@ -61,7 +62,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       boolean result = true;
 
       // Check the repository service.
-      String url = env.getProperty(REPO_SVC_URL_KEY);
+      String url = getServiceEndpoint(ServiceDescr.SVC_REPO);
 
       if (url != null) {
         result = isServiceReady(url);
@@ -73,7 +74,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       }
 
       // Check the configuration service.
-      url = env.getProperty(CONFIG_SVC_URL_KEY);
+      url = getServiceEndpoint(ServiceDescr.SVC_CONFIG);
 
       if (url != null) {
         result = isServiceReady(url);
@@ -85,7 +86,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       }
 
       // Check the poller service.
-      url = env.getProperty(POLLER_SVC_URL_KEY);
+      url = getServiceEndpoint(ServiceDescr.SVC_POLLER);
 
       if (url != null) {
         result = isServiceReady(url);
@@ -97,7 +98,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       }
 
       // Check the metadata extractor service.
-      url = env.getProperty(MDX_SVC_URL_KEY);
+      url = getServiceEndpoint(ServiceDescr.SVC_MDX);
 
       if (url != null) {
         result = isServiceReady(url);
@@ -109,7 +110,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       }
 
       // Check the metadata service.
-      url = env.getProperty(MDQ_SVC_URL_KEY);
+      url = getServiceEndpoint(ServiceDescr.SVC_MDQ);
 
       if (url != null) {
         result = isServiceReady(url);
@@ -197,7 +198,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              env.getProperty(CONFIG_SVC_URL_KEY),
+              getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/austatuses/{auId}",
               uriVariables,
               null,
@@ -242,7 +243,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              env.getProperty(CONFIG_SVC_URL_KEY),
+              getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/plugins",
               null,
               queryParams,
@@ -288,7 +289,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              env.getProperty(CONFIG_SVC_URL_KEY),
+              getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/auqueries",
               null,
               queryParams,
@@ -328,7 +329,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
     try {
       // Make the REST call to make the query.
       List<PeerWsResult> results =
-          new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+        new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .queryPeers(peerQuery);
@@ -355,7 +356,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
     try {
       // Make the REST call to make the query.
       List<VoteWsResult> results =
-          new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .queryVotes(voteQuery);
@@ -384,7 +385,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
     try {
       // Make the REST call to make the query.
       List<RepositorySpaceWsResult> results =
-          new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+          new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .queryRepositorySpaces(repositorySpaceQuery);
@@ -412,7 +413,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
     try {
       // Make the REST call to make the query.
       List<RepositoryWsResult> results =
-          new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+           new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .queryAuRepositories(repositoryQuery);
@@ -463,7 +464,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
     try {
       // Make the REST call to make the query.
       List<PollWsResult> results =
-          new RestPollerClient(env.getProperty(POLLER_SVC_URL_KEY))
+        new RestPollerClient(getServiceEndpoint(ServiceDescr.SVC_POLLER))
               .addRequestHeaders(getAuthHeaders())
               .setRestTemplate(restTemplate)
               .queryPolls(pollQuery);
@@ -489,7 +490,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              env.getProperty(CONFIG_SVC_URL_KEY),
+              getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/config/platform",
               null,
               null,
@@ -537,7 +538,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              env.getProperty(CONFIG_SVC_URL_KEY),
+              getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/tdbpublishers",
               null,
               queryParams,
@@ -584,7 +585,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              env.getProperty(CONFIG_SVC_URL_KEY),
+              getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/tdbtitles",
               null,
               queryParams,
@@ -631,7 +632,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              env.getProperty(CONFIG_SVC_URL_KEY),
+              getServiceEndpoint(ServiceDescr.SVC_CONFIG),
               "/tdbaus",
               null,
               queryParams,
@@ -678,7 +679,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       // Loop through all the artifacts in the response from the REST service.
       for (Artifact artifact :
           getRestLockssRepository()
-              .getArtifactsWithPrefix(env.getProperty(REPO_COLLECTION_KEY), auId, prefixUrl)) {
+              .getArtifactsWithPrefix(repoCollection, auId, prefixUrl)) {
         log.trace("artifact = {}", artifact);
 
         // Add this artifact URL to the results.

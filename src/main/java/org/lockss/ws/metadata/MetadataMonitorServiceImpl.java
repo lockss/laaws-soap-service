@@ -27,20 +27,14 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.metadata;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.lockss.log.L4JLogger;
-import org.lockss.ws.entities.AuMetadataWsResult;
-import org.lockss.ws.entities.KeyIdNamePairListPair;
-import org.lockss.ws.entities.KeyValueListPair;
-import org.lockss.ws.entities.LockssWebServicesFault;
-import org.lockss.ws.entities.MetadataItemWsResult;
-import org.lockss.ws.entities.MismatchedMetadataChildWsResult;
-import org.lockss.ws.entities.PkNamePairIdNamePairListPair;
-import org.lockss.ws.entities.UnnamedItemWsResult;
+import org.lockss.ws.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** The Metadata Monitor SOAP web service implementation. */
 @Service

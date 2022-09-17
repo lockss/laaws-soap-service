@@ -88,6 +88,10 @@ POSSIBILITY OF SUCH DAMAGE.
           <groupId>org.apache.solr</groupId>
           <artifactId>solr-solrj</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>jetty-util</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -186,6 +190,23 @@ POSSIBILITY OF SUCH DAMAGE.
 
     <dependency>
       <groupId>org.lockss</groupId>
+      <artifactId>lockss-core-bundle</artifactId>
+      <version>${version.lockss.lockss-core}</version>
+      <type>pom</type>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.woodstox</groupId>
+          <artifactId>stax2-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.cxf</groupId>
+          <artifactId>cxf-bundle</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lockss</groupId>
       <artifactId>lockss-core-tests-bundle</artifactId>
       <version>${version.lockss.lockss-core-bundle}</version>
       <type>pom</type>
@@ -208,6 +229,13 @@ POSSIBILITY OF SUCH DAMAGE.
       <version>4.3.0</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-spring-bundle</artifactId>
+      <version>${version.lockss.lockss-spring-bundle}</version>
+    </dependency>
+
   </dependencies>
 
   <build>

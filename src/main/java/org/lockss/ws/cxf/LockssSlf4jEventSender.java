@@ -31,15 +31,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.lockss.ws.cxf;
 
-import java.util.HashSet;
-import java.util.Set;
-import javax.xml.namespace.QName;
 import org.apache.cxf.ext.logging.event.LogEvent;
 import org.apache.cxf.ext.logging.event.LogEventSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.MarkerFactory;
+
+import javax.xml.namespace.QName;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Implementation of org.apache.cxf.ext.logging.slf4j.Slf4jEventSender for logging at level TRACE

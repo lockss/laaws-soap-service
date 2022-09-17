@@ -68,7 +68,7 @@ public class ContentServiceImpl extends BaseServiceImpl implements ContentServic
       // Loop through all the artifacts in the response from the REST service.
       for (Artifact artifact :
           getRestLockssRepository()
-              .getArtifactsAllVersions(env.getProperty(REPO_COLLECTION_KEY), auId, url)) {
+              .getArtifactsAllVersions(repoCollection, auId, url)) {
         log.trace("artifact = {}", artifact);
 
         // Create the result data for this artifact.
@@ -104,7 +104,7 @@ public class ContentServiceImpl extends BaseServiceImpl implements ContentServic
 
     try {
       boolean result =
-          getRestLockssRepository().getArtifact(env.getProperty(REPO_COLLECTION_KEY), auId, url)
+        getRestLockssRepository().getArtifact(repoCollection, auId, url)
               != null;
       log.debug2("result = {}", result);
       return result;
@@ -134,7 +134,7 @@ public class ContentServiceImpl extends BaseServiceImpl implements ContentServic
       boolean result =
           getRestLockssRepository()
                   .getArtifactVersion(
-                      env.getProperty(REPO_COLLECTION_KEY), auId, url, version, false)
+                      repoCollection, auId, url, version, false)
               != null;
       log.debug2("result = {}", result);
       return result;
@@ -167,7 +167,7 @@ public class ContentServiceImpl extends BaseServiceImpl implements ContentServic
       ContentResult result = new ContentResult();
 
       Artifact artifact =
-          getRestLockssRepository().getArtifact(env.getProperty(REPO_COLLECTION_KEY), auId, url);
+          getRestLockssRepository().getArtifact(repoCollection, auId, url);
       log.trace("artifact = {}", artifact);
 
       if (artifact != null) {
@@ -213,7 +213,7 @@ public class ContentServiceImpl extends BaseServiceImpl implements ContentServic
 
       Artifact artifact =
           getRestLockssRepository()
-              .getArtifactVersion(env.getProperty(REPO_COLLECTION_KEY), auId, url, version, false);
+              .getArtifactVersion(repoCollection, auId, url, version, false);
       log.trace("artifact = {}", artifact);
 
       if (artifact != null) {

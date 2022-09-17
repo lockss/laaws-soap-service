@@ -31,124 +31,56 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 package org.lockss.ws.importer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.istack.ByteArrayDataSource;
 import org.apache.commons.fileupload.FileItem;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.lockss.laaws.rs.util.NamedInputStreamResource;
+import org.lockss.app.ServiceDescr;
 import org.lockss.log.L4JLogger;
-import org.lockss.spring.test.SpringLockssTestCase4;
 import org.lockss.util.ListUtil;
-import org.lockss.util.rest.RestResponseErrorBody;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.multipart.MultipartMessage;
 import org.lockss.util.rest.multipart.MultipartMessageHttpMessageConverter;
 import org.lockss.ws.entities.ImportWsParams;
 import org.lockss.ws.entities.ImportWsResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.LocalServerPort;
+import org.lockss.ws.test.BaseSoapTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.env.Environment;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.*;
-import org.springframework.http.client.ClientHttpRequest;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
 import org.springframework.mock.http.MockHttpInputMessage;
-import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.mock.http.client.MockClientHttpResponse;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.client.ExpectedCount;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
-import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Service;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
-import static org.lockss.ws.BaseServiceImpl.POLLER_SVC_URL_KEY;
-import static org.lockss.ws.BaseServiceImpl.REPO_SVC_URL_KEY;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
-public class TestImportService extends SpringLockssTestCase4 {
+public class TestImportService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
 
-  @TestConfiguration
-  public static class MyConfiguration {
-    @Bean
-    public RestTemplate restTemplate() {
-      RestTemplate restTemplate = new RestTemplate();
-
-      // Add the multipart/form-data converter
-      List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
-      messageConverters.add(new MultipartMessageHttpMessageConverter());
-
-      return restTemplate;
-    }
-  }
-
-  @Autowired
-  protected Environment env;
-
-  @Autowired
-  private RestTemplate restTemplate;
-
-  @LocalServerPort
-  private int port;
-
   private ImportService proxy;
-  private MockRestServiceServer mockRestServer;
-
-  private static final ObjectMapper mapper = new ObjectMapper();
-
   private static final String TARGET_NAMESPACE = "http://importer.ws.lockss.org/";
   private static final String SERVICE_NAME = "ImportServiceImplService";
-
-  private static final String USERNAME = "lockss-u";
-  private static final String PASSWORD = "lockss-p";
-  private static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
+  private static final String ENDPOINT_NAME = "ImportService";
 
   @Before
-  public void init() throws MalformedURLException {
-    // Setup proxy to SOAP service
-    String wsdlEndpoint = "http://localhost:" + port + "/ws/ImportService?wsdl";
-    Service srv = Service.create(new URL(wsdlEndpoint), new QName(TARGET_NAMESPACE, SERVICE_NAME));
-    proxy = srv.getPort(ImportService.class);
-
-    // Add authentication headers for SOAP request
-    BindingProvider bp = (BindingProvider) proxy;
-    Map<String, Object> requestContext = bp.getRequestContext();
-    requestContext.put(BindingProvider.USERNAME_PROPERTY, USERNAME);
-    requestContext.put(BindingProvider.PASSWORD_PROPERTY, PASSWORD);
-
-    // Create MockRestServiceServer from RestTemplate
-    mockRestServer = MockRestServiceServer.createServer(restTemplate);
+  public void init() throws Exception {
+    setUpMultipartFormConverter();
+    proxy = setUpProxyAndCommonTestEnv(TARGET_NAMESPACE,
+                                       ENDPOINT_NAME, SERVICE_NAME,
+                                       ImportService.class);
   }
 
   private static final byte[] HELLO_WORLD = "hello world".getBytes(StandardCharsets.UTF_8);
@@ -180,7 +112,7 @@ public class TestImportService extends SpringLockssTestCase4 {
             .body(HELLO_WORLD));
 
     // Prepare the endpoint URI
-    String importEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/aus/import";
+    String importEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/aus/import";
     URI importEndpointQuery = RestUtil.getRestUri(importEndpoint, null, null);
 
     // Mock REST service call and response
@@ -266,7 +198,7 @@ public class TestImportService extends SpringLockssTestCase4 {
     params.setDataHandler(dh);
 
     // Prepare the endpoint URI
-    String importEndpoint = env.getProperty(POLLER_SVC_URL_KEY) + "/aus/import";
+    String importEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/aus/import";
     URI importEndpointQuery = RestUtil.getRestUri(importEndpoint, null, null);
 
     // Mock REST service call and response
@@ -339,7 +271,7 @@ public class TestImportService extends SpringLockssTestCase4 {
     List<String> supportedAlgorithms = ListUtil.list("A", "B", "C");
 
     // Prepare the endpoint URI
-    String importEndpoint = env.getProperty(REPO_SVC_URL_KEY) + "/checksumalgorithms";
+    String importEndpoint = getServiceEndpoint(ServiceDescr.SVC_REPO) + "/checksumalgorithms";
     URI importEndpointQuery = RestUtil.getRestUri(importEndpoint, null, null);
 
     // Mock REST service call and response
