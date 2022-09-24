@@ -250,7 +250,7 @@ public class ImportServiceImpl extends BaseServiceImpl implements ImportService 
 
     // Prepare the endpoint URI.
     String endpointUri =
-      getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/aus/import";
+      getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/aus/import";
     log.trace("endpointUri = {}", endpointUri);
 
     URI uri = RestUtil.getRestUri(endpointUri, null, null);

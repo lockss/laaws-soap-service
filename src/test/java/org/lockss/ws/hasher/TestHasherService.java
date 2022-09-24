@@ -106,7 +106,8 @@ public class TestHasherService extends BaseSoapTest {
       queryParams.put("isAsynchronous", "false");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null,
+          queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -138,7 +139,8 @@ public class TestHasherService extends BaseSoapTest {
       queryParams.put("isAsynchronous", "false");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null,
+          queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -170,7 +172,8 @@ public class TestHasherService extends BaseSoapTest {
       queryParams.put("isAsynchronous", "false");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null,
+          queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -202,7 +205,8 @@ public class TestHasherService extends BaseSoapTest {
       queryParams.put("isAsynchronous", "false");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null,
+          queryParams);
 
       // This map simulates the map built by the Poller service from a HasherResult object
       Map<String, Object> resultProps = new HashMap<>();
@@ -299,7 +303,8 @@ public class TestHasherService extends BaseSoapTest {
       queryParams.put("isAsynchronous", "true");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null,
+          queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -331,7 +336,8 @@ public class TestHasherService extends BaseSoapTest {
       queryParams.put("isAsynchronous", "true");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null,
+          queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -363,7 +369,8 @@ public class TestHasherService extends BaseSoapTest {
       queryParams.put("isAsynchronous", "true");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null,
+          queryParams);
 
       // Mock REST service call and response
       mockRestServer
@@ -395,7 +402,8 @@ public class TestHasherService extends BaseSoapTest {
       queryParams.put("isAsynchronous", "true");
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, queryParams);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null,
+          queryParams);
 
       // This map simulates the map built by the Poller service from a HasherResult object
       Map<String, Object> resultProps = new HashMap<>();
@@ -486,7 +494,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       String message = "Must supply request identifier";
 
@@ -514,7 +524,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       // Mock REST service call and response
       mockRestServer
@@ -539,7 +551,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       // Mock REST service call and response
       mockRestServer
@@ -564,7 +578,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       String message = "Cannot find asynchronous hash request '" + requestId + "'";
 
@@ -592,7 +608,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       String message = "Cannot getHash() for requestId = '" + requestId + "'";
 
@@ -620,7 +638,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       // This map simulates the map built by the Poller service from a HasherResult object
       Map<String, Object> resultProps = new HashMap<>();
@@ -707,7 +727,7 @@ public class TestHasherService extends BaseSoapTest {
     //// Test bad or no auth error ("401 Unauthorized") handling
     {
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null, null);
 
       // Mock REST service call and response
       mockRestServer
@@ -730,7 +750,7 @@ public class TestHasherService extends BaseSoapTest {
     //// Test bad User Role error ("Forbidden") handling
     {
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null, null);
 
       // Mock REST service call and response
       mockRestServer
@@ -753,7 +773,7 @@ public class TestHasherService extends BaseSoapTest {
     //// Test unforeseen exception ("500 Internal Server Error") handling
     {
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null, null);
 
       String message = "Cannot getAllHashes()";
 
@@ -779,7 +799,7 @@ public class TestHasherService extends BaseSoapTest {
     //// Test success
     {
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes", null, null);
+      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes", null, null);
 
       // This map simulates the map built by the Poller service from a HasherResult object
       Map<String, Object> resultProps1 = new HashMap<>();
@@ -928,7 +948,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       String message = "Must supply request identifier";
 
@@ -961,7 +983,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       // Mock REST service call and response
       mockRestServer
@@ -985,7 +1009,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       // Mock REST service call and response
       mockRestServer
@@ -1009,7 +1035,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       String message = "Cannot find asynchronous hash request '" + requestId + "'";
 
@@ -1042,7 +1070,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       String message = "Cannot deleteHash() for requestId = '" + requestId + "'";
 
@@ -1075,7 +1105,9 @@ public class TestHasherService extends BaseSoapTest {
       String requestId = "requestId";
 
       // REST API endpoint of operation we're testing
-      URI restEndpoint = RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/hashes/requests/" + requestId, null, null);
+      URI restEndpoint =
+          RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/hashes/requests/" + requestId, null,
+              null);
 
       String message = "Done";
 

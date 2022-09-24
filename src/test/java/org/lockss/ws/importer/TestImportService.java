@@ -112,7 +112,7 @@ public class TestImportService extends BaseSoapTest {
             .body(HELLO_WORLD));
 
     // Prepare the endpoint URI
-    String importEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/aus/import";
+    String importEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/aus/import";
     URI importEndpointQuery = RestUtil.getRestUri(importEndpoint, null, null);
 
     // Mock REST service call and response
@@ -198,7 +198,7 @@ public class TestImportService extends BaseSoapTest {
     params.setDataHandler(dh);
 
     // Prepare the endpoint URI
-    String importEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/aus/import";
+    String importEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/aus/import";
     URI importEndpointQuery = RestUtil.getRestUri(importEndpoint, null, null);
 
     // Mock REST service call and response

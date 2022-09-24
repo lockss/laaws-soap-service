@@ -321,7 +321,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     queryParams.put("peerQuery", peerQuery);
 
     // Prepare the endpoint URI
-    String peersEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/peers";
+    String peersEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/peers";
     URI peersQuery = RestUtil.getRestUri(peersEndpoint, null, queryParams);
 
     mockRestServer
@@ -357,7 +357,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     queryParams.put("voteQuery", voteQuery);
 
     // Prepare the endpoint URI
-    String votesEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/votes";
+    String votesEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/votes";
     URI votesQuery = RestUtil.getRestUri(votesEndpoint, null, queryParams);
 
     mockRestServer
@@ -393,7 +393,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     queryParams.put("repositorySpaceQuery", repositorySpaceQuery);
 
     // Prepare the endpoint URI
-    String repoSpacesEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/repositoryspaces";
+    String repoSpacesEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/repositoryspaces";
     URI repoSpacesQuery = RestUtil.getRestUri(repoSpacesEndpoint, null, queryParams);
 
     mockRestServer
@@ -429,7 +429,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     queryParams.put("repositoryQuery", repositoryQuery);
 
     // Prepare the endpoint URI
-    String repositoriesEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/aurepositories";
+    String repositoriesEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/aurepositories";
     URI repositoriesQuery = RestUtil.getRestUri(repositoriesEndpoint, null, queryParams);
 
     mockRestServer
@@ -473,7 +473,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     queryParams.put("pollQuery", pollQuery);
 
     // Prepare the endpoint URI
-    String pollsEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/polls";
+    String pollsEndpoint = getServiceEndpoint(ServiceDescr.SVC_POLLER) + "/ws/polls";
     URI pollsQuery = RestUtil.getRestUri(pollsEndpoint, null, queryParams);
 
     mockRestServer
