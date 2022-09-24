@@ -197,8 +197,12 @@ public class BaseServiceImpl
     String[] credentials = getSoapRequestCredentials();
     log.trace("credentials = [{}, ****]", credentials[0]);
 
-    return new RestLockssRepository(new URL(getServiceEndpoint(ServiceDescr.SVC_REPO)),
-        restTemplate, credentials[0], credentials[1]);
+    try {
+      return new RestLockssRepository(new URL(getServiceEndpoint(ServiceDescr.SVC_REPO)),
+          restTemplate, credentials[0], credentials[1]);
+    } catch (IOException e) {
+      throw new IllegalStateException("Could not create REST LOCKSS Repository client");
+    }
   }
 
   /**
