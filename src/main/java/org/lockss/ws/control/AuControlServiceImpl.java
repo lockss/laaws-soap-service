@@ -146,7 +146,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
             .setRestTemplate(restTemplate)
             .callCrawl(crawlDesc);
 
-        return new RequestCrawlResult(auId, true, job.getDelayReason(), null);
+        return new RequestCrawlResult(auId, true, job.getResult(), null);
       } catch (LockssRestHttpException e) {
         String msg = e.getMessage();
 
@@ -225,7 +225,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
             .setRestTemplate(restTemplate)
             .callCrawl(crawlDesc);
 
-        return new RequestDeepCrawlResult(auId, refetchDepth, true, job.getDelayReason(), null);
+        return new RequestDeepCrawlResult(auId, refetchDepth, true, job.getResult(), null);
       } catch (LockssRestHttpException e) {
         String msg = e.getMessage();
 
