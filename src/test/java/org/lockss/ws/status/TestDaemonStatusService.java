@@ -654,18 +654,18 @@ public class TestDaemonStatusService extends BaseSoapTest {
 
     // Prepare the URI path variables
     Map<String, String> uriVariables = new HashMap<>(1);
-    Configuration config = ConfigManager.getCurrentConfig();
-    uriVariables.put("collection",
-                     config.get(BaseServiceImpl.PARAM_REPO_COLLECTION,
-                                BaseServiceImpl.DEFAULT_REPO_COLLECTION));
     uriVariables.put("auId", auId);
+
+    Configuration config = ConfigManager.getCurrentConfig();
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
+    queryParams.put("namespace",
+        config.get(BaseServiceImpl.PARAM_REPO_NAMESPACE, BaseServiceImpl.DEFAULT_REPO_NAMESPACE));
     queryParams.put("urlPrefix", urlPrefix);
 
     // Prepare the endpoint URI
-    String auArtifactsEndpoint = getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/{collection}/aus/{auId}/artifacts";
+    String auArtifactsEndpoint = getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/{auId}/artifacts";
     URI auArtifactsQuery = RestUtil.getRestUri(auArtifactsEndpoint, uriVariables, queryParams);
 
     mockRestServer

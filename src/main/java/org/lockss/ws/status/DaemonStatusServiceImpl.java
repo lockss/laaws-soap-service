@@ -679,7 +679,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       // Loop through all the artifacts in the response from the REST service.
       for (Artifact artifact :
           getRestLockssRepository()
-              .getArtifactsWithPrefix(repoCollection, auId, prefixUrl)) {
+              .getArtifactsWithPrefix(repoNamespace, auId, prefixUrl)) {
         log.trace("artifact = {}", artifact);
 
         // Add this artifact URL to the results.

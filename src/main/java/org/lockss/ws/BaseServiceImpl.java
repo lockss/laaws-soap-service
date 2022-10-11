@@ -68,10 +68,10 @@ public class BaseServiceImpl
 
   public static final String PREFIX = "org.lockss.soap.";
 
-  /** Repository collection identifier. */
-  public static final String PARAM_REPO_COLLECTION =
-    PREFIX + "repository.collection";
-  public static final String DEFAULT_REPO_COLLECTION = "lockss";
+  /** Repository namespace. */
+  public static final String PARAM_REPO_NAMESPACE =
+    PREFIX + "repository.namespace";
+  public static final String DEFAULT_REPO_NAMESPACE = "lockss";
 
   /** Connection timeout. */
   public static final String PARAM_CONNECTION_TIMEOUT =
@@ -90,7 +90,7 @@ public class BaseServiceImpl
   protected long connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
   protected long readTimeout = DEFAULT_READ_TIMEOUT;
 
-  protected String repoCollection = DEFAULT_REPO_COLLECTION;
+  protected String repoNamespace = DEFAULT_REPO_NAMESPACE;
 
   protected ServiceBinding getServiceBinding(ServiceDescr sd) {
     LockssDaemon daemon = getRunningLockssDaemon();
@@ -428,8 +428,8 @@ public class BaseServiceImpl
                                   DEFAULT_CONNECTION_TIMEOUT);
       readTimeout = newConfig.getTimeInterval(PARAM_READ_TIMEOUT,
                                               DEFAULT_READ_TIMEOUT);
-      repoCollection = newConfig.get(PARAM_REPO_COLLECTION,
-                                     DEFAULT_REPO_COLLECTION);
+      repoNamespace = newConfig.get(PARAM_REPO_NAMESPACE,
+          DEFAULT_REPO_NAMESPACE);
     }
   }
 }

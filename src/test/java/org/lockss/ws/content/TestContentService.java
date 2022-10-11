@@ -101,20 +101,22 @@ public class TestContentService extends BaseSoapTest {
     //// Test success
     {
       // Parameters to SOAP and REST calls
-      String collection = "lockss";
+      String namespace = "lockss";
       String auid = "testAuid";
       String url = "testUrl";
 
       URI auArtifactsEndpoint =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
 
       URI allUrlVersionsEndpoint_p1 = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
+          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", "all")
           .build()
           .toUri();
 
       URI allUrlVersionsEndpoint_p2 = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
+          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", "all")
           .queryParam("continuationToken", "ABC")
@@ -124,7 +126,7 @@ public class TestContentService extends BaseSoapTest {
       // Page 1 of artifacts
 
       Artifact artifact1 = new Artifact();
-      artifact1.setNamespace(collection);
+      artifact1.setNamespace(namespace);
       artifact1.setAuid(auid);
       artifact1.setUri(url);
       artifact1.setVersion(1);
@@ -147,7 +149,7 @@ public class TestContentService extends BaseSoapTest {
       // Page 2 of artifacts
 
       Artifact artifact2 = new Artifact();
-      artifact2.setNamespace(collection);
+      artifact2.setNamespace(namespace);
       artifact2.setAuid(auid);
       artifact2.setUri(url);
       artifact2.setVersion(2);
@@ -213,21 +215,22 @@ public class TestContentService extends BaseSoapTest {
     //// Test success
     {
       // Parameters to SOAP and REST calls
-      String collection = "lockss";
+      String namespace = "lockss";
       String auid = "testAuid";
       String url = "testUrl";
 
       URI auArtifactsEndpoint =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
 
       URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
+          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", "latest")
           .build()
           .toUri();
 
       Artifact artifact = new Artifact();
-      artifact.setNamespace(collection);
+      artifact.setNamespace(namespace);
       artifact.setAuid(auid);
       artifact.setUri(url);
       artifact.setVersion(1);
@@ -271,22 +274,23 @@ public class TestContentService extends BaseSoapTest {
     //// Test success
     {
       // Parameters to SOAP and REST calls
-      String collection = "lockss";
+      String namespace = "lockss";
       String auid = "testAuid";
       String url = "testUrl";
       int version = 1234;
 
       URI auArtifactsEndpoint =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
 
       URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
+          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", version)
           .build()
           .toUri();
 
       Artifact artifact = new Artifact();
-      artifact.setNamespace(collection);
+      artifact.setNamespace(namespace);
       artifact.setAuid(auid);
       artifact.setUri(url);
       artifact.setVersion(version);
@@ -341,16 +345,17 @@ public class TestContentService extends BaseSoapTest {
     }
 
     {
-      String collection = "lockss";
+      String namespace = "lockss";
       String auid = "testAuid";
       String url = "testUrl";
       String artifactId = "testArtifactId";
 
       // REST getArtifacts endpoint
       URI getArtifactsURL =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
 
       URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
+          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", "latest")
           .build()
@@ -358,10 +363,10 @@ public class TestContentService extends BaseSoapTest {
 
       // Mock return object from REST getArtifacts call
       Artifact artifact =
-          new Artifact(artifactId, collection, auid, url, 1, true,
+          new Artifact(artifactId, namespace, auid, url, 1, true,
               "file:///test.warc?offset=0&length=2014", 1024L, "digest");
 
-//      artifact.setCollection(collection);
+//      artifact.setNamespace(namespace);
 //      artifact.setAuid(auid);
 //      artifact.setUri(url);
 //      artifact.setVersion(1);
@@ -391,10 +396,10 @@ public class TestContentService extends BaseSoapTest {
       // REST getArtifactData() endpoint
       URI getArtifactDataURL =
         new URI(getServiceEndpoint(ServiceDescr.SVC_REPO)
-              + "/collections/" + collection
               + "/artifacts/" + artifactId);
 
       URI getArtifactDataQuery = UriComponentsBuilder.fromUri(getArtifactDataURL)
+          .queryParam("namespace", namespace)
           .queryParam("includeContent", "ALWAYS")
           .build()
           .toUri();
@@ -464,7 +469,7 @@ public class TestContentService extends BaseSoapTest {
   @Test
   public void testFetchVersionedFile() throws Exception {
     {
-      String collection = "lockss";
+      String namespace = "lockss";
       String auid = "testAuid";
       String url = "testUrl";
       int version = 1;
@@ -472,9 +477,10 @@ public class TestContentService extends BaseSoapTest {
 
       // REST getArtifacts endpoint
       URI getArtifactsURL =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/collections/" + collection + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
 
       URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
+          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", version)
           .build()
@@ -482,10 +488,10 @@ public class TestContentService extends BaseSoapTest {
 
       // Mock return object from REST getArtifacts call
       Artifact artifact =
-          new Artifact(artifactId, collection, auid, url, version, true,
+          new Artifact(artifactId, namespace, auid, url, version, true,
               "file:///test.warc?offset=0&length=2014", 1024L, "digest");
 
-//      artifact.setCollection(collection);
+//      artifact.setNamespace(namespace);
 //      artifact.setAuid(auid);
 //      artifact.setUri(url);
 //      artifact.setVersion(version);
@@ -515,10 +521,10 @@ public class TestContentService extends BaseSoapTest {
       // REST getArtifactData() endpoint
       URI getArtifactDataURL =
         new URI(getServiceEndpoint(ServiceDescr.SVC_REPO)
-              + "/collections/" + collection
               + "/artifacts/" + artifactId);
 
       URI getArtifactDataQuery = UriComponentsBuilder.fromUri(getArtifactDataURL)
+          .queryParam("namespace",namespace)
           .queryParam("includeContent", "ALWAYS")
           .build()
           .toUri();
