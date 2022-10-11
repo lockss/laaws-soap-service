@@ -124,7 +124,7 @@ public class TestContentService extends BaseSoapTest {
       // Page 1 of artifacts
 
       Artifact artifact1 = new Artifact();
-      artifact1.setNamespace(collection);
+      artifact1.setCollection(collection);
       artifact1.setAuid(auid);
       artifact1.setUri(url);
       artifact1.setVersion(1);
@@ -147,7 +147,7 @@ public class TestContentService extends BaseSoapTest {
       // Page 2 of artifacts
 
       Artifact artifact2 = new Artifact();
-      artifact2.setNamespace(collection);
+      artifact2.setCollection(collection);
       artifact2.setAuid(auid);
       artifact2.setUri(url);
       artifact2.setVersion(2);
@@ -227,7 +227,7 @@ public class TestContentService extends BaseSoapTest {
           .toUri();
 
       Artifact artifact = new Artifact();
-      artifact.setNamespace(collection);
+      artifact.setCollection(collection);
       artifact.setAuid(auid);
       artifact.setUri(url);
       artifact.setVersion(1);
@@ -286,7 +286,7 @@ public class TestContentService extends BaseSoapTest {
           .toUri();
 
       Artifact artifact = new Artifact();
-      artifact.setNamespace(collection);
+      artifact.setCollection(collection);
       artifact.setAuid(auid);
       artifact.setUri(url);
       artifact.setVersion(version);
@@ -666,7 +666,7 @@ public class TestContentService extends BaseSoapTest {
     //// Artifact repository ID information headers
     ArtifactIdentifier id = ad.getIdentifier();
     headers.set(ArtifactConstants.ARTIFACT_ID_KEY, id.getId());
-    headers.set(ArtifactConstants.ARTIFACT_NAMESPACE_KEY, id.getNamespace());
+    headers.set(ArtifactConstants.ARTIFACT_COLLECTION_KEY, id.getCollection());
     headers.set(ArtifactConstants.ARTIFACT_AUID_KEY, id.getAuid());
     headers.set(ArtifactConstants.ARTIFACT_URI_KEY, id.getUri());
     headers.set(ArtifactConstants.ARTIFACT_VERSION_KEY, String.valueOf(id.getVersion()));
