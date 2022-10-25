@@ -71,7 +71,7 @@ public class BaseServiceImpl
   /** Repository namespace. */
   public static final String PARAM_REPO_NAMESPACE =
     PREFIX + "repository.namespace";
-  public static final String DEFAULT_REPO_NAMESPACE = "lockss";
+  public static final String DEFAULT_REPO_NAMESPACE = null;
 
   /** Connection timeout. */
   public static final String PARAM_CONNECTION_TIMEOUT =
