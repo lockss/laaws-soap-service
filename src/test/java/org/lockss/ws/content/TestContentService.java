@@ -109,14 +109,12 @@ public class TestContentService extends BaseSoapTest {
         new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
 
       URI allUrlVersionsEndpoint_p1 = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
-          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", "all")
           .build()
           .toUri();
 
       URI allUrlVersionsEndpoint_p2 = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
-          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", "all")
           .queryParam("continuationToken", "ABC")
@@ -223,7 +221,6 @@ public class TestContentService extends BaseSoapTest {
         new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
 
       URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
-          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", "latest")
           .build()
@@ -283,7 +280,6 @@ public class TestContentService extends BaseSoapTest {
         new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
 
       URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
-          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", version)
           .build()
@@ -355,7 +351,6 @@ public class TestContentService extends BaseSoapTest {
         new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
 
       URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
-          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", "latest")
           .build()
@@ -399,8 +394,8 @@ public class TestContentService extends BaseSoapTest {
               + "/artifacts/" + artifactId);
 
       URI getArtifactDataQuery = UriComponentsBuilder.fromUri(getArtifactDataURL)
-          .queryParam("namespace", namespace)
           .queryParam("includeContent", "ALWAYS")
+          .queryParam("namespace", namespace)
           .build()
           .toUri();
 
@@ -480,7 +475,6 @@ public class TestContentService extends BaseSoapTest {
         new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
 
       URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
-          .queryParam("namespace", namespace)
           .queryParam("url", url)
           .queryParam("version", version)
           .build()
@@ -524,8 +518,8 @@ public class TestContentService extends BaseSoapTest {
               + "/artifacts/" + artifactId);
 
       URI getArtifactDataQuery = UriComponentsBuilder.fromUri(getArtifactDataURL)
-          .queryParam("namespace",namespace)
           .queryParam("includeContent", "ALWAYS")
+          .queryParam("namespace", namespace)
           .build()
           .toUri();
 

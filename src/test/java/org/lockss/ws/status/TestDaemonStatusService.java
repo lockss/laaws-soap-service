@@ -43,6 +43,7 @@ import org.lockss.laaws.rs.model.ArtifactPageInfo;
 import org.lockss.laaws.rs.model.PageInfo;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.ListUtil;
+import org.lockss.util.StringUtil;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.status.ApiStatus;
 import org.lockss.ws.BaseServiceImpl;
@@ -660,9 +661,14 @@ public class TestDaemonStatusService extends BaseSoapTest {
 
     // Prepare the query parameters
     Map<String, String> queryParams = new HashMap<>(1);
-    queryParams.put("namespace",
-        config.get(BaseServiceImpl.PARAM_REPO_NAMESPACE, BaseServiceImpl.DEFAULT_REPO_NAMESPACE));
     queryParams.put("urlPrefix", urlPrefix);
+
+    String namespace =
+        config.get(BaseServiceImpl.PARAM_REPO_NAMESPACE, BaseServiceImpl.DEFAULT_REPO_NAMESPACE);
+
+    if (!StringUtil.isNullString(namespace)) {
+      queryParams.put("namespace", namespace);
+    }
 
     // Prepare the endpoint URI
     String auArtifactsEndpoint = getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/{auId}/artifacts";
