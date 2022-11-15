@@ -244,7 +244,7 @@ public class ContentServiceImpl extends BaseServiceImpl implements ContentServic
     if (artifactData != null) {
       String contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
-      HttpHeaders metadata = artifactData.getMetadata();
+      HttpHeaders metadata = artifactData.getHttpHeaders();
       log.trace("metadata = {}", metadata);
 
       if (metadata != null) {
@@ -264,11 +264,11 @@ public class ContentServiceImpl extends BaseServiceImpl implements ContentServic
 
       Properties props = new Properties();
 
-      for (String key : artifactData.getMetadata().keySet()) {
+      for (String key : artifactData.getHttpHeaders().keySet()) {
         // TODO: Replace with StringUtil method once StringUtil has been
         // moved from the lockss-core project to the lockss-util project.
         String value =
-            separatedString(artifactData.getMetadata().get(key), "", ",", "", new StringBuilder())
+            separatedString(artifactData.getHttpHeaders().get(key), "", ",", "", new StringBuilder())
                 .toString();
         props.setProperty(key, value);
       }

@@ -31,8 +31,14 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 package org.lockss.ws.content;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
+import org.apache.http.impl.io.HttpTransportMetricsImpl;
+import org.apache.http.impl.io.SessionOutputBufferImpl;
+import org.apache.http.message.BasicLineFormatter;
 import org.apache.http.message.BasicStatusLine;
+import org.apache.http.util.CharArrayBuffer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,6 +58,7 @@ import org.lockss.ws.entities.FileWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 import org.lockss.ws.test.BaseSoapTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
@@ -68,8 +75,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
@@ -415,7 +421,7 @@ public class TestContentService extends BaseSoapTest {
       artifactData.setContentLength(data.length);
       artifactData.setContentDigest("testDigest");
 
-      MultiValueMap<String, Object> parts = generateMultipartResponseFromArtifactData(
+      MultiValueMap<String, Object> parts = generateMultipartMapFromArtifactData(
           artifactData, LockssRepository.IncludeContent.ALWAYS, 4096L);
 
       HttpOutputMessage outputMessage = new MockHttpOutputMessage();
@@ -539,7 +545,7 @@ public class TestContentService extends BaseSoapTest {
       artifactData.setContentLength(data.length);
       artifactData.setContentDigest("testDigest");
 
-      MultiValueMap<String, Object> parts = generateMultipartResponseFromArtifactData(
+      MultiValueMap<String, Object> parts = generateMultipartMapFromArtifactData(
           artifactData, LockssRepository.IncludeContent.ALWAYS, 4096L);
 
       HttpOutputMessage outputMessage = new MockHttpOutputMessage();
@@ -582,12 +588,32 @@ public class TestContentService extends BaseSoapTest {
     }
   }
 
-  private static MultiValueMap<String, Object> generateMultipartResponseFromArtifactData(
+  public static byte[] getHttpStatusByteArray(StatusLine httpStatus) throws IOException {
+    UnsynchronizedByteArrayOutputStream output = new UnsynchronizedByteArrayOutputStream();
+    CharArrayBuffer lineBuf = new CharArrayBuffer(128);
+
+    // Create a new SessionOutputBuffer and bind the UnsynchronizedByteArrayOutputStream
+    SessionOutputBufferImpl outputBuffer = new SessionOutputBufferImpl(new HttpTransportMetricsImpl(),4096);
+    outputBuffer.bind(output);
+
+    // Write HTTP status line
+    BasicLineFormatter.INSTANCE.formatStatusLine(lineBuf, httpStatus);
+    outputBuffer.writeLine(lineBuf);
+    outputBuffer.flush();
+
+    // Flush and close UnsynchronizedByteArrayOutputStream
+    output.flush();
+    output.close();
+
+    // Return HTTP status byte array
+    return output.toByteArray();
+  }
+
+  public static MultiValueMap<String, Object> generateMultipartMapFromArtifactData(
       ArtifactData artifactData, LockssRepository.IncludeContent includeContent, long smallContentThreshold)
       throws IOException {
 
-    // Get artifact ID
-    String artifactid = artifactData.getIdentifier().getId();
+    String artifactId = artifactData.getIdentifier().getId();
 
     // Holds multipart response parts
     MultiValueMap<String, Object> parts = new LinkedMultiValueMap<>();
@@ -599,42 +625,38 @@ public class TestContentService extends BaseSoapTest {
       partHeaders.setContentType(MediaType.APPLICATION_JSON);
 
       // Add repository properties multipart to multiparts list
-      parts.add(
-          RestLockssRepository.MULTIPART_ARTIFACT_REPO_PROPS,
-          new HttpEntity<>(getArtifactRepositoryProperties(artifactData), partHeaders)
-      );
+      parts.add(RestLockssRepository.MULTIPART_ARTIFACT_PROPS,
+          new HttpEntity<>(getArtifactProperties(artifactData), partHeaders));
     }
 
-    //// Add artifact headers multipart
-    {
-      // Part's headers
-      HttpHeaders partHeaders = new HttpHeaders();
-      partHeaders.setContentType(MediaType.APPLICATION_JSON);
+    //// Add HTTP response header multiparts if present
+    if (artifactData.isHttpResponse()) {
+      //// HTTP status part
+      {
+        // Part's headers
+        HttpHeaders partHeaders = new HttpHeaders();
+        partHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
-      // Add artifact headers multipart
-      parts.add(
-          RestLockssRepository.MULTIPART_ARTIFACT_HEADER,
-          new HttpEntity<>(artifactData.getMetadata(), partHeaders)
-      );
-    }
+        // Create resource containing HTTP status byte array
+        Resource resource = new NamedByteArrayResource(artifactId,
+            getHttpStatusByteArray(artifactData.getHttpStatus()));
 
-    //// Add artifact HTTP status multipart if present
-    if (artifactData.getHttpStatus() != null) {
-      // Part's headers
-      HttpHeaders partHeaders = new HttpHeaders();
-      partHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        // Add artifact headers multipart
+        parts.add(RestLockssRepository.MULTIPART_ARTIFACT_HTTP_STATUS,
+            new HttpEntity<>(resource, partHeaders));
+      }
 
-      // Create resource containing HTTP status byte array
-      Resource resource = new NamedByteArrayResource(
-          artifactid,
-          ArtifactDataUtil.getHttpStatusByteArray(artifactData.getHttpStatus())
-      );
+      //// HTTP headers part
+      HttpHeaders headers = artifactData.getHttpHeaders();
+      if (headers != null && !headers.isEmpty()) {
+        // Part's headers
+        HttpHeaders partHeaders = new HttpHeaders();
+        partHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-      // Add artifact headers multipart
-      parts.add(
-          RestLockssRepository.MULTIPART_ARTIFACT_HTTP_STATUS,
-          new HttpEntity<>(resource, partHeaders)
-      );
+        // Add artifact headers multipart
+        parts.add(RestLockssRepository.MULTIPART_ARTIFACT_HEADER,
+            new HttpEntity<>(headers, partHeaders));
+      }
     }
 
     //// Add artifact content part if requested or if small enough
@@ -644,55 +666,66 @@ public class TestContentService extends BaseSoapTest {
 
       // Create content part headers
       HttpHeaders partHeaders = new HttpHeaders();
-      partHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-      partHeaders.setContentLength(artifactData.getContentLength());
+
+      if (artifactData.hasContentLength()) {
+        partHeaders.setContentLength(artifactData.getContentLength());
+      }
+
+      MediaType type = artifactData.getHttpHeaders().getContentType();
+      partHeaders.setContentType(type == null ?
+          MediaType.APPLICATION_OCTET_STREAM : type);
+
+      // FIXME: Filename must be set or else Spring will treat the part as a parameter instead of a file
+      partHeaders.setContentDispositionFormData(
+          RestLockssRepository.MULTIPART_ARTIFACT_PAYLOAD, RestLockssRepository.MULTIPART_ARTIFACT_PAYLOAD);
 
       // Artifact content
-      Resource resource = new NamedInputStreamResource(artifactid, artifactData.getInputStream());
+//      InputStreamResource resource = new NamedInputStreamResource(artifactId, artifactData.getInputStream());
+      InputStreamResource resource = new InputStreamResource(artifactData.getInputStream());
 
       // Assemble content part and add to multiparts map
-      parts.add(
-          RestLockssRepository.MULTIPART_ARTIFACT_CONTENT,
-          new HttpEntity<>(resource, partHeaders)
-      );
+      parts.add(RestLockssRepository.MULTIPART_ARTIFACT_PAYLOAD,
+          new HttpEntity<>(resource, partHeaders));
     }
 
     return parts;
   }
 
-  private static HttpHeaders getArtifactRepositoryProperties(ArtifactData ad) {
-    HttpHeaders headers = new HttpHeaders();
-
-    //// Artifact repository ID information headers
+  private static Map<String, String> getArtifactProperties(ArtifactData ad) {
+    Map<String, String> props = new HashMap<>();
     ArtifactIdentifier id = ad.getIdentifier();
-    headers.set(ArtifactConstants.ARTIFACT_ID_KEY, id.getId());
-    headers.set(ArtifactConstants.ARTIFACT_NAMESPACE_KEY, id.getNamespace());
-    headers.set(ArtifactConstants.ARTIFACT_AUID_KEY, id.getAuid());
-    headers.set(ArtifactConstants.ARTIFACT_URI_KEY, id.getUri());
-    headers.set(ArtifactConstants.ARTIFACT_VERSION_KEY, String.valueOf(id.getVersion()));
 
-    ArtifactState state = ad.getArtifactState();
+    putIfNotNull(props, Artifact.ARTIFACT_NAMESPACE_KEY, id.getNamespace());
+    putIfNotNull(props, Artifact.ARTIFACT_ID_KEY, id.getId());
+    props.put(Artifact.ARTIFACT_AUID_KEY, id.getAuid());
+    props.put(Artifact.ARTIFACT_URI_KEY, id.getUri());
 
-    //// Artifact repository state information headers if present
-    if (state != null) {
-      headers.set(
-          ArtifactConstants.ARTIFACT_STATE_COMMITTED,
-          String.valueOf(state.isCommitted())
-      );
-
-      headers.set(
-          ArtifactConstants.ARTIFACT_STATE_DELETED,
-          String.valueOf(state.isDeleted())
-      );
+    if (id.getVersion() > 0) {
+      props.put(Artifact.ARTIFACT_VERSION_KEY, String.valueOf(id.getVersion()));
     }
 
-    //// Unclassified artifact repository headers
-    headers.set(ArtifactConstants.ARTIFACT_LENGTH_KEY, String.valueOf(ad.getContentLength()));
-    headers.set(ArtifactConstants.ARTIFACT_DIGEST_KEY, ad.getContentDigest());
+    if (ad.hasContentLength()) {
+      props.put(Artifact.ARTIFACT_LENGTH_KEY, String.valueOf(ad.getContentLength()));
+    }
 
-//    headers.set(ArtifactConstants.ARTIFACT_ORIGIN_KEY, ???);
-//    headers.set(ArtifactConstants.ARTIFACT_COLLECTION_DATE, ???);
+    putIfNotNull(props, Artifact.ARTIFACT_DIGEST_KEY, ad.getContentDigest());
+    putIfNonZero(props, Artifact.ARTIFACT_COLLECTION_DATE_KEY, ad.getCollectionDate());
 
-    return headers;
+    ArtifactState state = ad.getArtifactState();
+    if (state != null) {
+      props.put(ArtifactState.ARTIFACT_STATE_KEY, String.valueOf(state));
+    }
+
+    return props;
+  }
+
+  private static void putIfNonZero(Map props, String k, long v) {
+    if (v == 0) return;
+    props.put(k, String.valueOf(v));
+  }
+
+  private static void putIfNotNull(Map props, String k, String v) {
+    if (v == null) return;
+    props.put(k, v);
   }
 }
