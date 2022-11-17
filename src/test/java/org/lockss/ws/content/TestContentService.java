@@ -613,7 +613,7 @@ public class TestContentService extends BaseSoapTest {
       ArtifactData artifactData, LockssRepository.IncludeContent includeContent, long smallContentThreshold)
       throws IOException {
 
-    String artifactId = artifactData.getIdentifier().getId();
+    String artifactId = artifactData.getIdentifier().getUuid();
 
     // Holds multipart response parts
     MultiValueMap<String, Object> parts = new LinkedMultiValueMap<>();
@@ -696,7 +696,7 @@ public class TestContentService extends BaseSoapTest {
     ArtifactIdentifier id = ad.getIdentifier();
 
     putIfNotNull(props, Artifact.ARTIFACT_NAMESPACE_KEY, id.getNamespace());
-    putIfNotNull(props, Artifact.ARTIFACT_ID_KEY, id.getId());
+    putIfNotNull(props, Artifact.ARTIFACT_UUID_KEY, id.getUuid());
     props.put(Artifact.ARTIFACT_AUID_KEY, id.getAuid());
     props.put(Artifact.ARTIFACT_URI_KEY, id.getUri());
 
