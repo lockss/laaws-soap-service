@@ -32,10 +32,12 @@ POSSIBILITY OF SUCH DAMAGE.
 package org.lockss.ws.content;
 
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 import org.apache.http.impl.io.HttpTransportMetricsImpl;
 import org.apache.http.impl.io.SessionOutputBufferImpl;
+import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicLineFormatter;
 import org.apache.http.message.BasicStatusLine;
 import org.apache.http.util.CharArrayBuffer;
@@ -47,10 +49,7 @@ import org.lockss.laaws.rs.core.LockssRepository;
 import org.lockss.laaws.rs.core.RestLockssRepository;
 import org.lockss.laaws.rs.io.storage.warc.ArtifactState;
 import org.lockss.laaws.rs.model.*;
-import org.lockss.laaws.rs.util.ArtifactConstants;
-import org.lockss.laaws.rs.util.ArtifactDataUtil;
-import org.lockss.laaws.rs.util.NamedByteArrayResource;
-import org.lockss.laaws.rs.util.NamedInputStreamResource;
+import org.lockss.laaws.rs.util.*;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.ListUtil;
 import org.lockss.ws.entities.ContentResult;
@@ -613,7 +612,7 @@ public class TestContentService extends BaseSoapTest {
       ArtifactData artifactData, LockssRepository.IncludeContent includeContent, long smallContentThreshold)
       throws IOException {
 
-    String artifactId = artifactData.getIdentifier().getUuid();
+    String artifactUuid = artifactData.getIdentifier().getUuid();
 
     // Holds multipart response parts
     MultiValueMap<String, Object> parts = new LinkedMultiValueMap<>();
@@ -637,25 +636,19 @@ public class TestContentService extends BaseSoapTest {
         HttpHeaders partHeaders = new HttpHeaders();
         partHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
+        HttpResponse httpResponse = new BasicHttpResponse(artifactData.getHttpStatus());
+
+        httpResponse.setHeaders(
+            ArtifactDataFactory.transformHttpHeadersToHeaderArray(artifactData.getHttpHeaders()));
+
+        byte[] header = ArtifactDataUtil.getHttpResponseHeader(httpResponse);
+
         // Create resource containing HTTP status byte array
-        Resource resource = new NamedByteArrayResource(artifactId,
-            getHttpStatusByteArray(artifactData.getHttpStatus()));
+        Resource resource = new NamedByteArrayResource(artifactUuid, header);
 
         // Add artifact headers multipart
-        parts.add(RestLockssRepository.MULTIPART_ARTIFACT_HTTP_STATUS,
+        parts.add(RestLockssRepository.MULTIPART_ARTIFACT_HTTP_RESPONSE_HEADER,
             new HttpEntity<>(resource, partHeaders));
-      }
-
-      //// HTTP headers part
-      HttpHeaders headers = artifactData.getHttpHeaders();
-      if (headers != null && !headers.isEmpty()) {
-        // Part's headers
-        HttpHeaders partHeaders = new HttpHeaders();
-        partHeaders.setContentType(MediaType.APPLICATION_JSON);
-
-        // Add artifact headers multipart
-        parts.add(RestLockssRepository.MULTIPART_ARTIFACT_HEADER,
-            new HttpEntity<>(headers, partHeaders));
       }
     }
 
