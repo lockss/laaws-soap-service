@@ -37,7 +37,6 @@ import org.lockss.ws.entities.ContentResult;
 import org.lockss.ws.entities.FileWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 import javax.activation.DataHandler;
@@ -239,23 +238,11 @@ public class ContentServiceImpl extends BaseServiceImpl implements ContentServic
 
     ArtifactData artifactData =
         getRestLockssRepository().getArtifactData(artifact, LockssRepository.IncludeContent.ALWAYS);
-    log.trace("artifactData = {}", artifactData);
 
     if (artifactData != null) {
-      String contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+      HttpHeaders headers = artifactData.getHttpHeaders();
 
-      HttpHeaders metadata = artifactData.getHttpHeaders();
-      log.trace("metadata = {}", metadata);
-
-      if (metadata != null) {
-        MediaType mediaType = metadata.getContentType();
-        log.trace("mediaType = {}", mediaType);
-
-        if (mediaType != null) {
-          contentType = mediaType.toString();
-          log.trace("contentType = {}", contentType);
-        }
-      }
+      String contentType = headers.getFirst(HttpHeaders.CONTENT_TYPE);
 
       result.setDataHandler(
           new DataHandler(
