@@ -49,7 +49,7 @@ POSSIBILITY OF SUCH DAMAGE.
   <packaging>jar</packaging>
 
   <name>laaws-soap-service</name>
-  <description>LOCKSS SOAP Service</description>
+  <description>LOCKSS SOAP Compatibility Service</description>
 
   <properties>
     <java.version>1.8</java.version>
