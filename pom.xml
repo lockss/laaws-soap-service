@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-Copyright (c) 2000-2021, Board of Trustees of Leland Stanford Jr. University
-All rights reserved.
+Copyright (c) 2000-2023, Board of Trustees of Leland Stanford Jr. University
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -40,17 +39,17 @@ POSSIBILITY OF SUCH DAMAGE.
   <parent>
     <groupId>org.lockss</groupId>
     <artifactId>lockss-parent-pom</artifactId>
-    <version>1.14.0</version>
+    <version>1.15.0</version>
     <relativePath />
   </parent>
 
   <groupId>org.lockss.laaws</groupId>
   <artifactId>laaws-soap-service</artifactId>
-  <version>1.2.0</version>
+  <version>1.3.0</version>
   <packaging>jar</packaging>
 
   <name>laaws-soap-service</name>
-  <description>LOCKSS SOAP Service</description>
+  <description>LOCKSS SOAP Compatibility Service</description>
 
   <properties>
     <java.version>1.8</java.version>
@@ -58,6 +57,11 @@ POSSIBILITY OF SUCH DAMAGE.
     <!-- Not a LAAWS Spring project but needs to be packaged with dependencies -->
     <build.java.spring.repackageJar.skip>false</build.java.spring.repackageJar.skip>
     <build.java.mainClass>org.lockss.ws.SoapApplication</build.java.mainClass>
+
+    <!-- Is a Docker project -->
+    <build.docker.skip>false</build.docker.skip>
+    <build.docker.dockerBuild.restPort>24675</build.docker.dockerBuild.restPort>
+    <!-- <build.docker.dockerBuild.uiPort>246xx</build.docker.dockerBuild.uiPort> -->
   </properties>
 
   <dependencies>
@@ -83,6 +87,10 @@ POSSIBILITY OF SUCH DAMAGE.
           <groupId>org.apache.solr</groupId>
           <artifactId>solr-solrj</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>jetty-util</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -98,7 +106,16 @@ POSSIBILITY OF SUCH DAMAGE.
       <version>${version.lockss.lockss-util-rest}</version>
     </dependency>
 
-<!--     <dependency> -->
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-junit4-bundle</artifactId>
+      <version>${version.lockss.lockss-junit4-bundle}</version>
+      <type>pom</type>
+      <scope>test</scope>
+    </dependency>
+
+
+    <!--     <dependency> -->
 <!--       <groupId>org.lockss</groupId> -->
 <!--       <artifactId>lockss-util-entities</artifactId> -->
 <!--       <version>${version.lockss.lockss-util-entities}</version> -->
@@ -155,6 +172,69 @@ POSSIBILITY OF SUCH DAMAGE.
       <version>${version.group.spring-boot}</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-spring-bundle</artifactId>
+      <version>${version.lockss.lockss-spring-bundle}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.cxf</groupId>
+          <artifactId>cxf-bundle</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-core-bundle</artifactId>
+      <version>${version.lockss.lockss-core}</version>
+      <type>pom</type>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.woodstox</groupId>
+          <artifactId>stax2-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.cxf</groupId>
+          <artifactId>cxf-bundle</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-core-tests-bundle</artifactId>
+      <version>${version.lockss.lockss-core-bundle}</version>
+      <type>pom</type>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.woodstox</groupId>
+          <artifactId>stax2-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.cxf</groupId>
+          <artifactId>cxf-bundle</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jeasy</groupId>
+      <artifactId>easy-random-core</artifactId>
+      <version>4.3.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-spring-bundle</artifactId>
+      <version>${version.lockss.lockss-spring-bundle}</version>
+    </dependency>
+
   </dependencies>
 
   <build>
