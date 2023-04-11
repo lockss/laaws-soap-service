@@ -45,13 +45,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lockss.app.ServiceDescr;
-import org.lockss.laaws.rs.core.LockssRepository;
-import org.lockss.laaws.rs.core.RestLockssRepository;
-import org.lockss.laaws.rs.io.storage.warc.ArtifactState;
-import org.lockss.laaws.rs.model.*;
-import org.lockss.laaws.rs.util.*;
+import org.lockss.util.rest.repo.LockssRepository;
+import org.lockss.util.rest.repo.RestLockssRepository;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.ListUtil;
+import org.lockss.util.rest.repo.model.*;
+import org.lockss.util.rest.repo.util.ArtifactConstants;
+import org.lockss.util.rest.repo.util.ArtifactDataUtil;
+import org.lockss.util.rest.repo.util.NamedByteArrayResource;
 import org.lockss.ws.entities.ContentResult;
 import org.lockss.ws.entities.FileWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
@@ -414,8 +415,7 @@ public class TestContentService extends BaseSoapTest {
           props,
           new ByteArrayInputStream(data),
           new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"),
-          new URI(artifact.getStorageUrl()),
-          ArtifactState.UNCOMMITTED);
+          new URI(artifact.getStorageUrl()));
 
       artifactData.setContentLength(data.length);
       artifactData.setContentDigest("testDigest");
@@ -538,8 +538,7 @@ public class TestContentService extends BaseSoapTest {
           props,
           new ByteArrayInputStream(data),
           new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"),
-          new URI(artifact.getStorageUrl()),
-          ArtifactState.UNCOMMITTED);
+          new URI(artifact.getStorageUrl()));
 
       artifactData.setContentLength(data.length);
       artifactData.setContentDigest("testDigest");
@@ -639,7 +638,7 @@ public class TestContentService extends BaseSoapTest {
         HttpResponse httpResponse = new BasicHttpResponse(artifactData.getHttpStatus());
 
         httpResponse.setHeaders(
-            ArtifactDataFactory.transformHttpHeadersToHeaderArray(artifactData.getHttpHeaders()));
+            ArtifactDataUtil.transformHttpHeadersToHeaderArray(artifactData.getHttpHeaders()));
 
         byte[] header = ArtifactDataUtil.getHttpResponseHeader(httpResponse);
 
@@ -714,11 +713,6 @@ public class TestContentService extends BaseSoapTest {
 
     putIfNotNull(props, Artifact.ARTIFACT_DIGEST_KEY, ad.getContentDigest());
     putIfNonZero(props, Artifact.ARTIFACT_COLLECTION_DATE_KEY, ad.getCollectionDate());
-
-    ArtifactState state = ad.getArtifactState();
-    if (state != null) {
-      props.put(ArtifactState.ARTIFACT_STATE_KEY, String.valueOf(state));
-    }
 
     return props;
   }
