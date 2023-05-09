@@ -244,7 +244,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/plugins",
+              "/ws/plugins",
               null,
               queryParams,
               HttpMethod.GET,
@@ -290,7 +290,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/auqueries",
+              "/ws/auqueries",
               null,
               queryParams,
               HttpMethod.GET,
@@ -539,7 +539,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/tdbpublishers",
+              "/ws/tdbpublishers",
               null,
               queryParams,
               HttpMethod.GET,
@@ -586,7 +586,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/tdbtitles",
+              "/ws/tdbtitles",
               null,
               queryParams,
               HttpMethod.GET,
@@ -633,7 +633,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/tdbaus",
+              "/ws/tdbaus",
               null,
               queryParams,
               HttpMethod.GET,
