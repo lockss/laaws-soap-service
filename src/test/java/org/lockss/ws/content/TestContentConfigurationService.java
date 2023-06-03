@@ -94,7 +94,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.POST))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
               .contentType(MediaType.APPLICATION_JSON)
@@ -115,7 +115,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.POST))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.FORBIDDEN)
@@ -137,7 +137,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.POST))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -164,7 +164,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.POST))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -191,7 +191,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.POST))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -223,7 +223,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.POST))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
               .contentType(MediaType.APPLICATION_JSON)
@@ -246,7 +246,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.POST))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.FORBIDDEN)
               .contentType(MediaType.APPLICATION_JSON)
@@ -269,7 +269,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.POST))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
               .contentType(MediaType.APPLICATION_JSON)
@@ -305,7 +305,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.POST))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -345,7 +345,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.POST))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -394,7 +394,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.DELETE))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
               .contentType(MediaType.APPLICATION_JSON)
@@ -415,7 +415,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.DELETE))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.FORBIDDEN)
@@ -437,7 +437,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.DELETE))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -464,7 +464,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.DELETE))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -490,7 +490,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.DELETE))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -522,7 +522,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.DELETE))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
               .contentType(MediaType.APPLICATION_JSON)
@@ -545,7 +545,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.DELETE))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.FORBIDDEN)
               .contentType(MediaType.APPLICATION_JSON)
@@ -568,7 +568,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.DELETE))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
               .contentType(MediaType.APPLICATION_JSON)
@@ -604,7 +604,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.DELETE))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -644,7 +644,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.DELETE))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -681,7 +681,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
               .contentType(MediaType.APPLICATION_JSON)
@@ -702,7 +702,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.FORBIDDEN)
@@ -724,7 +724,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -751,7 +751,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -777,7 +777,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -809,7 +809,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
               .contentType(MediaType.APPLICATION_JSON)
@@ -832,7 +832,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.FORBIDDEN)
               .contentType(MediaType.APPLICATION_JSON)
@@ -855,7 +855,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
               .contentType(MediaType.APPLICATION_JSON)
@@ -891,7 +891,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -931,7 +931,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -968,7 +968,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
               .contentType(MediaType.APPLICATION_JSON)
@@ -989,7 +989,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.FORBIDDEN)
@@ -1011,7 +1011,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -1038,7 +1038,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -1064,7 +1064,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -1096,7 +1096,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
               .contentType(MediaType.APPLICATION_JSON)
@@ -1119,7 +1119,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.FORBIDDEN)
               .contentType(MediaType.APPLICATION_JSON)
@@ -1142,7 +1142,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
               .contentType(MediaType.APPLICATION_JSON)
@@ -1178,7 +1178,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)
@@ -1218,7 +1218,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(restEndpoint))
           .andExpect(method(HttpMethod.PUT))
-          .andExpect(content().contentType("application/json;charset=UTF-8"))
+          .andExpect(content().contentType("application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().string(mapper.writeValueAsString(auids)))
           .andRespond(withStatus(HttpStatus.OK)

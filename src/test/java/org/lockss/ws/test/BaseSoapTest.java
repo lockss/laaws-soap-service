@@ -40,7 +40,7 @@ import org.lockss.test.ConfigurationUtil;
 import org.lockss.util.rest.multipart.MultipartMessageHttpMessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.context.embedded.LocalServerPort;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;

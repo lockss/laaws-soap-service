@@ -119,6 +119,12 @@ POSSIBILITY OF SUCH DAMAGE.
           <groupId>org.slf4j</groupId>
           <artifactId>log4j-over-slf4j</artifactId>
         </exclusion>
+
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+
         <!-- Avoid Logback vs. SLF4J conflict -->
         <exclusion>
           <groupId>ch.qos.logback</groupId>
@@ -150,6 +156,19 @@ POSSIBILITY OF SUCH DAMAGE.
       <artifactId>spring-boot-starter-test</artifactId>
       <version>${version.group.spring-boot}</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+      <version>${version.group.spring-boot}</version>
+    </dependency>
+
+    <!-- why?? -->
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>2.0.1.Final</version>
     </dependency>
 
     <dependency>
