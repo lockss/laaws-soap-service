@@ -403,7 +403,7 @@ public class TestContentService extends BaseSoapTest {
               .body(mapper.writeValueAsString(artifactsPage)));
 
       // REST getArtifactData() endpoint
-      URI getArtifactDataURL = endpointOfgetArtifactData(artifactId);
+      URI getArtifactDataURL = endpointOfGetArtifactData(artifactId);
 
       URI getArtifactDataQuery = UriComponentsBuilder.fromUri(getArtifactDataURL)
           .queryParam("includeContent", "ALWAYS")
@@ -474,7 +474,7 @@ public class TestContentService extends BaseSoapTest {
     }
   }
 
-  private URI endpointOfgetArtifactData(String artifactUuid) throws URISyntaxException {
+  private URI endpointOfGetArtifactData(String artifactUuid) throws URISyntaxException {
     return new URI(getServiceEndpoint(ServiceDescr.SVC_REPO)
         + "/artifacts/" + artifactUuid + "/response");
   }
@@ -534,7 +534,7 @@ public class TestContentService extends BaseSoapTest {
               .body(mapper.writeValueAsString(artifactsPage)));
 
       // REST getArtifactData() endpoint
-      URI getArtifactDataURL = endpointOfgetArtifactData(artifactId);
+      URI getArtifactDataURL = endpointOfGetArtifactData(artifactId);
 
       URI getArtifactDataQuery = UriComponentsBuilder.fromUri(getArtifactDataURL)
           .queryParam("includeContent", "ALWAYS")
