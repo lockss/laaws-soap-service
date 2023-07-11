@@ -447,7 +447,7 @@ public class TestContentService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(getArtifactDataQuery))
           .andExpect(method(HttpMethod.GET))
-          .andExpect(header("Accept", "*/*, application/json"))
+          .andExpect(header("Accept", APPLICATION_HTTP_RESPONSE_VALUE + ", application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andRespond(withStatus(HttpStatus.OK)
               .headers(outputMessage.getHeaders())
@@ -578,7 +578,7 @@ public class TestContentService extends BaseSoapTest {
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(getArtifactDataQuery))
           .andExpect(method(HttpMethod.GET))
-          .andExpect(header("Accept", "*/*, application/json"))
+          .andExpect(header("Accept", APPLICATION_HTTP_RESPONSE_VALUE + ", application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andRespond(withStatus(HttpStatus.OK)
               .headers(outputMessage.getHeaders())
