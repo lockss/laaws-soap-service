@@ -433,14 +433,10 @@ public class TestContentService extends BaseSoapTest {
       converter.write(resource, APPLICATION_HTTP_RESPONSE, outputMessage);
 
       HttpHeaders outputHeaders = outputMessage.getHeaders();
-//      if (!isHttpResponse) {
-//        outputHeaders.set(ArtifactConstants.ARTIFACT_DATA_TYPE, isHttpResponse ? "response" : "resource");
-//      }
-
-//      String responseBody = ((ByteArrayOutputStream) outputMessage.getBody()).toString();
+      outputHeaders.set(ArtifactConstants.ARTIFACT_DATA_TYPE, "response");
+      outputHeaders.set(ArtifactConstants.INCLUDES_CONTENT, "true");
 
 //      // Set Content-Length of REST response body
-//      HttpHeaders outputHeaders = outputMessage.getHeaders();
 //      outputHeaders.setContentLength(responseBody.length());
 
       // Mock REST call for ArtifactData
@@ -564,14 +560,10 @@ public class TestContentService extends BaseSoapTest {
       converter.write(resource, APPLICATION_HTTP_RESPONSE, outputMessage);
 
       HttpHeaders outputHeaders = outputMessage.getHeaders();
-//      if (!isHttpResponse) {
-//        outputHeaders.set(ArtifactConstants.ARTIFACT_DATA_TYPE, isHttpResponse ? "response" : "resource");
-//      }
-
-//      String responseBody = ((ByteArrayOutputStream) outputMessage.getBody()).toString();
+      outputHeaders.set(ArtifactConstants.ARTIFACT_DATA_TYPE, "response");
+      outputHeaders.set(ArtifactConstants.INCLUDES_CONTENT, "true");
 
 //      // Set Content-Length of REST response body
-//      HttpHeaders outputHeaders = outputMessage.getHeaders();
 //      outputHeaders.setContentLength(responseBody.length());
 
       // Mock REST call for ArtifactData
