@@ -52,7 +52,7 @@ POSSIBILITY OF SUCH DAMAGE.
   <description>LOCKSS SOAP Compatibility Service</description>
 
   <properties>
-    <java.version>1.8</java.version>
+    <java.version>11</java.version>
 
     <!-- Not a LAAWS Spring project but needs to be packaged with dependencies -->
     <build.java.spring.repackageJar.skip>false</build.java.spring.repackageJar.skip>
