@@ -36,7 +36,7 @@ import org.lockss.app.LockssDaemon;
 import org.lockss.app.ServiceBinding;
 import org.lockss.app.ServiceDescr;
 import org.lockss.config.Configuration;
-import org.lockss.laaws.rs.core.RestLockssRepository;
+import org.lockss.util.rest.repo.RestLockssRepository;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.base.BaseSpringApiServiceImpl;
 import org.lockss.spring.base.LockssConfigurableService;

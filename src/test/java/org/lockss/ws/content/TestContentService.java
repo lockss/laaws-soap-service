@@ -45,13 +45,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lockss.app.ServiceDescr;
-import org.lockss.laaws.rs.core.LockssRepository;
-import org.lockss.laaws.rs.core.RestLockssRepository;
-import org.lockss.laaws.rs.io.storage.warc.ArtifactState;
-import org.lockss.laaws.rs.model.*;
-import org.lockss.laaws.rs.util.*;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.ListUtil;
+import org.lockss.util.rest.repo.LockssRepository;
+import org.lockss.util.rest.repo.RestLockssRepository;
+import org.lockss.util.rest.repo.model.*;
+import org.lockss.util.rest.repo.util.ArtifactConstants;
+import org.lockss.util.rest.repo.util.ArtifactDataUtil;
+import org.lockss.util.rest.repo.util.NamedByteArrayResource;
 import org.lockss.ws.entities.ContentResult;
 import org.lockss.ws.entities.FileWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
@@ -60,7 +61,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
-import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -73,8 +74,12 @@ import javax.activation.DataHandler;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
@@ -88,6 +93,10 @@ public class TestContentService extends BaseSoapTest {
   private static final String TARGET_NAMESPACE = "http://content.ws.lockss.org/";
   private static final String SERVICE_NAME = "ContentServiceImplService";
   private static final String ENDPOINT_NAME = "ContentService";
+  public static final String APPLICATION_HTTP_RESPONSE_VALUE =
+      "application/http;msgtype=response";
+  public static final MediaType APPLICATION_HTTP_RESPONSE =
+      MediaType.parseMediaType(APPLICATION_HTTP_RESPONSE_VALUE);
 
   private ContentService proxy;
 
@@ -394,9 +403,7 @@ public class TestContentService extends BaseSoapTest {
               .body(mapper.writeValueAsString(artifactsPage)));
 
       // REST getArtifactData() endpoint
-      URI getArtifactDataURL =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO)
-              + "/artifacts/" + artifactId);
+      URI getArtifactDataURL = endpointOfGetArtifactData(artifactId);
 
       URI getArtifactDataQuery = UriComponentsBuilder.fromUri(getArtifactDataURL)
           .queryParam("includeContent", "ALWAYS")
@@ -414,29 +421,29 @@ public class TestContentService extends BaseSoapTest {
           props,
           new ByteArrayInputStream(data),
           new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"),
-          new URI(artifact.getStorageUrl()),
-          ArtifactState.UNCOMMITTED);
+          new URI(artifact.getStorageUrl()));
 
       artifactData.setContentLength(data.length);
       artifactData.setContentDigest("testDigest");
 
-      MultiValueMap<String, Object> parts = generateMultipartMapFromArtifactData(
-          artifactData, LockssRepository.IncludeContent.ALWAYS, 4096L);
+      ResourceHttpMessageConverter converter = new ResourceHttpMessageConverter();
+      MockHttpOutputMessage outputMessage = new MockHttpOutputMessage();
+      InputStreamResource resource = new InputStreamResource(
+          ArtifactDataUtil.getHttpResponseStreamFromArtifactData(artifactData));
+      converter.write(resource, APPLICATION_HTTP_RESPONSE, outputMessage);
 
-      HttpOutputMessage outputMessage = new MockHttpOutputMessage();
-      new AllEncompassingFormHttpMessageConverter().write(parts, MediaType.MULTIPART_FORM_DATA, outputMessage);
-
-//      String responseBody = ((ByteArrayOutputStream) outputMessage.getBody()).toString();
+      HttpHeaders outputHeaders = outputMessage.getHeaders();
+      outputHeaders.set(ArtifactConstants.ARTIFACT_DATA_TYPE, "response");
+      outputHeaders.set(ArtifactConstants.INCLUDES_CONTENT, "true");
 
 //      // Set Content-Length of REST response body
-//      HttpHeaders outputHeaders = outputMessage.getHeaders();
 //      outputHeaders.setContentLength(responseBody.length());
 
       // Mock REST call for ArtifactData
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(getArtifactDataQuery))
           .andExpect(method(HttpMethod.GET))
-          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Accept", APPLICATION_HTTP_RESPONSE_VALUE + ", application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andRespond(withStatus(HttpStatus.OK)
               .headers(outputMessage.getHeaders())
@@ -461,6 +468,11 @@ public class TestContentService extends BaseSoapTest {
       mockRestServer.verify();
       mockRestServer.reset();
     }
+  }
+
+  private URI endpointOfGetArtifactData(String artifactUuid) throws URISyntaxException {
+    return new URI(getServiceEndpoint(ServiceDescr.SVC_REPO)
+        + "/artifacts/" + artifactUuid + "/response");
   }
 
   /**
@@ -518,9 +530,7 @@ public class TestContentService extends BaseSoapTest {
               .body(mapper.writeValueAsString(artifactsPage)));
 
       // REST getArtifactData() endpoint
-      URI getArtifactDataURL =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO)
-              + "/artifacts/" + artifactId);
+      URI getArtifactDataURL = endpointOfGetArtifactData(artifactId);
 
       URI getArtifactDataQuery = UriComponentsBuilder.fromUri(getArtifactDataURL)
           .queryParam("includeContent", "ALWAYS")
@@ -538,29 +548,29 @@ public class TestContentService extends BaseSoapTest {
           props,
           new ByteArrayInputStream(data),
           new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"),
-          new URI(artifact.getStorageUrl()),
-          ArtifactState.UNCOMMITTED);
+          new URI(artifact.getStorageUrl()));
 
       artifactData.setContentLength(data.length);
       artifactData.setContentDigest("testDigest");
 
-      MultiValueMap<String, Object> parts = generateMultipartMapFromArtifactData(
-          artifactData, LockssRepository.IncludeContent.ALWAYS, 4096L);
+      ResourceHttpMessageConverter converter = new ResourceHttpMessageConverter();
+      MockHttpOutputMessage outputMessage = new MockHttpOutputMessage();
+      InputStreamResource resource = new InputStreamResource(
+          ArtifactDataUtil.getHttpResponseStreamFromArtifactData(artifactData));
+      converter.write(resource, APPLICATION_HTTP_RESPONSE, outputMessage);
 
-      HttpOutputMessage outputMessage = new MockHttpOutputMessage();
-      new AllEncompassingFormHttpMessageConverter().write(parts, MediaType.MULTIPART_FORM_DATA, outputMessage);
-
-//      String responseBody = ((ByteArrayOutputStream) outputMessage.getBody()).toString();
+      HttpHeaders outputHeaders = outputMessage.getHeaders();
+      outputHeaders.set(ArtifactConstants.ARTIFACT_DATA_TYPE, "response");
+      outputHeaders.set(ArtifactConstants.INCLUDES_CONTENT, "true");
 
 //      // Set Content-Length of REST response body
-//      HttpHeaders outputHeaders = outputMessage.getHeaders();
 //      outputHeaders.setContentLength(responseBody.length());
 
       // Mock REST call for ArtifactData
       mockRestServer
           .expect(ExpectedCount.once(), requestTo(getArtifactDataQuery))
           .andExpect(method(HttpMethod.GET))
-          .andExpect(header("Accept", "multipart/form-data, application/json"))
+          .andExpect(header("Accept", APPLICATION_HTTP_RESPONSE_VALUE + ", application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andRespond(withStatus(HttpStatus.OK)
               .headers(outputMessage.getHeaders())
@@ -639,7 +649,7 @@ public class TestContentService extends BaseSoapTest {
         HttpResponse httpResponse = new BasicHttpResponse(artifactData.getHttpStatus());
 
         httpResponse.setHeaders(
-            ArtifactDataFactory.transformHttpHeadersToHeaderArray(artifactData.getHttpHeaders()));
+            ArtifactDataUtil.transformHttpHeadersToHeaderArray(artifactData.getHttpHeaders()));
 
         byte[] header = ArtifactDataUtil.getHttpResponseHeader(httpResponse);
 
@@ -714,11 +724,6 @@ public class TestContentService extends BaseSoapTest {
 
     putIfNotNull(props, Artifact.ARTIFACT_DIGEST_KEY, ad.getContentDigest());
     putIfNonZero(props, Artifact.ARTIFACT_COLLECTION_DATE_KEY, ad.getCollectionDate());
-
-    ArtifactState state = ad.getArtifactState();
-    if (state != null) {
-      props.put(ArtifactState.ARTIFACT_STATE_KEY, String.valueOf(state));
-    }
 
     return props;
   }

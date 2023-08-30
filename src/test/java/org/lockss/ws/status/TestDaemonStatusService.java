@@ -38,13 +38,13 @@ import org.junit.runner.RunWith;
 import org.lockss.app.ServiceDescr;
 import org.lockss.config.ConfigManager;
 import org.lockss.config.Configuration;
-import org.lockss.laaws.rs.model.Artifact;
-import org.lockss.laaws.rs.model.ArtifactPageInfo;
-import org.lockss.laaws.rs.model.PageInfo;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.ListUtil;
 import org.lockss.util.StringUtil;
 import org.lockss.util.rest.RestUtil;
+import org.lockss.util.rest.repo.model.Artifact;
+import org.lockss.util.rest.repo.model.ArtifactPageInfo;
+import org.lockss.util.rest.repo.model.PageInfo;
 import org.lockss.util.rest.status.ApiStatus;
 import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.*;
@@ -171,7 +171,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     queryParams.put("auQuery", auQuery);
 
     // Prepare the endpoint URI
-    String auQueriesEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/auqueries";
+    String auQueriesEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/auqueries";
     URI auQueriesQuery = RestUtil.getRestUri(auQueriesEndpoint, null, queryParams);
 
     mockRestServer
@@ -250,7 +250,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     queryParams.put("pluginQuery", pluginQuery);
 
     // Prepare the endpoint URI
-    String pluginsEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/plugins";
+    String pluginsEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/plugins";
     URI pluginsQuery = RestUtil.getRestUri(pluginsEndpoint, null, queryParams);
 
     mockRestServer
@@ -286,7 +286,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     queryParams.put("auQuery", auQuery);
 
     // Prepare the endpoint URI
-    String auQueriesEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/auqueries";
+    String auQueriesEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/auqueries";
     URI auQueriesQuery = RestUtil.getRestUri(auQueriesEndpoint, null, queryParams);
 
     mockRestServer
@@ -540,7 +540,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     queryParams.put("tdbPublisherQuery", tdbPublisherQuery);
 
     // Prepare the endpoint URI
-    String tdbPublishersEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/tdbpublishers";
+    String tdbPublishersEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/tdbpublishers";
     URI tdbPublishersQuery = RestUtil.getRestUri(tdbPublishersEndpoint, null, queryParams);
 
     mockRestServer
@@ -576,7 +576,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     queryParams.put("tdbTitleQuery", tdbTitleQuery);
 
     // Prepare the endpoint URI
-    String tdbTitlesEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/tdbtitles";
+    String tdbTitlesEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/tdbtitles";
     URI tdbTitlesQuery = RestUtil.getRestUri(tdbTitlesEndpoint, null, queryParams);
 
     mockRestServer
@@ -612,7 +612,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     queryParams.put("tdbAuQuery", tdbAuQuery);
 
     // Prepare the endpoint URI
-    String tdbAusEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/tdbaus";
+    String tdbAusEndpoint = getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/tdbaus";
     URI tdbAusQuery = RestUtil.getRestUri(tdbAusEndpoint, null, queryParams);
 
     mockRestServer

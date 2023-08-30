@@ -28,9 +28,9 @@ in this Software without prior written authorization from Stanford University.
 package org.lockss.ws.content;
 
 import org.apache.cxf.jaxrs.ext.multipart.InputStreamDataSource;
-import org.lockss.laaws.rs.core.LockssRepository;
-import org.lockss.laaws.rs.model.Artifact;
-import org.lockss.laaws.rs.model.ArtifactData;
+import org.lockss.util.rest.repo.LockssRepository;
+import org.lockss.util.rest.repo.model.Artifact;
+import org.lockss.util.rest.repo.model.ArtifactData;
 import org.lockss.log.L4JLogger;
 import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.ContentResult;

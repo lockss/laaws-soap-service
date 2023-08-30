@@ -30,7 +30,7 @@ package org.lockss.ws.status;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.lockss.app.ServiceDescr;
-import org.lockss.laaws.rs.model.Artifact;
+import org.lockss.util.rest.repo.model.Artifact;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.poller.RestPollerClient;
@@ -244,7 +244,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/plugins",
+              "/ws/plugins",
               null,
               queryParams,
               HttpMethod.GET,
@@ -290,7 +290,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/auqueries",
+              "/ws/auqueries",
               null,
               queryParams,
               HttpMethod.GET,
@@ -539,7 +539,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/tdbpublishers",
+              "/ws/tdbpublishers",
               null,
               queryParams,
               HttpMethod.GET,
@@ -586,7 +586,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/tdbtitles",
+              "/ws/tdbtitles",
               null,
               queryParams,
               HttpMethod.GET,
@@ -633,7 +633,7 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/tdbaus",
+              "/ws/tdbaus",
               null,
               queryParams,
               HttpMethod.GET,

@@ -192,7 +192,7 @@ public class TestAuControlService extends BaseSoapTest {
 
     // Prepare the endpoint URI
     URI crawlsEndpoint =
-      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/crawls", null, null);
+      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/jobs", null, null);
 
     // Mock REST call for ArtifactData
     mockRestServer
@@ -229,7 +229,7 @@ public class TestAuControlService extends BaseSoapTest {
 
     // Prepare the endpoint URI
     URI crawlsEndpoint =
-      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/crawls", null, null);
+      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/jobs", null, null);
 
     for (String auId : auids) {
       CrawlDesc crawlDesc = new CrawlDesc();
@@ -283,7 +283,7 @@ public class TestAuControlService extends BaseSoapTest {
 
     // Prepare the endpoint URI
     URI crawlsEndpoint =
-      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/crawls", null, null);
+      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/jobs", null, null);
 
     // Mock REST call for ArtifactData
     mockRestServer
@@ -321,7 +321,7 @@ public class TestAuControlService extends BaseSoapTest {
 
     // Prepare the endpoint URI
     URI crawlsEndpoint =
-      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/crawls", null, null);
+      RestUtil.getRestUri(getServiceEndpoint(ServiceDescr.SVC_CRAWLER) + "/jobs", null, null);
 
     for (String auId : auids) {
       CrawlDesc crawlDesc = new CrawlDesc();
