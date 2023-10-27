@@ -47,6 +47,7 @@ import org.springframework.context.annotation.ImportResource;
 
 import static org.lockss.app.LockssApp.PARAM_START_PLUGINS;
 import static org.lockss.app.ManagerDescs.ACCOUNT_MANAGER_DESC;
+import static org.lockss.app.ManagerDescs.STATE_MANAGER_DESC;
 
 /** Launcher of the Spring Boot application. */
 @SpringBootApplication(exclude = {SolrAutoConfiguration.class})
@@ -60,6 +61,7 @@ public class SoapApplication implements CommandLineRunner {
   // Manager descriptors.  The order of this table determines the order in
   // which managers are initialized and started.
   private static final LockssApp.ManagerDesc[] myManagerDescs = {
+      STATE_MANAGER_DESC,
       ACCOUNT_MANAGER_DESC
   };
 
