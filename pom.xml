@@ -156,6 +156,36 @@ POSSIBILITY OF SUCH DAMAGE.
       <artifactId>spring-boot-starter-test</artifactId>
       <version>${version.group.spring-boot}</version>
       <scope>test</scope>
+      <exclusions>
+        <!-- has an old version of JSONException -->
+        <exclusion>
+          <groupId>com.vaadin.external.google</groupId>
+          <artifactId>android-json</artifactId>
+        </exclusion>
+
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.junit.vintage</groupId>
+          <artifactId>junit-vintage-engine</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-engine</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter</artifactId>
+        </exclusion>
+
+        <exclusion>
+          <groupId>org.mockito</groupId>
+          <artifactId>mockito-junit-jupiter</artifactId>
+        </exclusion>
+
+      </exclusions>
     </dependency>
 
     <dependency>
