@@ -27,6 +27,7 @@ in this Software without prior written authorization from Stanford University.
 */
 package org.lockss.ws.content;
 
+import jakarta.activation.DataHandler;
 import org.apache.cxf.jaxrs.ext.multipart.InputStreamDataSource;
 import org.lockss.util.rest.repo.LockssRepository;
 import org.lockss.util.rest.repo.model.Artifact;
@@ -39,7 +40,6 @@ import org.lockss.ws.entities.LockssWebServicesFault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
-import javax.activation.DataHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;

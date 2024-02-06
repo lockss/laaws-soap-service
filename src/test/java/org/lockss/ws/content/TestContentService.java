@@ -31,6 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 package org.lockss.ws.content;
 
+import jakarta.activation.DataHandler;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
@@ -70,7 +71,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.activation.DataHandler;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;

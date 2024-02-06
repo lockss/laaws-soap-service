@@ -29,6 +29,7 @@ package org.lockss.ws.importer;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.activation.DataHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.lockss.app.ServiceDescr;
@@ -51,7 +52,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StreamUtils;
 
-import javax.activation.DataHandler;
 import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -360,7 +360,7 @@ public class ImportServiceImpl extends BaseServiceImpl implements ImportService 
     log.trace("response = {}", response);
 
     // Prepare the result to be returned.
-    boolean isSuccess = response.getCode() == HttpStatus.OK.value();
+    boolean isSuccess = response.getStatusCode() == HttpStatus.OK.value();
     log.trace("isSuccess = {}", isSuccess);
 
     ImportWsResult wsResult = new ImportWsResult();

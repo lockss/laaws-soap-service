@@ -41,7 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.solr.SolrAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ImportResource;
 
@@ -50,7 +49,7 @@ import static org.lockss.app.ManagerDescs.ACCOUNT_MANAGER_DESC;
 import static org.lockss.app.ManagerDescs.STATE_MANAGER_DESC;
 
 /** Launcher of the Spring Boot application. */
-@SpringBootApplication(exclude = {SolrAutoConfiguration.class})
+@SpringBootApplication()
 @ImportResource({"classpath:webservice-definition-beans.xml"})
 public class SoapApplication implements CommandLineRunner {
   private static L4JLogger log = L4JLogger.getLogger();

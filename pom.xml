@@ -136,19 +136,19 @@ POSSIBILITY OF SUCH DAMAGE.
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
-      <version>3.2.7</version>
+      <version>4.0.3</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-      <version>3.2.7</version>
+      <version>4.0.3</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-features-logging</artifactId>
-      <version>3.2.7</version>
+      <version>4.0.3</version>
     </dependency>
 
     <dependency>
