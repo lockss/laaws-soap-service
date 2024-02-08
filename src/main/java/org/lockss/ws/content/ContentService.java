@@ -31,9 +31,9 @@ import org.lockss.ws.entities.ContentResult;
 import org.lockss.ws.entities.FileWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebParam;
+import jakarta.jws.WebService;
 import java.util.List;
 
 /** The Content SOAP web service interface. */

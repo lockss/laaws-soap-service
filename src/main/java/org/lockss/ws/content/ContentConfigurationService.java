@@ -30,9 +30,9 @@ package org.lockss.ws.content;
 import org.lockss.ws.entities.ContentConfigurationResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebParam;
+import jakarta.jws.WebService;
 import java.util.List;
 
 /** The Content Configuration SOAP web service interface. */

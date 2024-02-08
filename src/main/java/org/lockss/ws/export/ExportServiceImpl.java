@@ -48,8 +48,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
-import javax.activation.DataHandler;
-import javax.xml.ws.soap.MTOM;
+import jakarta.activation.DataHandler;
+import jakarta.xml.ws.soap.MTOM;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;

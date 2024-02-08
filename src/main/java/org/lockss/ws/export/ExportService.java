@@ -31,8 +31,8 @@ import org.lockss.ws.entities.ExportServiceParams;
 import org.lockss.ws.entities.ExportServiceWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
 
 /**
  * The Export SOAP web service interface.

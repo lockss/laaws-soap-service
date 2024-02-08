@@ -52,7 +52,7 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import javax.mail.MessagingException;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
