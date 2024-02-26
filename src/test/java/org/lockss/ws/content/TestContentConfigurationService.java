@@ -84,7 +84,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
   @Test
   public void testAddAuById() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/add");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/aus/add");
 
     List<String> auids = ListUtil.list("auid1");
 
@@ -213,7 +213,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
   @Test
   public void testAddAusByIdList() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/add");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/aus/add");
 
     //// Test bad or no auth error ("Unauthorized") handling
     {
@@ -384,7 +384,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
   @Test
   public void testDeleteAuById() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/delete");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/aus/delete");
 
     List<String> auids = ListUtil.list("auid1");
 
@@ -512,7 +512,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
   @Test
   public void testDeleteAusByIdList() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/delete");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/aus/delete");
 
     //// Test bad or no auth error ("Unauthorized") handling
     {
@@ -671,7 +671,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
   @Test
   public void testReactivateAuById() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/reactivate");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/aus/reactivate");
 
     List<String> auids = ListUtil.list("auid1");
 
@@ -799,7 +799,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
   @Test
   public void testReactivateAusByIdList() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/reactivate");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/aus/reactivate");
 
     //// Test bad or no auth error ("Unauthorized") handling
     {
@@ -958,7 +958,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
   @Test
   public void testDeactivateAuById() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/deactivate");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/aus/deactivate");
 
     List<String> auids = ListUtil.list("auid1");
 
@@ -1086,7 +1086,7 @@ public class TestContentConfigurationService extends BaseSoapTest {
   @Test
   public void testDeactivateAusByIdList() throws Exception {
     // REST API endpoint of operation we're testing
-    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/aus/deactivate");
+    URI restEndpoint = new URI(getServiceEndpoint(ServiceDescr.SVC_CONFIG) + "/ws/aus/deactivate");
 
     //// Test bad or no auth error ("Unauthorized") handling
     {
