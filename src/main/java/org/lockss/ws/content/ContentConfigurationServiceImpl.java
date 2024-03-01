@@ -84,7 +84,7 @@ public class ContentConfigurationServiceImpl extends BaseServiceImpl
       // Make the REST call.
       ResponseEntity<String> response =
               callRestServiceEndpoint(getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/aus/add",
+              "/ws/aus/add",
               null,
               null,
               HttpMethod.POST,
@@ -147,7 +147,7 @@ public class ContentConfigurationServiceImpl extends BaseServiceImpl
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/aus/delete",
+              "/ws/aus/delete",
               null,
               null,
               HttpMethod.DELETE,
@@ -210,7 +210,7 @@ public class ContentConfigurationServiceImpl extends BaseServiceImpl
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/aus/reactivate",
+              "/ws/aus/reactivate",
               null,
               null,
               HttpMethod.PUT,
@@ -273,7 +273,7 @@ public class ContentConfigurationServiceImpl extends BaseServiceImpl
       ResponseEntity<String> response =
           callRestServiceEndpoint(
               getServiceEndpoint(ServiceDescr.SVC_CONFIG),
-              "/aus/deactivate",
+              "/ws/aus/deactivate",
               null,
               null,
               HttpMethod.PUT,
