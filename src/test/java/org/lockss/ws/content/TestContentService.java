@@ -54,6 +54,7 @@ import org.lockss.util.rest.repo.model.*;
 import org.lockss.util.rest.repo.util.ArtifactConstants;
 import org.lockss.util.rest.repo.util.ArtifactDataUtil;
 import org.lockss.util.rest.repo.util.NamedByteArrayResource;
+import org.lockss.ws.SoapApplication;
 import org.lockss.ws.entities.ContentResult;
 import org.lockss.ws.entities.FileWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
@@ -85,7 +86,9 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = {SoapApplication.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
 public class TestContentService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();

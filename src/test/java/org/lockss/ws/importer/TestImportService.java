@@ -44,6 +44,7 @@ import org.lockss.util.ListUtil;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.multipart.MultipartMessage;
 import org.lockss.util.rest.multipart.MultipartMessageHttpMessageConverter;
+import org.lockss.ws.SoapApplication;
 import org.lockss.ws.entities.ImportWsParams;
 import org.lockss.ws.entities.ImportWsResult;
 import org.lockss.ws.test.BaseSoapTest;
@@ -65,7 +66,9 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = {SoapApplication.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
 public class TestImportService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
