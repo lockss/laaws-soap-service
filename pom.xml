@@ -83,6 +83,14 @@ POSSIBILITY OF SUCH DAMAGE.
       <groupId>org.lockss</groupId>
       <artifactId>lockss-util-rest</artifactId>
       <version>${version.lockss.lockss-util-rest}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lockss</groupId>
+      <artifactId>lockss-util-rest</artifactId>
+      <version>${version.lockss.lockss-util-rest}</version>
     </dependency>
 
     <dependency>
