@@ -444,94 +444,34 @@ public class TestContentService extends BaseSoapTest {
       int version = 1;
       String artifactId = "testArtifactId";
 
-      // REST getArtifacts endpoint
-      URI getArtifactsURL =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
-
-      URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
-          .queryParam("url", url)
-          .queryParam("version", version)
-          .build()
-          .toUri();
-
-      // Mock return object from REST getArtifacts call
-      Artifact artifact =
-          new Artifact(artifactId, namespace, auid, url, version, true,
-              "file:///test.warc?offset=0&length=2014", 1024L, "digest");
-
-//      artifact.setNamespace(namespace);
-//      artifact.setAuid(auid);
-//      artifact.setUri(url);
-//      artifact.setVersion(version);
-//      artifact.setContentLength(1024);
-      artifact.setCollectionDate(1);
-//      artifact.setCommitted(true);
-//      artifact.setStorageUrl("file:///test.warc?offset=0&length=1024");
-
-      PageInfo pageInfo = new PageInfo();
-      pageInfo.setTotalCount(1);
-      pageInfo.setResultsPerPage(1);
-      pageInfo.setCurLink(getArtifactsQuery.toString());
-
-      ArtifactPageInfo artifactsPage = new ArtifactPageInfo();
-      artifactsPage.setPageInfo(pageInfo);
-      artifactsPage.setArtifacts(ListUtil.list(artifact));
-
-      // Mock REST call for Artifact
-      mockRestServer
-          .expect(ExpectedCount.once(), requestTo(getArtifactsQuery))
-          .andExpect(method(HttpMethod.GET))
-          .andExpect(header("Authorization", BASIC_AUTH_HASH))
-          .andRespond(withStatus(HttpStatus.OK)
-              .contentType(MediaType.APPLICATION_JSON)
-              .body(mapper.writeValueAsString(artifactsPage)));
-
-      // REST getArtifactData() endpoint
-      URI getArtifactDataURL = endpointOfGetArtifactData(artifactId);
-
-      URI getArtifactDataQuery = UriComponentsBuilder.fromUri(getArtifactDataURL)
-          .queryParam("includeContent", "ALWAYS")
-          .queryParam("namespace", namespace)
-          .build()
-          .toUri();
-
-      byte[] data = "hello world".getBytes(StandardCharsets.UTF_8);
-
       HttpHeaders props = new HttpHeaders();
       props.set("test", "xyzzy");
 
-      ArtifactData artifactData = new ArtifactData(
-          artifact.getIdentifier(),
-          props,
-          new ByteArrayInputStream(data),
-          new BasicStatusLine(new ProtocolVersion("HTTP", 1, 1), 200, "OK"),
-          new URI(artifact.getStorageUrl()));
+      ArtifactSpec spec = new ArtifactSpec()
+          .setNamespace(namespace)
+          .setArtifactUuid(artifactId)
+          .setAuid(auid)
+          .setUrl(url)
+          .setHeaders(props.toSingleValueMap())
+          .setStorageUrl(new URI("artifact-storageUrl"))
+          .generateContent();
 
-      artifactData.setContentLength(data.length);
-      artifactData.setContentDigest("testDigest");
+      // Get the ContentServiceImpl bean from the application context and set its
+      // RestLockssRepository to a mock that we can control:
+      ContentServiceImpl svcImpl = appCtx.getBean(ContentServiceImpl.class);
+      RestLockssRepository repoClient = Mockito.mock(RestLockssRepository.class);
+      svcImpl.setRestLockssRepository(repoClient);
 
-      ResourceHttpMessageConverter converter = new ResourceHttpMessageConverter();
-      MockHttpOutputMessage outputMessage = new MockHttpOutputMessage();
-      InputStreamResource resource = new InputStreamResource(
-          ArtifactDataUtil.getHttpResponseStreamFromArtifactData(artifactData));
-      converter.write(resource, APPLICATION_HTTP_RESPONSE, outputMessage);
+      // Mock REST call for getArtifactVersion
+      when(repoClient.getArtifactVersion(
+          ArgumentMatchers.any(), eq(auid), eq(url), eq(version), eq(false)))
+          .thenReturn(spec.getArtifact());
 
-      HttpHeaders outputHeaders = outputMessage.getHeaders();
-      outputHeaders.set(ArtifactConstants.ARTIFACT_DATA_TYPE, "response");
-      outputHeaders.set(ArtifactConstants.INCLUDES_CONTENT, "true");
-
-//      // Set Content-Length of REST response body
-//      outputHeaders.setContentLength(responseBody.length());
-
-      // Mock REST call for ArtifactData
-      mockRestServer
-          .expect(ExpectedCount.once(), requestTo(getArtifactDataQuery))
-          .andExpect(method(HttpMethod.GET))
-          .andExpect(header("Accept", APPLICATION_HTTP_RESPONSE_VALUE + ", application/json"))
-          .andExpect(header("Authorization", BASIC_AUTH_HASH))
-          .andRespond(withStatus(HttpStatus.OK)
-              .headers(outputMessage.getHeaders())
-              .body(outputMessage.getBody().toString()));
+      // Mock REST call for getArtifactData
+      when(repoClient.getArtifactData(
+          argThat(artifact -> artifact.equals(spec.getArtifact())),
+          eq(LockssRepository.IncludeContent.ALWAYS)))
+          .thenReturn(spec.getArtifactData());
 
       ContentResult contentResult = proxy.fetchVersionedFile(url, auid, version);
 
@@ -547,9 +487,10 @@ public class TestContentService extends BaseSoapTest {
       // Assert content result data
       DataHandler dh = contentResult.getDataHandler();
       assertNotNull(dh);
-      assertInputStreamMatchesString("hello world", dh.getInputStream());
+      assertInputStreamMatchesString(spec.getContent(), dh.getInputStream());
       assertEquals(MediaType.APPLICATION_OCTET_STREAM_VALUE, dh.getContentType());
 
+      svcImpl.setRestLockssRepository(null);
       mockRestServer.verify();
       mockRestServer.reset();
     }
