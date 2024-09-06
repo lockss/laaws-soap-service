@@ -421,6 +421,7 @@ public class TestContentService extends BaseSoapTest {
       assertInputStreamMatchesString(spec.getContent(), dh.getInputStream());
       assertEquals(MediaType.APPLICATION_OCTET_STREAM_VALUE, dh.getContentType());
 
+      svcImpl.setRestLockssRepository(null);
       mockRestServer.verify();
       mockRestServer.reset();
     }
