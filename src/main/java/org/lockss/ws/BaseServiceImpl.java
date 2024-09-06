@@ -36,6 +36,7 @@ import org.lockss.app.LockssDaemon;
 import org.lockss.app.ServiceBinding;
 import org.lockss.app.ServiceDescr;
 import org.lockss.config.Configuration;
+import org.lockss.util.rest.repo.LockssRepository;
 import org.lockss.util.rest.repo.RestLockssRepository;
 import org.lockss.log.L4JLogger;
 import org.lockss.spring.base.BaseSpringApiServiceImpl;
@@ -48,6 +49,7 @@ import org.lockss.util.rest.exception.LockssRestException;
 import org.lockss.util.rest.multipart.MultipartConnector;
 import org.lockss.util.rest.multipart.MultipartResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -63,6 +65,7 @@ import java.util.*;
 public class BaseServiceImpl
   extends BaseSpringApiServiceImpl
   implements LockssConfigurableService {
+
 
   // Config params
 
@@ -85,6 +88,7 @@ public class BaseServiceImpl
   private static final L4JLogger log = L4JLogger.getLogger();
 
   @Autowired protected RestTemplate restTemplate;
+  private RestLockssRepository repoClient;
 
   // Timeouts.
   protected long connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
@@ -194,15 +198,37 @@ public class BaseServiceImpl
    * @throws MalformedURLException if there are problems with the REST Repository service URL.
    */
   protected RestLockssRepository getRestLockssRepository() throws MalformedURLException {
-    String[] credentials = getSoapRequestCredentials();
-    log.trace("credentials = [{}, ****]", credentials[0]);
+    if (repoClient == null) {
+      String[] credentials = getSoapRequestCredentials();
+      log.trace("credentials = [{}, ****]", credentials[0]);
 
-    try {
-      return new RestLockssRepository(new URL(getServiceEndpoint(ServiceDescr.SVC_REPO)),
-          restTemplate, credentials[0], credentials[1]);
-    } catch (IOException e) {
-      throw new IllegalStateException("Could not create REST LOCKSS Repository client");
+      try {
+        // Unless one was set explicitly, this method constructs a new RestLockssRepository
+        // every call because the credentials are passed from the initiating SOAP request,
+        // and could change in the next request:
+        // Q: Add a credential setter in RestLockssRepository?
+        return new RestLockssRepository(new URL(getServiceEndpoint(ServiceDescr.SVC_REPO)),
+            restTemplate, credentials[0], credentials[1]);
+      } catch (IOException e) {
+        throw new IllegalStateException("Could not create REST LOCKSS Repository client");
+      }
     }
+
+    return repoClient;
+  }
+
+  /**
+   * Sets the REST client to use for all calls to the LOCKSS Repository service made by this
+   * SOAP service. If set to {@code null}, revert to the default behavior of constructing a
+   * new client per request. See {@link BaseServiceImpl#getRestLockssRepository()}.
+   *
+   * Intended for use by tests.
+   *
+   * @param repoClient The {@link RestLockssRepository} client to use for calls to the LOCKSS
+   *                   Repository, or {@code null} for the default behavior.
+   */
+  public void setRestLockssRepository(RestLockssRepository repoClient) {
+    this.repoClient = repoClient;
   }
 
   /**
