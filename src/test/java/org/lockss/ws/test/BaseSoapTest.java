@@ -82,8 +82,6 @@ public abstract class BaseSoapTest extends SpringLockssTestCase4 {
   protected static final String BASIC_AUTH_HASH = "Basic bG9ja3NzLXU6bG9ja3NzLXA=";
   protected static final ObjectMapper mapper = new ObjectMapper();
 
-
-
   @TestConfiguration
   public static class MyConfiguration {
     @Bean
@@ -101,7 +99,7 @@ public abstract class BaseSoapTest extends SpringLockssTestCase4 {
   // The application Context used to specify the command line arguments to be
   // used for the tests.
   @Autowired
-  ApplicationContext appCtx;
+  protected ApplicationContext appCtx;
 
   protected void initBindings() throws MalformedURLException {
     ConfigurationUtil.addFromArgs(LockssApp.PARAM_SERVICE_BINDINGS, BINDINGS);
