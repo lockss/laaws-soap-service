@@ -35,7 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import javax.xml.ws.soap.MTOM;
+import jakarta.xml.ws.soap.MTOM;
 
 /** The COUNTER Reports SOAP web service implementation. */
 @MTOM

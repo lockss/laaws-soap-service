@@ -31,11 +31,11 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 package org.lockss.ws.reports;
 
-import org.jeasy.random.EasyRandom;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.lockss.log.L4JLogger;
+import org.lockss.ws.SoapApplication;
 import org.lockss.ws.entities.CounterReportParams;
 import org.lockss.ws.test.BaseSoapTest;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -43,7 +43,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = {SoapApplication.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
 public class TestCounterReportsService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();

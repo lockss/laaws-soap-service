@@ -44,11 +44,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
-import javax.activation.DataHandler;
-import javax.xml.ws.soap.MTOM;
+import jakarta.activation.DataHandler;
+import jakarta.xml.ws.soap.MTOM;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -113,10 +114,11 @@ public class ExportServiceImpl extends BaseServiceImpl implements ExportService 
               .setRestTemplate(restTemplate)
               .requestGet(getConnectionTimeout().intValue(), getReadTimeout().intValue());
 
-      HttpStatus statusCode = response.getStatusCode();
-      log.trace("statusCode = " + statusCode);
+      HttpStatusCode statusCode = response.getStatusCode();
+      HttpStatus status = HttpStatus.valueOf(statusCode.value());
+      log.trace("status = " + status);
 
-      if (statusCode.equals(HttpStatus.OK)) {
+      if (status.equals(HttpStatus.OK)) {
         Map<String, Part> parts = response.getParts();
         log.trace("parts = " + parts);
 
@@ -162,8 +164,8 @@ public class ExportServiceImpl extends BaseServiceImpl implements ExportService 
         return result;
       } else {
         String message =
-            "REST service returned statusCode '"
-                + statusCode
+            "REST service returned status '"
+                + status
                 + ", statusMessage = '"
                 + response.getStatusMessage()
                 + "'";

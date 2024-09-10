@@ -29,8 +29,8 @@ package org.lockss.ws.metadata;
 
 import org.lockss.ws.entities.*;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
 import java.util.List;
 
 /** The Metadata Monitor SOAP web service interface. */

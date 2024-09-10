@@ -29,9 +29,9 @@ package org.lockss.ws.control;
 
 import org.lockss.ws.entities.*;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebParam;
+import jakarta.jws.WebService;
 import java.util.List;
 
 /** The AU Control SOAP web service interface. */

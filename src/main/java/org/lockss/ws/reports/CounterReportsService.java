@@ -31,9 +31,9 @@ import org.lockss.ws.entities.CounterReportParams;
 import org.lockss.ws.entities.CounterReportResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebParam;
+import jakarta.jws.WebService;
 
 /** The Counter Reports SOAP web service interface. */
 @WebService

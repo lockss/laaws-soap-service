@@ -43,6 +43,7 @@ import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -401,13 +402,14 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
               metadataUpdateSpec,
               "Can't request metadata indexing");
 
-      HttpStatus statusCode = response.getStatusCode();
-      log.trace("statusCode = {}", statusCode);
+      HttpStatusCode statusCode = response.getStatusCode();
+      HttpStatus status = HttpStatus.valueOf(statusCode.value());
+      log.trace("status = {}", status);
 
-      if (RestUtil.isSuccess(statusCode)) {
+      if (RestUtil.isSuccess(status)) {
         result = new RequestAuControlResult(auId, true, null);
       } else {
-        result = new RequestAuControlResult(auId, false, statusCode.toString());
+        result = new RequestAuControlResult(auId, false, status.toString());
       }
 
       log.debug2("result = {}", result);

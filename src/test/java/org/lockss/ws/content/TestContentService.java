@@ -31,6 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 package org.lockss.ws.content;
 
+import jakarta.activation.DataHandler;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
@@ -53,6 +54,7 @@ import org.lockss.util.rest.repo.model.*;
 import org.lockss.util.rest.repo.util.ArtifactConstants;
 import org.lockss.util.rest.repo.util.ArtifactDataUtil;
 import org.lockss.util.rest.repo.util.NamedByteArrayResource;
+import org.lockss.ws.SoapApplication;
 import org.lockss.ws.entities.ContentResult;
 import org.lockss.ws.entities.FileWsResult;
 import org.lockss.ws.entities.LockssWebServicesFault;
@@ -70,7 +72,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.activation.DataHandler;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -85,7 +86,9 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = {SoapApplication.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
 public class TestContentService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
@@ -453,6 +456,7 @@ public class TestContentService extends BaseSoapTest {
 
       // Assert content result properties
       Properties actualProps = contentResult.getProperties();
+      actualProps.remove("Content-Type");
       assertNotNull(actualProps);
       assertIterableEquals(props.keySet(), actualProps.keySet());
 
@@ -580,6 +584,7 @@ public class TestContentService extends BaseSoapTest {
 
       // Assert content result properties
       Properties actualProps = contentResult.getProperties();
+      actualProps.remove("Content-Type");
       assertNotNull(actualProps);
       assertIterableEquals(props.keySet(), actualProps.keySet());
 

@@ -42,6 +42,7 @@ import org.lockss.util.rest.crawler.CrawlDesc;
 import org.lockss.util.rest.crawler.CrawlJob;
 import org.lockss.util.rest.mdx.MetadataUpdateSpec;
 import org.lockss.util.rest.poller.PollDesc;
+import org.lockss.ws.SoapApplication;
 import org.lockss.ws.entities.CheckSubstanceResult;
 import org.lockss.ws.entities.RequestAuControlResult;
 import org.lockss.ws.entities.RequestCrawlResult;
@@ -65,7 +66,9 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = {SoapApplication.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
 public class TestAuControlService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();

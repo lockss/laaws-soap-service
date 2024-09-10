@@ -39,6 +39,7 @@ import org.lockss.app.ServiceDescr;
 import org.lockss.log.L4JLogger;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.multipart.NamedByteArrayResource;
+import org.lockss.ws.SoapApplication;
 import org.lockss.ws.entities.DataHandlerWrapper;
 import org.lockss.ws.entities.ExportServiceParams;
 import org.lockss.ws.entities.ExportServiceWsResult;
@@ -63,7 +64,9 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = {SoapApplication.class},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = {"security.basic.enabled=false"})
 public class TestExportService extends BaseSoapTest {
   private static final L4JLogger log = L4JLogger.getLogger();
