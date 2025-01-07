@@ -40,7 +40,7 @@ import org.lockss.util.ListUtil;
 import org.lockss.util.rest.RestUtil;
 import org.lockss.util.rest.crawler.CrawlDesc;
 import org.lockss.util.rest.crawler.CrawlJob;
-import org.lockss.util.rest.mdx.MetadataUpdateSpec;
+import org.lockss.util.rest.md.MetadataUpdateSpec;
 import org.lockss.util.rest.poller.PollDesc;
 import org.lockss.ws.SoapApplication;
 import org.lockss.ws.entities.CheckSubstanceResult;
@@ -460,7 +460,7 @@ public class TestAuControlService extends BaseSoapTest {
     queryParams.put("force", String.valueOf(force));
 
     // Prepare the endpoint URI
-    String requestMdIndexingEndpoint = getServiceEndpoint(ServiceDescr.SVC_MDX) + "/mdupdates";
+    String requestMdIndexingEndpoint = getServiceEndpoint(ServiceDescr.SVC_MD) + "/mdupdates";
     URI requestMdIndexingQuery = RestUtil.getRestUri(requestMdIndexingEndpoint, null, queryParams);
 
     // Mock REST call for ArtifactData
@@ -508,7 +508,7 @@ public class TestAuControlService extends BaseSoapTest {
       queryParams.put("force", String.valueOf(force));
 
       // Prepare the endpoint URI
-      String requestMdIndexingEndpoint = getServiceEndpoint(ServiceDescr.SVC_MDX) + "/mdupdates";
+      String requestMdIndexingEndpoint = getServiceEndpoint(ServiceDescr.SVC_MD) + "/mdupdates";
       URI requestMdIndexingQuery = RestUtil.getRestUri(requestMdIndexingEndpoint, null, queryParams);
 
       // Mock REST call for ArtifactData
