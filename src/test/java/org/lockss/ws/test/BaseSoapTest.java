@@ -138,6 +138,8 @@ public abstract class BaseSoapTest extends SpringLockssTestCase4 {
 
     // Start LockssDaemon, load config w/ service bindings
     List<String> cmdLineArgs = getCommandLineArguments();
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add("test/config/lockss.txt");
     cmdLineArgs.add("-g");
     cmdLineArgs.add("demo");
     CommandLineRunner runner = appCtx.getBean(CommandLineRunner.class);
@@ -164,6 +166,8 @@ public abstract class BaseSoapTest extends SpringLockssTestCase4 {
     log.debug2("Invoked");
 
     List<String> cmdLineArgs = new ArrayList<String>();
+    cmdLineArgs.add("-p");
+    cmdLineArgs.add("test/config/lockss.txt");
     cmdLineArgs.add("-p");
     cmdLineArgs.add(getPlatformDiskSpaceConfigPath());
     log.debug2("cmdLineArgs = {}", cmdLineArgs);
