@@ -152,7 +152,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo_p1 = new PageInfo();
       pageInfo_p1.setTotalCount(2);
-      pageInfo_p1.setResultsPerPage(1);
+      pageInfo_p1.setItemsInPage(1);
       pageInfo_p1.setCurLink(allUrlVersionsEndpoint_p1.toString());
       pageInfo_p1.setContinuationToken("ABC");
       pageInfo_p1.setNextLink(allUrlVersionsEndpoint_p2.toString());
@@ -175,7 +175,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo_p2 = new PageInfo();
       pageInfo_p2.setTotalCount(2);
-      pageInfo_p2.setResultsPerPage(1);
+      pageInfo_p2.setItemsInPage(1);
       pageInfo_p2.setCurLink(allUrlVersionsEndpoint_p2.toString());
 
       ArtifactPageInfo artifactPageInfo_p2 = new ArtifactPageInfo();
@@ -255,7 +255,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo = new PageInfo();
       pageInfo.setTotalCount(1);
-      pageInfo.setResultsPerPage(1);
+      pageInfo.setItemsInPage(1);
       pageInfo.setCurLink(allUrlVersionsEndpoint.toString());
 
       ArtifactPageInfo artifactPageInfo = new ArtifactPageInfo();
@@ -314,7 +314,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo = new PageInfo();
       pageInfo.setTotalCount(1);
-      pageInfo.setResultsPerPage(1);
+      pageInfo.setItemsInPage(1);
       pageInfo.setCurLink(allUrlVersionsEndpoint.toString());
 
       ArtifactPageInfo artifactPageInfo = new ArtifactPageInfo();
@@ -389,7 +389,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo = new PageInfo();
       pageInfo.setTotalCount(1);
-      pageInfo.setResultsPerPage(1);
+      pageInfo.setItemsInPage(1);
       pageInfo.setCurLink(getArtifactsQuery.toString());
 
       ArtifactPageInfo artifactsPage = new ArtifactPageInfo();
@@ -517,7 +517,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo = new PageInfo();
       pageInfo.setTotalCount(1);
-      pageInfo.setResultsPerPage(1);
+      pageInfo.setItemsInPage(1);
       pageInfo.setCurLink(getArtifactsQuery.toString());
 
       ArtifactPageInfo artifactsPage = new ArtifactPageInfo();

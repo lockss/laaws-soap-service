@@ -644,7 +644,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     List<Artifact> artifacts = ListUtil.list(easyRandom.nextObject(Artifact[].class));
 
     PageInfo pageInfo = new PageInfo();
-    pageInfo.setResultsPerPage(artifacts.size());
+    pageInfo.setItemsInPage(artifacts.size());
     pageInfo.setTotalCount(artifacts.size());
 
     ArtifactPageInfo page = new ArtifactPageInfo();
