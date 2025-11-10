@@ -624,7 +624,7 @@ public class TestContentService extends BaseSoapTest {
   }
 
   public static MultiValueMap<String, Object> generateMultipartMapFromArtifactData(
-      ArtifactData artifactData, LockssRepository.IncludeContent includeContent, long smallContentThreshold)
+      ArtifactData artifactData, IncludeContentEnum includeContent, long smallContentThreshold)
       throws IOException {
 
     String artifactUuid = artifactData.getIdentifier().getUuid();
@@ -668,8 +668,8 @@ public class TestContentService extends BaseSoapTest {
     }
 
     //// Add artifact content part if requested or if small enough
-    if ((includeContent == LockssRepository.IncludeContent.ALWAYS) ||
-        (includeContent == LockssRepository.IncludeContent.IF_SMALL
+    if ((includeContent == IncludeContentEnum.ALWAYS) ||
+        (includeContent == IncludeContentEnum.IF_SMALL
             && artifactData.getContentLength() <= smallContentThreshold)) {
 
       // Create content part headers
