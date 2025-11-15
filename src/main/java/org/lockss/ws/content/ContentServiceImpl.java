@@ -33,7 +33,6 @@ import org.lockss.util.rest.repo.LockssRepository;
 import org.lockss.util.rest.repo.model.Artifact;
 import org.lockss.util.rest.repo.model.ArtifactData;
 import org.lockss.log.L4JLogger;
-import org.lockss.util.rest.repo.model.IncludeContentEnum;
 import org.lockss.ws.BaseServiceImpl;
 import org.lockss.ws.entities.ContentResult;
 import org.lockss.ws.entities.FileWsResult;
@@ -238,7 +237,7 @@ public class ContentServiceImpl extends BaseServiceImpl implements ContentServic
     ContentResult result = new ContentResult();
 
     ArtifactData artifactData =
-        getRestLockssRepository().getArtifactData(artifact, IncludeContentEnum.ALWAYS);
+        getRestLockssRepository().getArtifactData(artifact, LockssRepository.IncludeContent.ALWAYS);
 
     if (artifactData != null) {
       HttpHeaders headers = artifactData.getHttpHeaders();
