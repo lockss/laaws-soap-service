@@ -18,6 +18,7 @@ dependencies {
 
     // CXF 4.x for SOAP (jakarta namespace for Spring Boot 3.x)
     api(libs.cxf.jakarta.rt.frontend.jaxws)
+    api(libs.cxf.jakarta.rt.frontend.jaxrs)
     api(libs.cxf.jakarta.rt.transports.http)
     api(libs.cxf.jakarta.rt.ext.logging)
 
