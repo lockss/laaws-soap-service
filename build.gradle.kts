@@ -25,6 +25,9 @@ dependencies {
     // Test dependencies
     testImplementation(platform(project(":lockss-pom-bundles:lockss-junit5-bundle")))
     testImplementation(libs.junit.jupiter.engine)
+    testImplementation(project(":lockss-spring-bundle", configuration = "testArtifacts"))
+    testImplementation(project(":lockss-core", configuration = "testArtifacts"))
+    testImplementation("org.jeasy:easy-random-core:4.3.0")
 }
 
 // Docker configuration
