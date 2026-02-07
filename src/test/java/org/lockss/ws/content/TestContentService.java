@@ -123,7 +123,7 @@ public class TestContentService extends BaseSoapTest {
       String url = "testUrl";
 
       URI auArtifactsEndpoint =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts?auid=" + auid);
 
       URI allUrlVersionsEndpoint_p1 = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
           .queryParam("url", url)
@@ -235,7 +235,7 @@ public class TestContentService extends BaseSoapTest {
       String url = "testUrl";
 
       URI auArtifactsEndpoint =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts?auid=" + auid);
 
       URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
           .queryParam("url", url)
@@ -294,7 +294,7 @@ public class TestContentService extends BaseSoapTest {
       int version = 1234;
 
       URI auArtifactsEndpoint =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts?auid=" + auid);
 
       URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
           .queryParam("url", url)
@@ -365,7 +365,7 @@ public class TestContentService extends BaseSoapTest {
 
       // REST getArtifacts endpoint
       URI getArtifactsURL =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts?auid=" + auid);
 
       URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
           .queryParam("url", url)
@@ -493,7 +493,7 @@ public class TestContentService extends BaseSoapTest {
 
       // REST getArtifacts endpoint
       URI getArtifactsURL =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts?auid=" + auid);
 
       URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
           .queryParam("url", url)

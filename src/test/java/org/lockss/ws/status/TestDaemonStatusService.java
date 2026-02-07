@@ -654,13 +654,13 @@ public class TestDaemonStatusService extends BaseSoapTest {
     List<String> expectedResult = artifacts.stream().map(Artifact::getUri).collect(Collectors.toList());
 
     // Prepare the URI path variables
-    Map<String, String> uriVariables = new HashMap<>(1);
-    uriVariables.put("auId", auId);
+    Map<String, String> uriVariables = new HashMap<>();
 
     Configuration config = ConfigManager.getCurrentConfig();
 
     // Prepare the query parameters
-    Map<String, String> queryParams = new HashMap<>(1);
+    Map<String, String> queryParams = new HashMap<>();
+    queryParams.put("auid", auId);
     queryParams.put("urlPrefix", urlPrefix);
 
     String namespace =
@@ -671,7 +671,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     }
 
     // Prepare the endpoint URI
-    String auArtifactsEndpoint = getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/{auId}/artifacts";
+    String auArtifactsEndpoint = getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts";
     URI auArtifactsQuery = RestUtil.getRestUri(auArtifactsEndpoint, uriVariables, queryParams);
 
     mockRestServer
