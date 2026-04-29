@@ -252,7 +252,7 @@ public class ContentServiceImpl extends BaseServiceImpl implements ContentServic
 
       Properties props = new Properties();
 
-      for (String key : artifactData.getHttpHeaders().keySet()) {
+      for (String key : artifactData.getHttpHeaders().headerNames()) {
         // TODO: Replace with StringUtil method once StringUtil has been
         // moved from the lockss-core project to the lockss-util project.
         String value =

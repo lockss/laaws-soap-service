@@ -119,9 +119,9 @@ public class TestHasherService extends BaseSoapTest {
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().contentType("application/json"))
-          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andExpect(content().json(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
-              .contentType(MediaType.APPLICATION_JSON_UTF8)
+              .contentType(MediaType.APPLICATION_JSON)
               .body(mapper.writeValueAsString(blankError)));
 
       // Make the call through SOAP
@@ -152,7 +152,7 @@ public class TestHasherService extends BaseSoapTest {
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().contentType("application/json"))
-          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andExpect(content().json(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.FORBIDDEN)
               .contentType(MediaType.APPLICATION_JSON)
               .body(mapper.writeValueAsString(blankError)));
@@ -185,7 +185,7 @@ public class TestHasherService extends BaseSoapTest {
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().contentType("application/json"))
-          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andExpect(content().json(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
               .contentType(MediaType.APPLICATION_JSON)
               .body(mapper.writeValueAsString(blankError)));
@@ -260,7 +260,7 @@ public class TestHasherService extends BaseSoapTest {
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().contentType("application/json"))
-          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andExpect(content().json(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.OK)
               .contentType(MediaType.parseMediaType("multipart/form-data; boundary=12345\n"))
               .headers(responseHeaders)
@@ -316,7 +316,7 @@ public class TestHasherService extends BaseSoapTest {
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().contentType("application/json"))
-          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andExpect(content().json(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.UNAUTHORIZED)
               .contentType(MediaType.APPLICATION_JSON)
               .body(mapper.writeValueAsString(blankError)));
@@ -349,7 +349,7 @@ public class TestHasherService extends BaseSoapTest {
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().contentType("application/json;charset"))
-          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andExpect(content().json(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.FORBIDDEN)
               .contentType(MediaType.APPLICATION_JSON)
               .body(mapper.writeValueAsString(blankError)));
@@ -382,7 +382,7 @@ public class TestHasherService extends BaseSoapTest {
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().contentType("application/json"))
-          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andExpect(content().json(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
               .contentType(MediaType.APPLICATION_JSON)
               .body(mapper.writeValueAsString(blankError)));
@@ -457,7 +457,7 @@ public class TestHasherService extends BaseSoapTest {
           .andExpect(header("Accept", "multipart/form-data, application/json"))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
           .andExpect(content().contentType("application/json"))
-          .andExpect(content().string(mapper.writeValueAsString(params)))
+          .andExpect(content().json(mapper.writeValueAsString(params)))
           .andRespond(withStatus(HttpStatus.OK)
               .contentType(MediaType.parseMediaType("multipart/form-data; boundary=12345\n"))
               .headers(responseHeaders)

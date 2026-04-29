@@ -202,7 +202,7 @@ public class TestAuControlService extends BaseSoapTest {
         .expect(ExpectedCount.once(), requestTo(crawlsEndpoint))
         .andExpect(method(HttpMethod.POST))
         .andExpect(header("Authorization", BASIC_AUTH_HASH))
-        .andExpect(content().string(mapper.writeValueAsString(crawlDesc)))
+        .andExpect(content().json(mapper.writeValueAsString(crawlDesc)))
         .andRespond(withStatus(HttpStatus.OK)
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(job)));
@@ -245,7 +245,7 @@ public class TestAuControlService extends BaseSoapTest {
           .expect(ExpectedCount.once(), requestTo(crawlsEndpoint))
           .andExpect(method(HttpMethod.POST))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
-          .andExpect(content().string(mapper.writeValueAsString(crawlDesc)))
+          .andExpect(content().json(mapper.writeValueAsString(crawlDesc)))
           .andRespond(withStatus(HttpStatus.OK)
               .contentType(MediaType.APPLICATION_JSON)
               .body(mapper.writeValueAsString(job)));
@@ -293,7 +293,7 @@ public class TestAuControlService extends BaseSoapTest {
         .expect(ExpectedCount.once(), requestTo(crawlsEndpoint))
         .andExpect(method(HttpMethod.POST))
         .andExpect(header("Authorization", BASIC_AUTH_HASH))
-        .andExpect(content().string(mapper.writeValueAsString(crawlDesc)))
+        .andExpect(content().json(mapper.writeValueAsString(crawlDesc)))
         .andRespond(withStatus(HttpStatus.OK)
             .contentType(MediaType.APPLICATION_JSON)
             .body(mapper.writeValueAsString(job)));
@@ -338,7 +338,7 @@ public class TestAuControlService extends BaseSoapTest {
           .expect(ExpectedCount.once(), requestTo(crawlsEndpoint))
           .andExpect(method(HttpMethod.POST))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
-          .andExpect(content().string(mapper.writeValueAsString(crawlDesc)))
+          .andExpect(content().json(mapper.writeValueAsString(crawlDesc)))
           .andRespond(withStatus(HttpStatus.OK)
               .contentType(MediaType.APPLICATION_JSON)
               .body(mapper.writeValueAsString(job)));
@@ -378,7 +378,7 @@ public class TestAuControlService extends BaseSoapTest {
         .expect(ExpectedCount.once(), requestTo(requestPollQuery))
         .andExpect(method(HttpMethod.POST))
         .andExpect(header("Authorization", BASIC_AUTH_HASH))
-        .andExpect(content().string(mapper.writeValueAsString(pollDescription)))
+        .andExpect(content().json(mapper.writeValueAsString(pollDescription)))
         .andRespond(withStatus(HttpStatus.OK)
             .body(auId));
 
@@ -419,7 +419,7 @@ public class TestAuControlService extends BaseSoapTest {
           .expect(ExpectedCount.once(), requestTo(requestPollQuery))
           .andExpect(method(HttpMethod.POST))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
-          .andExpect(content().string(mapper.writeValueAsString(pollDescription)))
+          .andExpect(content().json(mapper.writeValueAsString(pollDescription)))
           .andRespond(withStatus(HttpStatus.OK)
               .body(auId));
     }
@@ -554,7 +554,7 @@ public class TestAuControlService extends BaseSoapTest {
         .expect(ExpectedCount.once(), requestTo(requestMdIndexingQuery))
         .andExpect(method(HttpMethod.PATCH))
         .andExpect(header("Authorization", BASIC_AUTH_HASH))
-        .andExpect(request -> assertFalse(request.getHeaders().containsKey("X-Lockss-Request-Cookie")))
+        .andExpect(request -> assertFalse(request.getHeaders().containsHeader("X-Lockss-Request-Cookie")))
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(content().string(auState))
         .andRespond(withStatus(HttpStatus.OK)
@@ -598,7 +598,7 @@ public class TestAuControlService extends BaseSoapTest {
           .expect(ExpectedCount.once(), requestTo(requestMdIndexingQuery))
           .andExpect(method(HttpMethod.PATCH))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
-          .andExpect(request -> assertFalse(request.getHeaders().containsKey("X-Lockss-Request-Cookie")))
+          .andExpect(request -> assertFalse(request.getHeaders().containsHeader("X-Lockss-Request-Cookie")))
           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
           .andExpect(content().string(auState))
           .andRespond(withStatus(HttpStatus.OK)
@@ -638,7 +638,7 @@ public class TestAuControlService extends BaseSoapTest {
         .expect(ExpectedCount.once(), requestTo(requestMdIndexingQuery))
         .andExpect(method(HttpMethod.PATCH))
         .andExpect(header("Authorization", BASIC_AUTH_HASH))
-        .andExpect(request -> assertFalse(request.getHeaders().containsKey("X-Lockss-Request-Cookie")))
+        .andExpect(request -> assertFalse(request.getHeaders().containsHeader("X-Lockss-Request-Cookie")))
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(content().string(auState))
         .andRespond(withStatus(HttpStatus.OK)
@@ -682,7 +682,7 @@ public class TestAuControlService extends BaseSoapTest {
           .expect(ExpectedCount.once(), requestTo(requestMdIndexingQuery))
           .andExpect(method(HttpMethod.PATCH))
           .andExpect(header("Authorization", BASIC_AUTH_HASH))
-          .andExpect(request -> assertFalse(request.getHeaders().containsKey("X-Lockss-Request-Cookie")))
+          .andExpect(request -> assertFalse(request.getHeaders().containsHeader("X-Lockss-Request-Cookie")))
           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
           .andExpect(content().string(auState))
           .andRespond(withStatus(HttpStatus.OK)

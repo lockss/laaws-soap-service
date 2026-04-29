@@ -458,9 +458,9 @@ public class TestContentService extends BaseSoapTest {
       Properties actualProps = contentResult.getProperties();
       actualProps.remove("Content-Type");
       assertNotNull(actualProps);
-      assertIterableEquals(props.keySet(), actualProps.keySet());
+      assertIterableEquals(props.headerNames(), actualProps.keySet());
 
-      for (String key : props.keySet())
+      for (String key : props.headerNames())
         assertEquals(props.getFirst(key), actualProps.getProperty(key));
 
       // Assert content result data
@@ -586,9 +586,9 @@ public class TestContentService extends BaseSoapTest {
       Properties actualProps = contentResult.getProperties();
       actualProps.remove("Content-Type");
       assertNotNull(actualProps);
-      assertIterableEquals(props.keySet(), actualProps.keySet());
+      assertIterableEquals(props.headerNames(), actualProps.keySet());
 
-      for (String key : props.keySet())
+      for (String key : props.headerNames())
         assertEquals(props.getFirst(key), actualProps.getProperty(key));
 
       // Assert content result data
