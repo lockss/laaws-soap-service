@@ -123,7 +123,7 @@ public class TestContentService extends BaseSoapTest {
       String url = "testUrl";
 
       URI auArtifactsEndpoint =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts?auid=" + auid);
 
       URI allUrlVersionsEndpoint_p1 = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
           .queryParam("url", url)
@@ -152,7 +152,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo_p1 = new PageInfo();
       pageInfo_p1.setTotalCount(2);
-      pageInfo_p1.setResultsPerPage(1);
+      pageInfo_p1.setItemsInPage(1);
       pageInfo_p1.setCurLink(allUrlVersionsEndpoint_p1.toString());
       pageInfo_p1.setContinuationToken("ABC");
       pageInfo_p1.setNextLink(allUrlVersionsEndpoint_p2.toString());
@@ -175,7 +175,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo_p2 = new PageInfo();
       pageInfo_p2.setTotalCount(2);
-      pageInfo_p2.setResultsPerPage(1);
+      pageInfo_p2.setItemsInPage(1);
       pageInfo_p2.setCurLink(allUrlVersionsEndpoint_p2.toString());
 
       ArtifactPageInfo artifactPageInfo_p2 = new ArtifactPageInfo();
@@ -235,7 +235,7 @@ public class TestContentService extends BaseSoapTest {
       String url = "testUrl";
 
       URI auArtifactsEndpoint =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts?auid=" + auid);
 
       URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
           .queryParam("url", url)
@@ -255,7 +255,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo = new PageInfo();
       pageInfo.setTotalCount(1);
-      pageInfo.setResultsPerPage(1);
+      pageInfo.setItemsInPage(1);
       pageInfo.setCurLink(allUrlVersionsEndpoint.toString());
 
       ArtifactPageInfo artifactPageInfo = new ArtifactPageInfo();
@@ -294,7 +294,7 @@ public class TestContentService extends BaseSoapTest {
       int version = 1234;
 
       URI auArtifactsEndpoint =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts?auid=" + auid);
 
       URI allUrlVersionsEndpoint = UriComponentsBuilder.fromUri(auArtifactsEndpoint)
           .queryParam("url", url)
@@ -314,7 +314,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo = new PageInfo();
       pageInfo.setTotalCount(1);
-      pageInfo.setResultsPerPage(1);
+      pageInfo.setItemsInPage(1);
       pageInfo.setCurLink(allUrlVersionsEndpoint.toString());
 
       ArtifactPageInfo artifactPageInfo = new ArtifactPageInfo();
@@ -365,7 +365,7 @@ public class TestContentService extends BaseSoapTest {
 
       // REST getArtifacts endpoint
       URI getArtifactsURL =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts?auid=" + auid);
 
       URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
           .queryParam("url", url)
@@ -389,7 +389,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo = new PageInfo();
       pageInfo.setTotalCount(1);
-      pageInfo.setResultsPerPage(1);
+      pageInfo.setItemsInPage(1);
       pageInfo.setCurLink(getArtifactsQuery.toString());
 
       ArtifactPageInfo artifactsPage = new ArtifactPageInfo();
@@ -493,7 +493,7 @@ public class TestContentService extends BaseSoapTest {
 
       // REST getArtifacts endpoint
       URI getArtifactsURL =
-        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/" + auid + "/artifacts");
+        new URI(getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts?auid=" + auid);
 
       URI getArtifactsQuery = UriComponentsBuilder.fromUri(getArtifactsURL)
           .queryParam("url", url)
@@ -517,7 +517,7 @@ public class TestContentService extends BaseSoapTest {
 
       PageInfo pageInfo = new PageInfo();
       pageInfo.setTotalCount(1);
-      pageInfo.setResultsPerPage(1);
+      pageInfo.setItemsInPage(1);
       pageInfo.setCurLink(getArtifactsQuery.toString());
 
       ArtifactPageInfo artifactsPage = new ArtifactPageInfo();
@@ -624,7 +624,7 @@ public class TestContentService extends BaseSoapTest {
   }
 
   public static MultiValueMap<String, Object> generateMultipartMapFromArtifactData(
-      ArtifactData artifactData, LockssRepository.IncludeContent includeContent, long smallContentThreshold)
+      ArtifactData artifactData, IncludeContentEnum includeContent, long smallContentThreshold)
       throws IOException {
 
     String artifactUuid = artifactData.getIdentifier().getUuid();
@@ -668,8 +668,8 @@ public class TestContentService extends BaseSoapTest {
     }
 
     //// Add artifact content part if requested or if small enough
-    if ((includeContent == LockssRepository.IncludeContent.ALWAYS) ||
-        (includeContent == LockssRepository.IncludeContent.IF_SMALL
+    if ((includeContent == IncludeContentEnum.ALWAYS) ||
+        (includeContent == IncludeContentEnum.IF_SMALL
             && artifactData.getContentLength() <= smallContentThreshold)) {
 
       // Create content part headers

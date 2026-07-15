@@ -97,20 +97,8 @@ public class DaemonStatusServiceImpl extends BaseServiceImpl implements DaemonSt
         }
       }
 
-      // Check the metadata extractor service.
-      url = getServiceEndpoint(ServiceDescr.SVC_MDX);
-
-      if (url != null) {
-        result = isServiceReady(url);
-
-        if (!result) {
-          log.debug2("result = {}", result);
-          return result;
-        }
-      }
-
       // Check the metadata service.
-      url = getServiceEndpoint(ServiceDescr.SVC_MDQ);
+      url = getServiceEndpoint(ServiceDescr.SVC_MD);
 
       if (url != null) {
         result = isServiceReady(url);

@@ -98,28 +98,25 @@ public class TestDaemonStatusService extends BaseSoapTest {
    */
   @Test
   public void testIsDaemonReady() throws Exception {
-    int allSvcsStopped = 0b00000;
-    int allSvcsReady = 0b11111;
+    int allSvcsStopped = 0b0000;
+    int allSvcsReady = 0b1111;
 
     for (int svcsReady = allSvcsStopped; svcsReady <= allSvcsReady; svcsReady++) {
 
-      boolean isRepoReady = (svcsReady & 0b10000) != 0;
-      boolean isCfgReady = (svcsReady & 0b01000) != 0;
-      boolean isPollerReady = (svcsReady & 0b00100) != 0;
-      boolean isMdxReady = (svcsReady & 0b00010) != 0;
-      boolean isMdqReady = (svcsReady & 0b00001) != 0;
+      boolean isRepoReady = (svcsReady & 0b1000) != 0;
+      boolean isCfgReady = (svcsReady & 0b0100) != 0;
+      boolean isPollerReady = (svcsReady & 0b0010) != 0;
+      boolean isMdReady = (svcsReady & 0b0001) != 0;
 
-      boolean isPollerCallExpected = (svcsReady & 0b11000) == 0b11000;
-      boolean isMdxCallExpected = (svcsReady & 0b11100) == 0b11100;
-      boolean isMdqCallExpected = (svcsReady & 0b11110) == 0b11110;
+      boolean isPollerCallExpected = (svcsReady & 0b1100) == 0b1100;
+      boolean isMdCallExpected = (svcsReady & 0b1110) == 0b1110;
 
       boolean isDaemonReady = svcsReady == allSvcsReady;
 
       mockIsServiceReady(getServiceEndpoint(ServiceDescr.SVC_REPO), isRepoReady, true);
       mockIsServiceReady(getServiceEndpoint(ServiceDescr.SVC_CONFIG), isCfgReady, isRepoReady);
       mockIsServiceReady(getServiceEndpoint(ServiceDescr.SVC_POLLER), isPollerReady, isPollerCallExpected);
-      mockIsServiceReady(getServiceEndpoint(ServiceDescr.SVC_MDX), isMdxReady, isMdxCallExpected);
-      mockIsServiceReady(getServiceEndpoint(ServiceDescr.SVC_MDQ), isMdqReady, isMdqCallExpected);
+      mockIsServiceReady(getServiceEndpoint(ServiceDescr.SVC_MD), isMdReady, isMdCallExpected);
 
       assertEquals(isDaemonReady, proxy.isDaemonReady());
 
@@ -647,7 +644,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     List<Artifact> artifacts = ListUtil.list(easyRandom.nextObject(Artifact[].class));
 
     PageInfo pageInfo = new PageInfo();
-    pageInfo.setResultsPerPage(artifacts.size());
+    pageInfo.setItemsInPage(artifacts.size());
     pageInfo.setTotalCount(artifacts.size());
 
     ArtifactPageInfo page = new ArtifactPageInfo();
@@ -657,13 +654,13 @@ public class TestDaemonStatusService extends BaseSoapTest {
     List<String> expectedResult = artifacts.stream().map(Artifact::getUri).collect(Collectors.toList());
 
     // Prepare the URI path variables
-    Map<String, String> uriVariables = new HashMap<>(1);
-    uriVariables.put("auId", auId);
+    Map<String, String> uriVariables = new HashMap<>();
 
     Configuration config = ConfigManager.getCurrentConfig();
 
     // Prepare the query parameters
-    Map<String, String> queryParams = new HashMap<>(1);
+    Map<String, String> queryParams = new HashMap<>();
+    queryParams.put("auid", auId);
     queryParams.put("urlPrefix", urlPrefix);
 
     String namespace =
@@ -674,7 +671,7 @@ public class TestDaemonStatusService extends BaseSoapTest {
     }
 
     // Prepare the endpoint URI
-    String auArtifactsEndpoint = getServiceEndpoint(ServiceDescr.SVC_REPO) + "/aus/{auId}/artifacts";
+    String auArtifactsEndpoint = getServiceEndpoint(ServiceDescr.SVC_REPO) + "/artifacts";
     URI auArtifactsQuery = RestUtil.getRestUri(auArtifactsEndpoint, uriVariables, queryParams);
 
     mockRestServer

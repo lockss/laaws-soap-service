@@ -36,7 +36,7 @@ import org.lockss.util.rest.crawler.CrawlDesc;
 import org.lockss.util.rest.crawler.CrawlJob;
 import org.lockss.util.rest.crawler.RestCrawlerClient;
 import org.lockss.util.rest.exception.LockssRestHttpException;
-import org.lockss.util.rest.mdx.MetadataUpdateSpec;
+import org.lockss.util.rest.md.MetadataUpdateSpec;
 import org.lockss.util.rest.poller.PollDesc;
 import org.lockss.util.rest.poller.RestPollerClient;
 import org.lockss.ws.BaseServiceImpl;
@@ -394,7 +394,7 @@ public class AuControlServiceImpl extends BaseServiceImpl implements AuControlSe
       // Make the REST call.
       ResponseEntity<String> response =
           callRestServiceEndpoint(
-              getServiceEndpoint(ServiceDescr.SVC_MDX),
+              getServiceEndpoint(ServiceDescr.SVC_MD),
               "/mdupdates",
               null,
               queryParams,
