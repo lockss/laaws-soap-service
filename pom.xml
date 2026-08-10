@@ -59,7 +59,7 @@ POSSIBILITY OF SUCH DAMAGE.
     <build.java.mainClass>org.lockss.ws.SoapApplication</build.java.mainClass>
 
     <!-- Is a Docker project -->
-    <skipDockerBuild>false</skipDockerBuild>
+    <skipDocker>false</skipDocker>
     <build.docker.dockerBuild.restPort>24616</build.docker.dockerBuild.restPort>
     <!-- <build.docker.dockerBuild.uiPort>246xx</build.docker.dockerBuild.uiPort> -->
   </properties>
