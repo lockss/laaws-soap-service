@@ -133,10 +133,25 @@ POSSIBILITY OF SUCH DAMAGE.
       </exclusions>
     </dependency>
 
+    <!-- Declared directly so nearest-wins resolves spring-boot-starter and
+         spring-boot-autoconfigure to ${version.group.spring-boot} rather than
+         the Boot version CXF's starter was built against (4.1.0 for CXF 4.2.3) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+      <version>${version.group.spring-boot}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
-      <version>4.2.0</version>
+      <version>4.2.3</version>
       <exclusions>
         <exclusion>
           <groupId>org.springframework.boot</groupId>
@@ -148,13 +163,13 @@ POSSIBILITY OF SUCH DAMAGE.
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-      <version>4.2.0</version>
+      <version>4.2.3</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-features-logging</artifactId>
-      <version>4.2.0</version>
+      <version>4.2.3</version>
     </dependency>
 
     <dependency>
