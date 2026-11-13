@@ -71,6 +71,16 @@ POSSIBILITY OF SUCH DAMAGE.
       <version>${version.lockss.lockss-util-core}</version>
       <type>test-jar</type>
       <scope>test</scope>
+      <exclusions>
+        <!-- Declared ahead of lockss-core-bundle, so kubernetes client-java's
+             bcpkix 1.79 would otherwise win mediation over lockss-core's and
+             mismatch bcprov (NoSuchFieldError in
+             DefaultSignatureAlgorithmIdentifierFinder at startup) -->
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
